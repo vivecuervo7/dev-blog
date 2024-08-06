@@ -6,12 +6,13 @@ links:
     website: https://github.com
     image: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
 menu:
-    main: 
-        weight: 4
-        params:
-            icon: link
+  main:
+    weight: 4
+    params:
+      icon: link
 
 comments: false
+expiryDate: 0000-01-01
 ---
 
 To use this feature, add `links` section to frontmatter.
