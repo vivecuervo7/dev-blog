@@ -1,5 +1,4 @@
-# TODO: Change baseurl before deploy
-baseurl = "https://demo.stack.jimmycai.com"
+baseurl = "https://vivecuervo7.github.io/dev-blog/"
 languageCode = "en-us"
 paginate = 5
 title = "Isaac Dedini"
