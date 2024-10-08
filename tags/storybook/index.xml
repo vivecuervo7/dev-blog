@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Storybook on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/storybook/</link><description>Recent content in Storybook on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Tue, 08 Oct 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/storybook/index.xml" rel="self" type="application/rss+xml"/><item><title>Creating a React component library with Vite</title><link>https://vivecuervo7.github.io/dev-blog/p/react-component-library-with-vite/</link><pubDate>Tue, 08 Oct 2024 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/react-component-library-with-vite/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/react-component-library-with-vite/cover.jpg" alt="Featured image of post Creating a React component library with Vite" />&lt;h2 id="context">Context
+&lt;/h2>&lt;p>A brief discussion with a client recently reminded me of something I&amp;rsquo;d long wanted to look into. The conversation was around the consolidation of designs across their rather broad suite of applications, and given the frequency with which React was used it got me wondering if it might be worth looking into creating a reusable component library.&lt;/p>
+&lt;p>Plenty of resources popped up when I started looking into the topic, and ultimately I discovered two promising avenues:&lt;/p>
+&lt;ul>
+&lt;li>Rollup&lt;/li>
+&lt;li>Vite (or more specifically, Vite&amp;rsquo;s &lt;a class="link" href="https://vite.dev/guide/build.html#library-mode" target="_blank" rel="noopener"
+>Library Mode&lt;/a>)&lt;/li>
+&lt;/ul>
+&lt;p>Of the above options, Rollup seemed to be the more &amp;ldquo;traditional&amp;rdquo; approach and so that&amp;rsquo;s where I started.&lt;/p>
+&lt;h2 id="rollup">Rollup
+&lt;/h2>&lt;p>&lt;a class="link" href="https://dev.to/alexeagleson/how-to-create-and-publish-a-react-component-library-2oe" target="_blank" rel="noopener"
+>This post&lt;/a> by &lt;a class="link" href="https://dev.to/alexeagleson" target="_blank" rel="noopener"
+>Alex Eagleson&lt;/a> was instrumental in helping me get my head around what needed to be done. There&amp;rsquo;s also a fantastic accompanying video tutorial linked on his post.&lt;/p>
+&lt;p>The tutorial is a little outdated so not all of the steps work as described, however there is a good amount of discussion in the comments with updated instructions. In any case, it proved to be informative enough to get me started in building a component library.&lt;/p>
+&lt;p>Hopefully it saves any pain, but one thing that caught me was a change to &lt;code>@rollup/plugin-typescript&lt;/code> in version 12 which was causing errors, especially when trying to create multiple outputs. Rolling back to version 11 restored the original functionality and allowed me to progress with the tutorial.&lt;/p>
+&lt;p>This resource was incredibly helpful in introducing me to the core concepts of how to bundle and publish a component library, and I highly recommend reading through it for anyone unfamiliar with Rollup and how to use it in this context.&lt;/p>
+&lt;h2 id="vite">Vite
+&lt;/h2>&lt;p>After running through the tutorial above and using the resulting library&amp;rsquo;s simple button component in another React application, I decided to look at Vite before continuing.&lt;/p>
+&lt;p>Of the resources I used, &lt;a class="link" href="https://victorlillo.dev/blog/react-typescript-vite-component-library" target="_blank" rel="noopener"
+>this post&lt;/a> by &lt;a class="link" href="https://victorlillo.dev/" target="_blank" rel="noopener"
+>Víctor Lillo&lt;/a> proved to be the most complete as it covered all of the aspects I wanted to look at.&lt;/p>
+&lt;p>Initially I disliked this approach due to the need to create a full-blown React application and subsequently remove all the bits we didn&amp;rsquo;t need, however it was still &lt;em>relatively&lt;/em> painless and came with a few nice things working straight out of the box — CSS as an example.&lt;/p>
+&lt;h3 id="exporting-components">Exporting components
+&lt;/h3>&lt;p>I did prefer the way components were exported in the first tutorial I followed, so I stuck with that here. This approach used an explicit &lt;code>index.ts&lt;/code> file at each level of the hierarchy.&lt;/p>
+&lt;p>&lt;code>src/components/Button/index.ts&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-ts" data-lang="ts">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;./Button&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;code>src/components/index.ts&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-ts" data-lang="ts">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kr">as&lt;/span> &lt;span class="nx">Button&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;./Button&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;code>src/index.ts&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-ts" data-lang="ts">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;./components&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="library-mode">Library mode
+&lt;/h3>&lt;p>The initial config required on the Vite side was relatively straightforward. Setting the required values for &lt;code>build.lib&lt;/code> under &lt;code>vite.config.ts&lt;/code> is all we needed, where we set our entry point.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-ts" data-lang="ts">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">/// &amp;lt;reference types=&amp;#34;vite/client&amp;#34; /&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">resolve&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;node:path&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">defineConfig&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;vite&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">react&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;@vitejs/plugin-react&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="nx">defineConfig&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">plugins&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="nx">react&lt;/span>&lt;span class="p">()],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">build&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">lib&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">entry&lt;/span>: &lt;span class="kt">resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">__dirname&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;src/index.ts&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">formats&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;es&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="dependencies">Dependencies
+&lt;/h4>&lt;p>Another important piece of configuration here is to make sure we&amp;rsquo;re not bundling up a bunch of dependencies that we don&amp;rsquo;t need, such as React itself. We do this by extending &lt;code>vite.config.ts&lt;/code> to include &lt;code>build.rollupOptions&lt;/code> under both &lt;code>external&lt;/code> and &lt;code>output.globals&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-ts" data-lang="ts">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">//...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="nx">defineConfig&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">plugins&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="c1">//...,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">build&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">lib&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="c1">//...,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">rollupOptions&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">external&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;react&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;react-dom&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;react/jsx-runtime&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">output&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">globals&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">react&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;React&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;react-dom&amp;#34;&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;React-dom&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;react/jsx-runtime&amp;#34;&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;react/jsx-runtime&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>In my particular case, I was using &lt;code>classnames&lt;/code> as a dependency for some styling, and ran into a few options when it came to ensuring any consumers of the library would have all the required dependencies.&lt;/p>
+&lt;p>&lt;strong>Bundled with the application&lt;/strong>&lt;/p>
+&lt;p>Leaving &lt;code>classnames&lt;/code> under &lt;code>devDependencies&lt;/code> in &lt;code>package.json&lt;/code> and simply having referenced it in the bundled code meant that &lt;code>classnames&lt;/code> itself would also be bundled into the library itself. While there may be some cases where this makes sense, if the consuming application was using &lt;code>classnames&lt;/code> already then we&amp;rsquo;ve essentially forced them to bundle the code in their application twice.&lt;/p>
+&lt;p>&lt;strong>Making it a regular dependency&lt;/strong>&lt;/p>
+&lt;p>Moving &lt;code>classnames&lt;/code> into the &lt;code>dependencies&lt;/code> list in &lt;code>package.json&lt;/code> might work, but that would lead to the consuming application needing to unnecessarily include &lt;code>classnames&lt;/code> as a runtime dependency.&lt;/p>
+&lt;p>&lt;strong>Peer dependencies&lt;/strong>&lt;/p>
+&lt;p>Having not seen this prior to the covered tutorials, it took some reasoning to understand what this was used for. Essentially, moving &lt;code>classnames&lt;/code> into the &lt;code>peerDependencies&lt;/code> would mean that it was a requirement of the library that the consuming application must have a matching version of the package installed. Thus, some leniency was required when specifying the version.&lt;/p>
+&lt;p>Installation was a concern that crossed my mind, however as of npm 7 &lt;a class="link" href="https://github.blog/news-insights/product-news/npm-7-is-now-generally-available/#peer-dependencies" target="_blank" rel="noopener"
+>peer dependencies are installed by default&lt;/a>, meaning that a consumer need not go and manually install the peer dependencies themselves.&lt;/p>
+&lt;p>Ultimately I went with the &lt;strong>peer dependencies&lt;/strong> approach as it seemed to have the fewest drawbacks.&lt;/p>
+&lt;h4 id="entry-points-and-css">Entry points and CSS
+&lt;/h4>&lt;p>As mentioned in the tutorial, style sheets aren&amp;rsquo;t automatically imported in the generated code and thus the consumer needs to import it themselves manually. This can be resolved by using the &lt;a class="link" href="https://www.npmjs.com/package/vite-plugin-lib-inject-css" target="_blank" rel="noopener"
+>vite-plugin-lib-inject-css&lt;/a> plugin. Once installed, it needs to be added to &lt;code>vite.config.ts&lt;/code> under &lt;code>plugins&lt;/code>.&lt;/p>
+&lt;p>This fixes our issue, however we now have a single import statement in our generated &lt;code>index.js&lt;/code> file, meaning the entire style sheet needs to be imported if we use even a single component from our library. &lt;a class="link" href="https://rollupjs.org/configuration-options/#input" target="_blank" rel="noopener"
+>Rollup recommends&lt;/a> that we instead turn every file into an entry point, which will result in individual CSS files for each component — allowing us to import and use a single component, and only require that component&amp;rsquo;s style sheet.&lt;/p>
+&lt;p>Adding the following to &lt;code>build.rollupOptions&lt;/code> allows us to generate individual files for each component. The addition to &lt;code>build.rollupOptions.output&lt;/code> is also necessary to retain our folder structure in the generated code.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">export default defineConfig({
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> build: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> rollupOptions: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ input: Object.fromEntries(
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ glob
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ .sync(&amp;#39;src/**/*.{ts,tsx}&amp;#39;)
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ .map((file: string) =&amp;gt; [
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ path.relative(&amp;#39;src&amp;#39;, file.slice(0, file.length - path.extname(file).length)),
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ fileURLToPath(new URL(file, import.meta.url))
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ ])
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ ),
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> output: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ entryFileNames: &amp;#39;[name].js&amp;#39;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ assetFileNames: &amp;#39;assets/[name][extname]&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> },
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> },
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> },
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">})
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>This will result in the &lt;code>dist/assets/&lt;/code> folder containing a CSS file for each component, which are imported accordingly.&lt;/p>
+&lt;h4 id="type-generation">Type generation
+&lt;/h4>&lt;p>&lt;a class="link" href="https://www.npmjs.com/package/vite-plugin-dts" target="_blank" rel="noopener"
+>vite-plugin-dts&lt;/a> is the plugin required to generate our type declarations. Similar to &lt;code>vite-plugin-lib-inject-css&lt;/code>, install it and add it to the &lt;code>plugins&lt;/code> array in &lt;code>vite.config.ts&lt;/code>.&lt;/p>
+&lt;p>Again bridging the two tutorials, I preferred the single-file approach taken by the first tutorial, and as such I added the plugin with the option &lt;code>rollupTypes&lt;/code> set to &lt;code>true&lt;/code>.&lt;/p>
+&lt;p>Assuming the &lt;code>rollupTypes&lt;/code> option was enabled, the generated code should now contain an &lt;code>index.d.ts&lt;/code> file with all of the types declared within it.&lt;/p>
+&lt;h4 id="setting-up-packagejson">Setting up package.json
+&lt;/h4>&lt;p>The other important file that requires some changes is the &lt;code>package.json&lt;/code> file. Add or update the following fields.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">{
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;type&amp;#34;: &amp;#34;module&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;files&amp;#34;: [&amp;#34;dist&amp;#34;],
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;module&amp;#34;: &amp;#34;dist/index.js&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;types&amp;#34;: &amp;#34;dist/index.d.ts&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>&lt;code>type&lt;/code>: should be set to &lt;code>module&lt;/code>. to indicate that we&amp;rsquo;re using ES module syntax&lt;/li>
+&lt;li>&lt;code>files&lt;/code>: describes the files to be included when the package is published&lt;/li>
+&lt;li>&lt;code>module&lt;/code>: not an official Node feature, but supported by some bundlers&lt;/li>
+&lt;li>&lt;code>types&lt;/code>: exposes the type declarations entry point&lt;/li>
+&lt;li>&lt;code>exports&lt;/code>: &lt;em>Optional&lt;/em> the entry points to the library&lt;/li>
+&lt;li>&lt;code>main&lt;/code>: This is used to specify the entry point for &lt;code>cjs&lt;/code>, which we&amp;rsquo;re not supporting&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Life cycle scripts&lt;/strong>&lt;/p>
+&lt;p>A script is also useful to specify here. While using &lt;code>prepublishOnly&lt;/code> makes sense if we&amp;rsquo;re planning to publish the library via &lt;code>npm publish&lt;/code>, using &lt;code>prepare&lt;/code> will run both on &lt;code>npm publish&lt;/code> and &lt;code>npm install&lt;/code> which allows us to install the library locally.&lt;/p>
+&lt;p>Add the following to &lt;code>package.json&lt;/code> under &lt;code>scripts&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">{
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &amp;#34;scripts&amp;#34;: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;prepare&amp;#34;: &amp;#34;vite build&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> }
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>More information on these &amp;ldquo;life cycle scripts&amp;rdquo; can be found &lt;a class="link" href="https://arc.net/l/quote/qplfovup" target="_blank" rel="noopener"
+>here&lt;/a>.&lt;/p>
+&lt;h2 id="development">Development
+&lt;/h2>&lt;p>The following are simply some additions to the development tooling for the library itself. This won&amp;rsquo;t be a guide on how to use any of the tooling, but simply provides some basic installation steps and ensuring that the files are not bundled into our generated library code.&lt;/p>
+&lt;h3 id="storybook">Storybook
+&lt;/h3>&lt;p>Storybook can be installed by running the following command.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">pnpm dlx storybook@latest init
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>The &lt;code>src/stories/&lt;/code> folder can be removed if desired as it only contains some sample stories and documentation.&lt;/p>
+&lt;p>Stories can now be added for any of our components — documentation on how to do so can be found &lt;a class="link" href="https://storybook.js.org/docs/writing-stories" target="_blank" rel="noopener"
+>here&lt;/a>. Once stories have been added, run Storybook with the following command.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">pnpm storybook
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Ignoring Storybook files&lt;/strong>&lt;/p>
+&lt;p>The last thing we need to do here is to ensure that we aren&amp;rsquo;t bundling our stories in the generated code. We do this by extending the &lt;code>glob.sync&lt;/code> command we added to &lt;code>build.rollupOptions.input&lt;/code> in &lt;code>vite.config.ts&lt;/code> and providing an &lt;code>ignore&lt;/code> field to the options as follows.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-ts" data-lang="ts">&lt;span class="line">&lt;span class="cl">&lt;span class="nx">glob&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">sync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;src/**/*.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">ignore&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;src/**/*.stories.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="vitest">Vitest
+&lt;/h3>&lt;p>Vitest, jsdom and the React Testing Library (we&amp;rsquo;ll need all three) can be installed with the following command.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">pnpm i -D vitest jsdom @testing-library/react
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Add a &lt;code>test&lt;/code> script to &lt;code>package.json&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">{
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &amp;#34;scripts&amp;#34;: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;test&amp;#34;: &amp;#34;vitest&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> }
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Next we need to update our &lt;code>vite.config.ts&lt;/code> file.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+/// &amp;lt;reference types=&amp;#34;vitest&amp;#34; /&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>export default defineConfig({
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ test: {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ environment: &amp;#34;jsdom&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ globals: true,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ root: &amp;#34;src/&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ },
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>});
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>And to get those globals working nicely so we don&amp;rsquo;t need to repeatedly import &lt;code>describe&lt;/code>, &lt;code>test&lt;/code> etc. we need to add the following to &lt;code>tsconfig.ts&lt;/code> under &lt;code>compilerOptions&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">{
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &amp;#34;compilerOptions&amp;#34;: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;types&amp;#34;: [&amp;#34;vitest/globals&amp;#34;]
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> }
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Ignoring test files&lt;/strong>&lt;/p>
+&lt;p>Similar to Storybook, we also need to make sure we&amp;rsquo;re not generated code for our tests. Update the &lt;code>glob.sync&lt;/code> command in &lt;code>vite.config.ts&lt;/code> under &lt;code>build.rollupOptions.input&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-ts" data-lang="ts">&lt;span class="line">&lt;span class="cl">&lt;span class="nx">glob&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">sync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;src/**/*.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">ignore&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;src/**/*.stories.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;src/**/*.test.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="using-the-library">Using the library
+&lt;/h2>&lt;p>Both of the linked tutorials go into publishing the library on npm, however due to the nature of a sample library I didn&amp;rsquo;t want to delve into the publishing side of things.&lt;/p>
+&lt;p>However, outside of publishing it on npm I was unsure as to how I could actually use the library, and to my pleasure it was actually incredibly straightforward.&lt;/p>
+&lt;p>&lt;strong>Github repository&lt;/strong>&lt;/p>
+&lt;p>Very simple, this allows you to install directly from the repository using the following command.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">pnpm i -D GITHUB_NAME/REPOSITORY_NAME
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Which results in the following &lt;code>package.json&lt;/code> entry under &lt;code>devDependencies&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;PACKAGE_NAME&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;github:GITHUB_NAME/REPOSITORY_NAME&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Local reference&lt;/strong>&lt;/p>
+&lt;p>Equally as straightforward, the following command can be run to create a local reference.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">pnpm i -D PATH_TO_LIBRARY
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Which similar to the above results in the following &lt;code>package.json&lt;/code> entry under &lt;code>devDependencies&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;PACKAGE_NAME&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;link:PATH_TO_LIBRARY&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="sample-repository">Sample repository
+&lt;/h3>&lt;p>I did end up with a functional component library — albeit one with all of two components and a custom hook. It&amp;rsquo;s available on GitHub &lt;a class="link" href="https://github.com/vivecuervo7/demolib" target="_blank" rel="noopener"
+>here&lt;/a>, or it can be used as above with the following command.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">pnpm i -D vivecuervo7/demolib
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div></description></item></channel></rss>
