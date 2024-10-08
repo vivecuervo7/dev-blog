@@ -16,11 +16,11 @@ tags:
 weight: 1
 links:
   - title: How to Create and Publish a React Component Library
-    description: Open Source Identity and Access Management
+    description: A tutorial for creating a React component library with Rollup
     website: https://dev.to/alexeagleson/how-to-create-and-publish-a-react-component-library-2oe
   - title: Build a React component library with TypeScript and Vite
-    description: Accelerated Container Application Development
-    website: https://victorlillo.dev/blog/react-typescript-vite-component-library
+    description: A tutorial for creating a React component library with Vite
+    website: https://victorlillo.dev/blog/react-typescript-vite-component-librarymenu
 ---
 
 ## Context
