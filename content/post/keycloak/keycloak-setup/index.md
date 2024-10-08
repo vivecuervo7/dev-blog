@@ -19,7 +19,7 @@ links:
     website: https://www.docker.com/
 ---
 
-<!-- ## Intro to Keycloak -->
+## Context
 
 [Keycloak](https://www.keycloak.org/) is an open-source identity and access management solution designed to manage users and secure applications. It provides features such as single sign-on (SSO), social login integration, and user federation.
 

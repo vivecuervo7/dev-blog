@@ -19,6 +19,8 @@ links:
     website: https://www.docker.com/
 ---
 
+## Context
+
 Keycloak allows us to import and export realms, which can make it much easier to share configurations amongst team members.
 
 ## Exporting an existing realm
@@ -91,6 +93,6 @@ services:
       - "--import-realm"
 ```
 
-Note the removal of the persisted Docker volume - this effectively gives us an auth server that can be modified on the fly, but will reset back to the exported realm whenever it restarts.
+Note the removal of the persisted Docker volume &mdash; this effectively gives us an auth server that can be modified on the fly, but will reset back to the exported realm whenever it restarts.
 
 As Keycloak won't overwrite an existing realm with the import method, the Docker volume can always be reintroduced and will essentially mean our import file serves as a starting point upon which changes can be persisted.
