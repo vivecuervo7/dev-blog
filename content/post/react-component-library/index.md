@@ -1,6 +1,6 @@
 ---
 title: Creating a React component library with Vite
-description: A guide on setting up a React component library using Vite
+description: Using Vite's library mode to build a React component library
 slug: react-component-library-with-vite
 date: 2024-10-08 00:00:00+0000
 image: cover.jpg

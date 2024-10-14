@@ -1,6 +1,6 @@
 ---
 title: Importing and exporting Keycloak configuration
-description: A guide and sample code for importing and exporting Keycloak realms
+description: How to import and export Keycloak realms
 slug: keycloak-import-export
 date: 2024-08-05 00:00:00+0000
 image: cover.jpg

@@ -1,6 +1,6 @@
 ---
 title: Setting up Keycloak
-description: A quick guide on running and configuring Keycloak as a local authentication server
+description: Run and configure Keycloak for use as as a local auth server
 slug: keycloak-setup
 date: 2024-08-05 00:00:00+0000
 image: cover.jpg

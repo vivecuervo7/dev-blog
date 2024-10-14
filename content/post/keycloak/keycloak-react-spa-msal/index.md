@@ -1,6 +1,6 @@
 ---
 title: Using Keycloak with a React SPA + MSAL
-description: A guide for running Keycloak locally to support a React SPA with MSAL
+description: How to use MSAL with Keycloak as a local auth server
 slug: keycloak-react-spa-msal
 date: 2024-08-05 00:00:00+0000
 image: cover.jpg
