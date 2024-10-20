@@ -1,3 +1,16 @@
-/*
-    You can add your own custom styles here.
-*/
+:root {
+  --alert-background: whitesmoke;
+  --alert-border: #f75b13;
+
+  &[data-scheme="dark"] {
+    --alert-background: #303030;
+    --alert-border: #cf451a;
+  }
+}
+
+.alert {
+  padding: 1rem 2rem;
+  border: solid 1px var(--alert-border);
+  border-radius: 12px;
+  background-color: var(--alert-background);
+}
