@@ -422,3 +422,7 @@ While these looked promising I didn't look at either beyond reading the article,
 
 - [Test builder](https://grafana.com/docs/k6/latest/using-k6/test-authoring/test-builder/)
 - [Browser recorder](https://grafana.com/docs/k6/latest/using-k6/test-authoring/create-tests-from-recordings/using-the-browser-recorder/)
+
+### Sample repository
+
+There is a very light sample repository available on [GitHub](https://github.com/vivecuervo7/k6-performance-testing) which includes a sample of the generated HTML report.
