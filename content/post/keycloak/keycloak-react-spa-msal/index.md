@@ -51,13 +51,13 @@ Since dotnet-certs are typically used for local dev when building .NET applicati
 
 Create the self-signed certificate by running the following in your terminal, in this case using `password` as the credential to create the following two files: `certificate.crt` and `certificate.key`.
 
-```bash
+```shell
 dotnet dev-certs https -ep ./certificate.crt -p password --trust --format PEM
 ```
 
 Use `openssl` to decrypt the certificate key, overwriting `certificate.key` with the decrypted copy.
 
-```bash
+```shell
 openssl rsa -in certificate.key  -out certificate.key
 ```
 
@@ -67,7 +67,9 @@ As a matter of preference, I tend to rename these files to `cert.pem` and `key.p
 
 The following changes expect that the certificate files we just created are present in a `certificates` directory. Go ahead and create the folder and copy both the certificate and key into it.
 
-Create or update your `docker.compose.yml` file to the following and run by calling `docker-compose up -d` in your terminal.
+Create or update your `docker-compose.yml` file to the following and run by calling `docker-compose up -d` in your terminal.
+
+{{< code-hint docker-compose.yml >}}
 
 ```yml
 services:
@@ -97,7 +99,7 @@ You can now access the Keycloak server at either [http://localhost:8080](http://
 
 Without delving too deep into how we might hold MSAL in a typical React application, the biggest change we need to make is to manually provide some of the configuration that usually works out of the box with MSAL when using Microsoft Entra ID.
 
-```ts
+```typescript
 const msalConfig = {
   auth: {
     clientId: "local-dev-client",
@@ -154,6 +156,8 @@ We may also need to run our React application with HTTPS as well. To achieve thi
 
 Note that while omitted below, it may be useful to split the `serve` and `build` commands so we keep our changes away from any deployed code.
 
+{{< code-hint vite.config.ts >}}
+
 ```diff
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
@@ -175,6 +179,8 @@ export default defineConfig(({ command, mode }) => {
 
 And then we'll also need to add a `.env` (and `.env.local`) with the correct paths.
 
+{{< code-hint ".env" >}}
+
 ```diff
 + VITE_CERT=../local-dev/certificates/cert.pem
 + VITE_CERT_KEY=../local-dev/certificates/key.pem
@@ -188,7 +194,9 @@ I did run into a small issue with the setup, where a user was unable to logout c
 
 Ultimately, this was easily resolved by obtaining an access token _before_ attempting to logout, and using the `id_token` from that.
 
-```tsx
+{{< code-hint main.tsx >}}
+
+```typescript
 const handleLogout = async () => {
   const response = await instance.acquireTokenSilent({
     scopes: ["openid"],
@@ -207,6 +215,8 @@ The [sample repo](https://github.com/vivecuervo7/local-auth-with-keycloak-exampl
 The configuration here is relatively straightforward to work with our local Keycloak server.
 
 The main changes we'll need to make are to `Program.cs`, where we simply add our necessary configuration (truncated for brevity).
+
+{{< code-hint Program.cs >}}
 
 ```diff
 + using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -240,6 +250,8 @@ The main changes we'll need to make are to `Program.cs`, where we simply add our
 ```
 
 And providing the appropriate configuration via appsettings.
+
+{{< code-hint appsettings.json >}}
 
 ```diff
 {

@@ -27,6 +27,8 @@ Keycloak allows us to import and export realms, which can make it much easier to
 
 The following instructions to export a realm from Keycloak will assume the use of a docker compose file similar to this.
 
+{{< code-hint docker-compose.yml >}}
+
 ```yaml
 services:
   keycloak:
@@ -49,6 +51,8 @@ volumes:
 
 The easiest way to export a realm when using docker compose is to add a second compose file. Call this `docker-compose.export.yml`.
 
+{{< code-hint docker-compose.export.yml >}}
+
 ```yaml
 services:
   keycloak:
@@ -59,7 +63,7 @@ services:
 
 Run the following in your terminal to export the configured realm.
 
-```bash
+```
 docker-compose -f "docker-compose.yml" -f "docker-compose.export.yml" up --exit-code-from keycloak
 ```
 
@@ -74,6 +78,8 @@ Keycloak also allows for multiple options when it comes to if and how users shou
 The updated Docker compose file below uses a bind mount to an `import` directory. Once any `realm.json` files have been exported, placing the files in the `import` directory will allow Keycloak to automatically pick those realms up and import them on first run.
 
 Update your `docker-compose.yml` to the following and run by calling `docker-compose up -d` in your terminal.
+
+{{< code-hint docker-compose.yml >}}
 
 ```yaml
 services:

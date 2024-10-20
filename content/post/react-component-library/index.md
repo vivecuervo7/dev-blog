@@ -56,29 +56,37 @@ Initially I disliked this approach due to the need to create a full-blown React 
 
 I did prefer the way components were exported in the first tutorial I followed, so I stuck with that here. This approach used an explicit `index.ts` file at each level of the hierarchy.
 
-`src/components/Button/index.ts`
+{{< code title=src/components/Button/index.ts >}}
 
-```ts
+```typescript
 export { default } from "./Button";
 ```
 
-`src/components/index.ts`
+{{</ code >}}
 
-```ts
+{{< code title=src/components/index.ts >}}
+
+```typescript
 export { default as Button } from "./Button";
 ```
 
-`src/index.ts`
+{{</ code >}}
 
-```ts
+{{< code title=src/index.ts >}}
+
+```typescript
 export * from "./components";
 ```
+
+{{</ code >}}
 
 ### Library mode
 
 The initial config required on the Vite side was relatively straightforward. Setting the required values for `build.lib` under `vite.config.ts` is all we needed, where we set our entry point.
 
-```ts
+{{< code-hint vite.config.ts >}}
+
+```typescript
 /// <reference types="vite/client" />
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
@@ -99,7 +107,9 @@ export default defineConfig({
 
 Another important piece of configuration here is to make sure we're not bundling up a bunch of dependencies that we don't need, such as React itself. We do this by extending `vite.config.ts` to include `build.rollupOptions` under both `external` and `output.globals`.
 
-```ts
+{{< code-hint vite.config.ts >}}
+
+```typescript
 //...
 export default defineConfig({
   plugins: //...,
@@ -145,6 +155,8 @@ This fixes our issue, however we now have a single import statement in our gener
 
 Adding the following to `build.rollupOptions` allows us to generate individual files for each component. The addition to `build.rollupOptions.output` is also necessary to retain our folder structure in the generated code.
 
+{{< code-hint vite.config.ts >}}
+
 ```diff
 export default defineConfig({
   build: {
@@ -180,6 +192,8 @@ Assuming the `rollupTypes` option was enabled, the generated code should now con
 
 The other important file that requires some changes is the `package.json` file. Add or update the following fields.
 
+{{< code-hint package.json >}}
+
 ```diff
 {
 + "type": "module",
@@ -188,6 +202,8 @@ The other important file that requires some changes is the `package.json` file. 
 + "types": "dist/index.d.ts"
 }
 ```
+
+Some more information regarding the new or updated fields:
 
 - `type`: should be set to `module`. to indicate that we're using ES module syntax
 - `files`: describes the files to be included when the package is published
@@ -201,6 +217,8 @@ The other important file that requires some changes is the `package.json` file. 
 A script is also useful to specify here. While using `prepublishOnly` makes sense if we're planning to publish the library via `npm publish`, using `prepare` will run both on `npm publish` and `npm install` which allows us to install the library locally.
 
 Add the following to `package.json` under `scripts`.
+
+{{< code-hint package.json >}}
 
 ```diff
 {
@@ -220,7 +238,7 @@ The following are simply some additions to the development tooling for the libra
 
 Storybook can be installed by running the following command.
 
-```bash
+```
 pnpm dlx storybook@latest init
 ```
 
@@ -228,7 +246,7 @@ The `src/stories/` folder can be removed if desired as it only contains some sam
 
 Stories can now be added for any of our components &mdash; documentation on how to do so can be found [here](https://storybook.js.org/docs/writing-stories). Once stories have been added, run Storybook with the following command.
 
-```bash
+```
 pnpm storybook
 ```
 
@@ -236,7 +254,9 @@ pnpm storybook
 
 The last thing we need to do here is to ensure that we aren't bundling our stories in the generated code. We do this by extending the `glob.sync` command we added to `build.rollupOptions.input` in `vite.config.ts` and providing an `ignore` field to the options as follows.
 
-```ts
+{{< code-hint vite.config.ts >}}
+
+```typescript
 glob.sync("src/**/*.{ts,tsx}", { ignore: ["src/**/*.stories.{ts,tsx}"] });
 ```
 
@@ -244,11 +264,13 @@ glob.sync("src/**/*.{ts,tsx}", { ignore: ["src/**/*.stories.{ts,tsx}"] });
 
 Vitest, jsdom and the React Testing Library (we'll need all three) can be installed with the following command.
 
-```bash
+```
 pnpm i -D vitest jsdom @testing-library/react
 ```
 
 Add a `test` script to `package.json`.
+
+{{< code-hint package.json >}}
 
 ```diff
 {
@@ -259,6 +281,8 @@ Add a `test` script to `package.json`.
 ```
 
 Next we need to update our `vite.config.ts` file.
+
+{{< code-hint vite.config.ts >}}
 
 ```diff
 +/// <reference types="vitest" />
@@ -271,7 +295,9 @@ export default defineConfig({
 });
 ```
 
-And to get those globals working nicely so we don't need to repeatedly import `describe`, `test` etc. we need to add the following to `tsconfig.ts` under `compilerOptions`.
+And to get those globals working nicely so we don't need to repeatedly import `describe`, `test` etc. we need to add the following to `tsconfig.json` under `compilerOptions`.
+
+{{< code-hint tsconfig.json >}}
 
 ```diff
 {
@@ -285,7 +311,9 @@ And to get those globals working nicely so we don't need to repeatedly import `d
 
 Similar to Storybook, we also need to make sure we're not generated code for our tests. Update the `glob.sync` command in `vite.config.ts` under `build.rollupOptions.input`.
 
-```ts
+{{< code-hint vite.config.ts >}}
+
+```typescript
 glob.sync("src/**/*.{ts,tsx}", {
   ignore: ["src/**/*.stories.{ts,tsx}", "src/**/*.test.{ts,tsx}"],
 });
@@ -301,11 +329,13 @@ However, outside of publishing it on npm I was unsure as to how I could actually
 
 Very simple, this allows you to install directly from the repository using the following command.
 
-```bash
+```
 pnpm i -D GITHUB_NAME/REPOSITORY_NAME
 ```
 
 Which results in the following `package.json` entry under `devDependencies`.
+
+{{< code-hint package.json >}}
 
 ```json
 {
@@ -317,11 +347,13 @@ Which results in the following `package.json` entry under `devDependencies`.
 
 Equally as straightforward, the following command can be run to create a local reference.
 
-```bash
+```
 pnpm i -D PATH_TO_LIBRARY
 ```
 
 Which similar to the above results in the following `package.json` entry under `devDependencies`.
+
+{{< code-hint package.json >}}
 
 ```json
 {
@@ -333,6 +365,6 @@ Which similar to the above results in the following `package.json` entry under `
 
 I did end up with a functional component library &mdash; albeit one with all of two components and a custom hook. It's available on GitHub [here](https://github.com/vivecuervo7/demolib), or it can be used as above with the following command.
 
-```bash
+```
 pnpm i -D vivecuervo7/demolib
 ```

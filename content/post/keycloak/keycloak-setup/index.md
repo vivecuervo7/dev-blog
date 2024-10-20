@@ -35,7 +35,7 @@ It also allows us to have full control over our own local dev environment, inclu
 
 To start the Keycloak dev server, simply run the following command in your terminal. This will expose Keycloak on port `8080`, and creates an initial admin user with the credentials `admin:admin`.
 
-```bash
+```
 docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:25.0.2 start-dev
 ```
 
@@ -102,6 +102,8 @@ This should finish configuring our client to correctly populate the audience cla
 Of course, once we tear down our Docker container we lose any of the previously configured values. [Docker volumes](https://docs.docker.com/storage/volumes/) provide a nice solution here, which we can easily configure using `docker-compose`.
 
 Save the following as `docker-compose.yml` and run by calling `docker-compose up -d` in your terminal.
+
+{{< code-hint docker-compose.yml >}}
 
 ```yaml
 services:
