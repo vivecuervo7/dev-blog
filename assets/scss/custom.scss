@@ -1,7 +1,7 @@
 :root {
   --alert-background: #f6f0e9;
   --alert-border: #f78d13;
-  --code-background: #f4f4f4;
+  --code-background: #f6f7f6;
   --code-border: #aed5c5;
   --code-data-lang: white;
   --code-title: #81aa98;
@@ -19,8 +19,11 @@
 .alert {
   padding: 1rem 2rem;
   border: solid 1px var(--alert-border);
-  border-radius: 12px;
+  border-radius: 8px;
   background-color: var(--alert-background);
+  margin: var(--card-padding) 0;
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
 }
 
 .highlight {
@@ -35,6 +38,10 @@
 [data-scheme="dark"] .highlight {
   border-top-width: 1px !important;
   border-bottom-width: 0.5px !important;
+}
+
+.highlight {
+  margin-bottom: 3rem;
 }
 
 .highlight,

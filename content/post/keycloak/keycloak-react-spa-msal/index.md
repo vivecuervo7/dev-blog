@@ -51,13 +51,13 @@ Since dotnet-certs are typically used for local dev when building .NET applicati
 
 Create the self-signed certificate by running the following in your terminal, in this case using `password` as the credential to create the following two files: `certificate.crt` and `certificate.key`.
 
-```shell
+```sh {linenos=false}
 dotnet dev-certs https -ep ./certificate.crt -p password --trust --format PEM
 ```
 
 Use `openssl` to decrypt the certificate key, overwriting `certificate.key` with the decrypted copy.
 
-```shell
+```sh {linenos=false}
 openssl rsa -in certificate.key  -out certificate.key
 ```
 

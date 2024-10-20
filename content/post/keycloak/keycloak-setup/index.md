@@ -35,7 +35,7 @@ It also allows us to have full control over our own local dev environment, inclu
 
 To start the Keycloak dev server, simply run the following command in your terminal. This will expose Keycloak on port `8080`, and creates an initial admin user with the credentials `admin:admin`.
 
-```
+```sh {linenos=false}
 docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:25.0.2 start-dev
 ```
 

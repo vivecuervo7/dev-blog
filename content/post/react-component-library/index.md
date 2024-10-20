@@ -6,7 +6,6 @@ date: 2024-10-08 00:00:00+0000
 image: cover.jpg
 categories:
   - React
-  - Vite
 tags:
   - React
   - Vite
@@ -56,29 +55,23 @@ Initially I disliked this approach due to the need to create a full-blown React 
 
 I did prefer the way components were exported in the first tutorial I followed, so I stuck with that here. This approach used an explicit `index.ts` file at each level of the hierarchy.
 
-{{< code title=src/components/Button/index.ts >}}
+{{< code-hint "src/components/Button/index.ts" >}}
 
 ```typescript
 export { default } from "./Button";
 ```
 
-{{</ code >}}
-
-{{< code title=src/components/index.ts >}}
+{{< code-hint "src/components/index.ts" >}}
 
 ```typescript
 export { default as Button } from "./Button";
 ```
 
-{{</ code >}}
-
-{{< code title=src/index.ts >}}
+{{< code-hint "src/index.ts" >}}
 
 ```typescript
 export * from "./components";
 ```
-
-{{</ code >}}
 
 ### Library mode
 
@@ -238,7 +231,7 @@ The following are simply some additions to the development tooling for the libra
 
 Storybook can be installed by running the following command.
 
-```
+```sh {linenos=false}
 pnpm dlx storybook@latest init
 ```
 
@@ -246,7 +239,7 @@ The `src/stories/` folder can be removed if desired as it only contains some sam
 
 Stories can now be added for any of our components &mdash; documentation on how to do so can be found [here](https://storybook.js.org/docs/writing-stories). Once stories have been added, run Storybook with the following command.
 
-```
+```sh {linenos=false}
 pnpm storybook
 ```
 
@@ -264,7 +257,7 @@ glob.sync("src/**/*.{ts,tsx}", { ignore: ["src/**/*.stories.{ts,tsx}"] });
 
 Vitest, jsdom and the React Testing Library (we'll need all three) can be installed with the following command.
 
-```
+```sh {linenos=false}
 pnpm i -D vitest jsdom @testing-library/react
 ```
 
@@ -329,7 +322,7 @@ However, outside of publishing it on npm I was unsure as to how I could actually
 
 Very simple, this allows you to install directly from the repository using the following command.
 
-```
+```sh {linenos=false}
 pnpm i -D GITHUB_NAME/REPOSITORY_NAME
 ```
 
@@ -347,7 +340,7 @@ Which results in the following `package.json` entry under `devDependencies`.
 
 Equally as straightforward, the following command can be run to create a local reference.
 
-```
+```sh {linenos=false}
 pnpm i -D PATH_TO_LIBRARY
 ```
 
@@ -365,6 +358,6 @@ Which similar to the above results in the following `package.json` entry under `
 
 I did end up with a functional component library &mdash; albeit one with all of two components and a custom hook. It's available on GitHub [here](https://github.com/vivecuervo7/demolib), or it can be used as above with the following command.
 
-```
+```sh {linenos=false}
 pnpm i -D vivecuervo7/demolib
 ```

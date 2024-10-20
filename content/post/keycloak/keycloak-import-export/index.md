@@ -63,7 +63,7 @@ services:
 
 Run the following in your terminal to export the configured realm.
 
-```
+```sh {linenos=false}
 docker-compose -f "docker-compose.yml" -f "docker-compose.export.yml" up --exit-code-from keycloak
 ```
 
