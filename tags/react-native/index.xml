@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>React Native on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/react-native/</link><description>Recent content in React Native on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 09 Dec 2024 00:00:00 +1000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/react-native/index.xml" rel="self" type="application/rss+xml"/><item><title>Comparing hybrid app frameworks</title><link>https://vivecuervo7.github.io/dev-blog/p/hybrid-app-dev/</link><pubDate>Mon, 09 Dec 2024 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/hybrid-app-dev/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/hybrid-app-dev/cover.jpg" alt="Featured image of post Comparing hybrid app frameworks" />&lt;h2 id="context">Context
+&lt;/h2>&lt;p>The idea of this will be to write a very basic implementation of a Todo app for each of the following frameworks, providing brief findings around setup and the inner dev loop. None of the frameworks yielded a complete Todo app and this had little bearing on the findings, but it did provide a common ground to anchor any findings to.&lt;/p>
+&lt;p>Nothing too fancy, I&amp;rsquo;ve taken a &amp;ldquo;day in the life of&amp;rdquo; approach here to constrain things to a very tight timebox and taken a few notes about the experiences as I went.&lt;/p>
+&lt;div class="alert">There&amp;rsquo;s a bit of a brain dump following this. Jump to the &lt;a class="link" href="#conclusion" >conclusion&lt;/a> if you&amp;rsquo;re mostly interested in the overall findings.&lt;/div>
+&lt;h2 id="react-native--expo">React Native + Expo
+&lt;/h2>&lt;h3 id="general-observations">General observations
+&lt;/h3>&lt;ul>
+&lt;li>Using Expo with React Native is strongly suggested by the community based on some initial searches&lt;/li>
+&lt;li>Looks like while Expo portrays itself as a paid service, doing local builds (&lt;code>eas build --platform ios --local&lt;/code>) doesn&amp;rsquo;t require their paid services&lt;/li>
+&lt;li>Unsure in starting out between Expo Go and Development Build — opted for the latter, seems to be their recommendation for production workloads&lt;/li>
+&lt;li>Need to sign up for a (free) Expo account if using Expo Application Services, but looks like this is unnecessary if using &lt;code>npx expo run:ios&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h4 id="pros">Pros
+&lt;/h4>&lt;ul>
+&lt;li>Project structure unsurprisingly looks familiar coming from a React (web) background&lt;/li>
+&lt;li>Fast Refresh (i.e. hot reloading) works well&lt;/li>
+&lt;li>Has a &lt;code>npx @react-native-community/cli doctor&lt;/code> similar to Flutter which helps to diagnose any development environment issues&lt;/li>
+&lt;li>&lt;a class="link" href="https://reactnative.dev/docs/platform-specific-code#platform-specific-extensions" target="_blank" rel="noopener"
+>Platform-specific extensions&lt;/a> make it look far easier to implement any platform-specific code with a consolidated import&lt;/li>
+&lt;li>&lt;a class="link" href="https://docs.expo.dev/eas-update/introduction/" target="_blank" rel="noopener"
+>EAS Updates&lt;/a> looks incredibly useful however comes with a hefty price tag — this looks like it can be circumvented by setting up a custom updates server&lt;/li>
+&lt;/ul>
+&lt;h4 id="cons">Cons
+&lt;/h4>&lt;ul>
+&lt;li>While documentation suggests that components can automatically switch between iOS and Android depending on the platform, the shipped components are very basic (a list view looked completely unstyled) and likely require a third-party UI library&lt;/li>
+&lt;li>Web support seems to only be supported via a third party library, but this appears to be configured as the default when using Expo&lt;/li>
+&lt;/ul>
+&lt;h3 id="platform-specific-observations">Platform-specific observations
+&lt;/h3>&lt;h4 id="android">Android
+&lt;/h4>&lt;ul>
+&lt;li>Environment setup is a little more involved than Flutter, requiring installing JDK and manually setting &lt;code>ANDROID_HOME&lt;/code> and &lt;code>JAVA_HOME&lt;/code>&lt;/li>
+&lt;li>Straightforward to run on both emulator or real device&lt;/li>
+&lt;li>Didn&amp;rsquo;t attempt to fix, but running a build using &lt;code>eas build --platform android --local&lt;/code> failed&lt;/li>
+&lt;/ul>
+&lt;h4 id="ios">iOS
+&lt;/h4>&lt;ul>
+&lt;li>Straightforward to get running in an emulator&lt;/li>
+&lt;li>Similar to Flutter etc., running on a connected device requires a paid developer account&lt;/li>
+&lt;li>Adding a list view for the todos didn&amp;rsquo;t come with any styling even remotely resembling the native iOS components&lt;/li>
+&lt;li>Running &lt;code>eas build --platform ios --local&lt;/code> indicated that an active Apple account would be required to complete&lt;/li>
+&lt;/ul>
+&lt;h4 id="web">Web
+&lt;/h4>&lt;ul>
+&lt;li>Seems that similar to Flutter web is a second-class citizen in React Native, however Expo specifically appears to use the third-party &lt;a class="link" href="https://necolas.github.io/react-native-web/" target="_blank" rel="noopener"
+>&lt;code>react-native-web&lt;/code>&lt;/a> library and provides the means to build and serve a web app&lt;/li>
+&lt;/ul>
+&lt;h3 id="summary">Summary
+&lt;/h3>&lt;p>The lower learning curve coming from a React background making this option hard to ignore.&lt;/p>
+&lt;p>Expo feels like a really nice wrapper around development, even without the paid options. It looks like using it also addresses the apparent issue around web not seemingly being supported without manually setting up a third-party library.&lt;/p>
+&lt;p>The apparent lack of styled components and push towards community-driven UI libraries etc. (even a basic checkbox component was marked as deprecated with a link to community alternatives) gives pause when considering React Native as a target for Android and iOS. Flutter seemed stronger in this regard, however the platform-specific extensions look like a &lt;em>much&lt;/em> cleaner way to go about writing platform-specific code.&lt;/p>
+&lt;p>While not mentioned above I did stumble across &lt;code>Solito&lt;/code> as a library attempting to address some apparent differences in the way navigation needs to be implemented for web vs. native. I didn&amp;rsquo;t get into any navigation to understand this for myself, but it did make me wonder as to the potential obstacles here.&lt;/p>
+&lt;h2 id="flutter">Flutter
+&lt;/h2>&lt;h3 id="general-observations-1">General observations
+&lt;/h3>&lt;ul>
+&lt;li>Syntax feels more closely reminiscent of Swift UI than other web frameworks i.e. React&lt;/li>
+&lt;li>Requires conditionally switching between iOS / Android / web widgets manually&lt;/li>
+&lt;li>Android and iOS development seem solid, web however had some issues I was unable to resolve in a reasonable timeframe&lt;/li>
+&lt;li>Ships with components, or &amp;lsquo;widgets&amp;rsquo;, implementing &lt;a class="link" href="https://docs.flutter.dev/ui/widgets#design-systems" target="_blank" rel="noopener"
+>both Apple&amp;rsquo;s Human Interface Guidelines and Material Design&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h4 id="pros-1">Pros
+&lt;/h4>&lt;ul>
+&lt;li>Quick to get up and running&lt;/li>
+&lt;li>Useful VS Code extension&lt;/li>
+&lt;li>Hot reloading works really nicely, maintains state through app changes&lt;/li>
+&lt;li>Dart DevTools look like they could be incredibly helpful&lt;/li>
+&lt;li>&lt;code>flutter doctor&lt;/code> command quite useful for getting development environment set up&lt;/li>
+&lt;li>Similarly, &lt;code>flutter devices&lt;/code> and &lt;code>flutter emulators&lt;/code> are handy - CLI tooling is quite solid overall&lt;/li>
+&lt;li>Building app files is straightforward with &lt;code>flutter build &amp;lt;target&amp;gt;&lt;/code> with &lt;code>apk&lt;/code>, &lt;code>ios&lt;/code>, &lt;code>macos&lt;/code>, &lt;code>web&lt;/code> etc.&lt;/li>
+&lt;/ul>
+&lt;h4 id="cons-1">Cons
+&lt;/h4>&lt;ul>
+&lt;li>Requires learning a new language (Dart)&lt;/li>
+&lt;li>Widgets aligned to platforms (Material UI vs. iOS) need to manually be implemented conditionally or rely on third-party packages for auto-switching between them&lt;/li>
+&lt;li>Issues running app in debug mode for web (see &lt;a class="link" href="#web-1" >Web&lt;/a> section)&lt;/li>
+&lt;/ul>
+&lt;h3 id="platform-specific-observations-1">Platform-specific observations
+&lt;/h3>&lt;h4 id="android-1">Android
+&lt;/h4>&lt;ul>
+&lt;li>Running against an emulator is pretty straightforward once Android Studio is set up&lt;/li>
+&lt;li>Similarly, very easy to run against a real device once connected&lt;/li>
+&lt;li>VS Code integration seemed less useful here, with no way to select the target device / emulator&lt;/li>
+&lt;li>Material Design is the default, which makes it unsurprisingly very aligned to Android development&lt;/li>
+&lt;/ul>
+&lt;h4 id="ios-1">iOS
+&lt;/h4>&lt;ul>
+&lt;li>VS Code extension facilitates choosing from &lt;code>Simulator&lt;/code>, &lt;code>Mac Designed for iPad&lt;/code>, or &lt;code>macOS&lt;/code> as the target device&lt;/li>
+&lt;li>Some permissions need to be enabled manually e.g. HTTP calls fail until adding the appropriate entitlement&lt;/li>
+&lt;li>Appears that a paid developer account is required to develop locally against a real device, however actually connecting to seems relatively straightforward&lt;/li>
+&lt;li>Without going too deep, the available &lt;a class="link" href="https://docs.flutter.dev/ui/widgets/cupertino" target="_blank" rel="noopener"
+>Cupertino widgets&lt;/a> look like they provide a solid ecosystem for developing complete apps aligned to the Human Interface Guidelines&lt;/li>
+&lt;/ul>
+&lt;h4 id="web-1">Web
+&lt;/h4>&lt;ul>
+&lt;li>Checking for &lt;code>Platform.IsIOS&lt;/code> etc. breaks on web, and requires ensuring that those checks are only run &lt;em>after&lt;/em> checking that we&amp;rsquo;re not in a web browser&lt;/li>
+&lt;li>Hot reloading doesn&amp;rsquo;t work here, only hot &lt;em>restarting&lt;/em>&lt;/li>
+&lt;li>VS Code not showing web / browser as a target, could be due to using a non-standard browser; needed to launch via CLI or manually created launch configuration for VS Code&lt;/li>
+&lt;li>Ultimately, I had this time-boxed and was unable to actually get the web view to load — perhaps this is due to using a niche browser (Arc, which &lt;em>is&lt;/em> however Chromium-based) — in either case this seems to be a widely reported issue with no concrete solution&lt;/li>
+&lt;/ul>
+&lt;h3 id="summary-1">Summary
+&lt;/h3>&lt;p>Ultimately Flutter looks like a very promising option if we&amp;rsquo;re targeting only Android and iOS. Once any issues are resolved for web, that likely becomes a valid target, however web as a target felt like a second-class citizen.&lt;/p>
+&lt;p>The Cupertino widgets make Flutter appear quite capable of producing a rich, native-like application, despite needing to more often than not implement separate Android and iOS widgets. Material Design as the other widget ecosystem provided by default produces a native-like Android experience.&lt;/p>
+&lt;p>The learning curve would be quite high owing to the need to learn a new language in Dart, especially when it comes to navigation and state management.&lt;/p>
+&lt;h2 id="capacitor--ionic">Capacitor / Ionic
+&lt;/h2>&lt;h3 id="general-observations-2">General observations
+&lt;/h3>&lt;ul>
+&lt;li>Came as a bit of a surprise upon spinning up a new project — Ionic still uses &lt;code>react-scripts&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h4 id="pros-2">Pros
+&lt;/h4>&lt;ul>
+&lt;li>Syntax is &lt;em>very&lt;/em> close to what a typical React web project looks like - very little learning curve and familiar workflows&lt;/li>
+&lt;li>Shipped Ionic components implement both iOS and Material Design styles that automatically switch based on the platform&lt;/li>
+&lt;/ul>
+&lt;h4 id="cons-2">Cons
+&lt;/h4>&lt;ul>
+&lt;li>General consensus based on some articles / conversation is that performance is not very good, especially compared to e.g. Flutter&lt;/li>
+&lt;li>Community sentiment seems to be quite poor, often recommending Flutter and React Native as much better alternatives&lt;/li>
+&lt;li>Documentation is a little lacking when setting up for running on other devices — requires &lt;code>@capacitor/core&lt;/code> and &lt;code>@capacitor/cli&lt;/code>, run &lt;code>npx cap init&lt;/code> before we can add iOS / Android with &lt;code>npx cap add iOS&lt;/code> etc.&lt;/li>
+&lt;/ul>
+&lt;h3 id="platform-specific-observations-2">Platform-specific observations
+&lt;/h3>&lt;h4 id="android-2">Android
+&lt;/h4>&lt;ul>
+&lt;li>Running against emulator seems to work as expected, but as with iOS was unable to get live reloading working here&lt;/li>
+&lt;li>Running against a real device seemed to be on par with the emulator experience for Android&lt;/li>
+&lt;/ul>
+&lt;h4 id="ios-2">iOS
+&lt;/h4>&lt;ul>
+&lt;li>Initial build worked fine, subsequent builds yielded a blank screen and no useful logs were not easy to find, assuming they exist&lt;/li>
+&lt;li>Attemps to run on a real device yielded an error &amp;ldquo;Device is busy&amp;rdquo;&lt;/li>
+&lt;li>While documentation suggests it is possible, could not get live reloading working when the builds did work&lt;/li>
+&lt;/ul>
+&lt;h4 id="web-2">Web
+&lt;/h4>&lt;ul>
+&lt;li>Compared to Flutter and React Native, web feels like a first-class citizen under Ionic&lt;/li>
+&lt;li>Hot reloading works well for web&lt;/li>
+&lt;/ul>
+&lt;h3 id="summary-2">Summary
+&lt;/h3>&lt;p>Ionic feels like it has a nice happy path, but once anything goes slightly astray it starts to feel quite shaky. I would have dismissed this as the byproduct of trying to squeeze a brief intro into a single day, but this is consistent with my experience using it a couple of years prior.&lt;/p>
+&lt;p>The component rendering is quite nice and it&amp;rsquo;s very handy just needing to render a single component and have it displayed relatively correctly per the target platform, but again this relies on that happy path. Going back to my previous experience and any custom styling etc. can be quite difficult.&lt;/p>
+&lt;p>Ultimately Ionic felt a fair way off the more polished experiences of Flutter and React Native. It likely has a place for a quick prototype where the majority of active development can be done in the web browser and device or emulator builds are used more sparingly. There may be another half-point here when it comes to web development specifically, but I would be more inclined to use one of the other offerings.&lt;/p>
+&lt;h2 id="net-maui">.NET MAUI
+&lt;/h2>&lt;h3 id="general-observations-3">General observations
+&lt;/h3>&lt;ul>
+&lt;li>Little confusing to start re: ability to also cover targeting web — ultimately scrapped the default MAUI project in lieu of the &lt;code>.NET MAUI Blazor Hybrid and Web App&lt;/code> template&lt;/li>
+&lt;/ul>
+&lt;h4 id="pros-3">Pros
+&lt;/h4>&lt;ul>
+&lt;li>Similar to Blazor, being able to maintain this under a single solution makes sharing data contracts etc. much more straightforward&lt;/li>
+&lt;li>Looks like it&amp;rsquo;s essentially Blazor from here on out, which with some experience makes me feel confident of a reasonable framework for development&lt;/li>
+&lt;li>Being unable to run on iOS or Android I was unable to confirm, but the MAUI controls such as the &lt;a class="link" href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.maui.controls.listview?view=net-maui-9.0" target="_blank" rel="noopener"
+>&lt;code>ListView&lt;/code>&lt;/a> did not appear to implement any platofrm-specific styling or functionality, appearing that this would require manual work or third-party implementations&lt;/li>
+&lt;/ul>
+&lt;h4 id="cons-3">Cons
+&lt;/h4>&lt;ul>
+&lt;li>Trouble debugging via VS Code, needed to revert to running via CLI&lt;/li>
+&lt;li>Running via CLI not working out of the box for iOS or Android (&lt;code>dotnet build&lt;/code> works for all three targets)&lt;/li>
+&lt;li>VS Code on macOS troubles seem to be common — seems that Rider is likely a better option&lt;/li>
+&lt;/ul>
+&lt;h3 id="platform-specific-observations-3">Platform-specific observations
+&lt;/h3>&lt;h4 id="android-3">Android
+&lt;/h4>&lt;ul>
+&lt;li>Unable to run via VS Code or CLI&lt;/li>
+&lt;li>From my understanding, using the template required to support web means that the app will essentially be the web app rendered inside a web view — unsure of implications on performance or platform interactivity etc.&lt;/li>
+&lt;/ul>
+&lt;h4 id="ios-3">iOS
+&lt;/h4>&lt;ul>
+&lt;li>Unable to run via VS Code or CLI&lt;/li>
+&lt;li>From my understanding, using the template required to support web means that the app will essentially be the web app rendered inside a web view — unsure of implications on performance or platform interactivity etc.&lt;/li>
+&lt;/ul>
+&lt;h4 id="web-3">Web
+&lt;/h4>&lt;ul>
+&lt;li>Little confusing to start, needing to re-create project with &lt;code>.NET MAUI Blazor Hybrid and Web App&lt;/code> template&lt;/li>
+&lt;li>Started up as expected&lt;/li>
+&lt;li>Hot reload worked initially, but stopped after the first update and subsequent changes did not trigger any reload&lt;/li>
+&lt;/ul>
+&lt;h3 id="summary-3">Summary
+&lt;/h3>&lt;p>MAUI came with the most troublesome setup, to the point that I was unable to get it running on iOS or Android emulated devices within a timebox. While this may have been environment-specific, I didn&amp;rsquo;t want to consider using a specific IDE as a valid solution.&lt;/p>
+&lt;p>The apparent lack of out-of-the-box support for platform-specific styling also painted a less than ideal picture.&lt;/p>
+&lt;p>There was also some confusion over how the framework was intended to be used, with a new project based on the &lt;code>.NET MAUI&lt;/code> template looking very different to the &lt;code>.NET MAUI Blazor Hybrid App and Web App&lt;/code> template.&lt;/p>
+&lt;p>It didn&amp;rsquo;t take long for me to begin feeling that this wasn&amp;rsquo;t a framework I wanted to work with, despite some attraction to the idea of being able to use Blazor or a Blazor-like syntax, having used it in the past.&lt;/p>
+&lt;h2 id="conclusion">Conclusion
+&lt;/h2>&lt;p>The following is very much based around my specific environment and some aggressive timeboxes, and is reflective of my background in using predominantly React for front-end development.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Framework&lt;/th>
+&lt;th>Would use?&lt;/th>
+&lt;th>Setup / getting started&lt;/th>
+&lt;th>Tooling&lt;/th>
+&lt;th>Learning curve&lt;/th>
+&lt;th>OOTB components*&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>React Native&lt;/td>
+&lt;td>👍&lt;/td>
+&lt;td>⭐⭐&lt;/td>
+&lt;td>⭐⭐⭐&lt;/td>
+&lt;td>📕&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Flutter&lt;/td>
+&lt;td>👍&lt;/td>
+&lt;td>⭐⭐⭐&lt;/td>
+&lt;td>⭐⭐⭐&lt;/td>
+&lt;td>📕 📕 📕&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Ionic&lt;/td>
+&lt;td>➖&lt;/td>
+&lt;td>⭐⭐&lt;/td>
+&lt;td>⭐&lt;/td>
+&lt;td>📕&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>.NET MAUI&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>⭐&lt;/td>
+&lt;td>⭐&lt;/td>
+&lt;td>📕 📕&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;div class="alert">* Specifically, out-of-the-box &lt;strong>&lt;em>platform-specific&lt;/em>&lt;/strong> components&lt;/div>
+&lt;p>Ultimately I would not, based on this experience, want to move forward with .NET MAUI for any of the targets.&lt;/p>
+&lt;p>Ionic felt a little better but this experience did little outside of reaffirming my sentiment in not wanting to use this again. I do believe however that due to the relatively pleasant happy path it provides, it may still have a place for rapidly building a simple prototype with the out-of-the-box platform-specific components. I would not pick this over Flutter or React Native for a more serious project.&lt;/p>
+&lt;p>React Native and Flutter felt quite even, but the deciding factors for me would be &lt;strong>time constraints&lt;/strong>, specifically regarding the learning curve, and &lt;strong>target platforms&lt;/strong>, looking whether we intend to target web.&lt;/p>
+&lt;p>For strictly iOS and Android development, it&amp;rsquo;s hard to look past the out-of-the-box components that Flutter ships with. While they need to be implemented conditionally, I feel that this workflow would still be preferred to leaning on third-party components or requiring manual implementations as React Native would require.&lt;/p>
+&lt;p>If web was intended as a priority target alongside the two main mobile platforms, I feel that React Native creeps ahead here. There is a small caveat in the as-of-yet unexplored navigation, where the existence of the &lt;code>Solito&lt;/code> library suggests some pain around navigation where web and native platforms are being used. This may be either addressed in recent versions, or by third-party libraries e.g. &lt;code>Solito&lt;/code>.&lt;/p>
+&lt;p>I did walk away from this experience feeling that Flutter had more upside to it, but given the above considerations I would need to factor in the learning curve against the shipped platform-specific components. If pressed, I would feel compelled to choose React Native should I be starting a project today, but Flutter looks to be a very promising avenue for professional development and future usage.&lt;/p></description></item></channel></rss>

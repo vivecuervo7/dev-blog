@@ -1,0 +1,2045 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/post/</link><description>Recent content in Posts on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 09 Dec 2024 00:00:00 +1000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/post/index.xml" rel="self" type="application/rss+xml"/><item><title>Comparing hybrid app frameworks</title><link>https://vivecuervo7.github.io/dev-blog/p/hybrid-app-dev/</link><pubDate>Mon, 09 Dec 2024 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/hybrid-app-dev/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/hybrid-app-dev/cover.jpg" alt="Featured image of post Comparing hybrid app frameworks" />&lt;h2 id="context">Context
+&lt;/h2>&lt;p>The idea of this will be to write a very basic implementation of a Todo app for each of the following frameworks, providing brief findings around setup and the inner dev loop. None of the frameworks yielded a complete Todo app and this had little bearing on the findings, but it did provide a common ground to anchor any findings to.&lt;/p>
+&lt;p>Nothing too fancy, I&amp;rsquo;ve taken a &amp;ldquo;day in the life of&amp;rdquo; approach here to constrain things to a very tight timebox and taken a few notes about the experiences as I went.&lt;/p>
+&lt;div class="alert">There&amp;rsquo;s a bit of a brain dump following this. Jump to the &lt;a class="link" href="#conclusion" >conclusion&lt;/a> if you&amp;rsquo;re mostly interested in the overall findings.&lt;/div>
+&lt;h2 id="react-native--expo">React Native + Expo
+&lt;/h2>&lt;h3 id="general-observations">General observations
+&lt;/h3>&lt;ul>
+&lt;li>Using Expo with React Native is strongly suggested by the community based on some initial searches&lt;/li>
+&lt;li>Looks like while Expo portrays itself as a paid service, doing local builds (&lt;code>eas build --platform ios --local&lt;/code>) doesn&amp;rsquo;t require their paid services&lt;/li>
+&lt;li>Unsure in starting out between Expo Go and Development Build — opted for the latter, seems to be their recommendation for production workloads&lt;/li>
+&lt;li>Need to sign up for a (free) Expo account if using Expo Application Services, but looks like this is unnecessary if using &lt;code>npx expo run:ios&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h4 id="pros">Pros
+&lt;/h4>&lt;ul>
+&lt;li>Project structure unsurprisingly looks familiar coming from a React (web) background&lt;/li>
+&lt;li>Fast Refresh (i.e. hot reloading) works well&lt;/li>
+&lt;li>Has a &lt;code>npx @react-native-community/cli doctor&lt;/code> similar to Flutter which helps to diagnose any development environment issues&lt;/li>
+&lt;li>&lt;a class="link" href="https://reactnative.dev/docs/platform-specific-code#platform-specific-extensions" target="_blank" rel="noopener"
+>Platform-specific extensions&lt;/a> make it look far easier to implement any platform-specific code with a consolidated import&lt;/li>
+&lt;li>&lt;a class="link" href="https://docs.expo.dev/eas-update/introduction/" target="_blank" rel="noopener"
+>EAS Updates&lt;/a> looks incredibly useful however comes with a hefty price tag — this looks like it can be circumvented by setting up a custom updates server&lt;/li>
+&lt;/ul>
+&lt;h4 id="cons">Cons
+&lt;/h4>&lt;ul>
+&lt;li>While documentation suggests that components can automatically switch between iOS and Android depending on the platform, the shipped components are very basic (a list view looked completely unstyled) and likely require a third-party UI library&lt;/li>
+&lt;li>Web support seems to only be supported via a third party library, but this appears to be configured as the default when using Expo&lt;/li>
+&lt;/ul>
+&lt;h3 id="platform-specific-observations">Platform-specific observations
+&lt;/h3>&lt;h4 id="android">Android
+&lt;/h4>&lt;ul>
+&lt;li>Environment setup is a little more involved than Flutter, requiring installing JDK and manually setting &lt;code>ANDROID_HOME&lt;/code> and &lt;code>JAVA_HOME&lt;/code>&lt;/li>
+&lt;li>Straightforward to run on both emulator or real device&lt;/li>
+&lt;li>Didn&amp;rsquo;t attempt to fix, but running a build using &lt;code>eas build --platform android --local&lt;/code> failed&lt;/li>
+&lt;/ul>
+&lt;h4 id="ios">iOS
+&lt;/h4>&lt;ul>
+&lt;li>Straightforward to get running in an emulator&lt;/li>
+&lt;li>Similar to Flutter etc., running on a connected device requires a paid developer account&lt;/li>
+&lt;li>Adding a list view for the todos didn&amp;rsquo;t come with any styling even remotely resembling the native iOS components&lt;/li>
+&lt;li>Running &lt;code>eas build --platform ios --local&lt;/code> indicated that an active Apple account would be required to complete&lt;/li>
+&lt;/ul>
+&lt;h4 id="web">Web
+&lt;/h4>&lt;ul>
+&lt;li>Seems that similar to Flutter web is a second-class citizen in React Native, however Expo specifically appears to use the third-party &lt;a class="link" href="https://necolas.github.io/react-native-web/" target="_blank" rel="noopener"
+>&lt;code>react-native-web&lt;/code>&lt;/a> library and provides the means to build and serve a web app&lt;/li>
+&lt;/ul>
+&lt;h3 id="summary">Summary
+&lt;/h3>&lt;p>The lower learning curve coming from a React background making this option hard to ignore.&lt;/p>
+&lt;p>Expo feels like a really nice wrapper around development, even without the paid options. It looks like using it also addresses the apparent issue around web not seemingly being supported without manually setting up a third-party library.&lt;/p>
+&lt;p>The apparent lack of styled components and push towards community-driven UI libraries etc. (even a basic checkbox component was marked as deprecated with a link to community alternatives) gives pause when considering React Native as a target for Android and iOS. Flutter seemed stronger in this regard, however the platform-specific extensions look like a &lt;em>much&lt;/em> cleaner way to go about writing platform-specific code.&lt;/p>
+&lt;p>While not mentioned above I did stumble across &lt;code>Solito&lt;/code> as a library attempting to address some apparent differences in the way navigation needs to be implemented for web vs. native. I didn&amp;rsquo;t get into any navigation to understand this for myself, but it did make me wonder as to the potential obstacles here.&lt;/p>
+&lt;h2 id="flutter">Flutter
+&lt;/h2>&lt;h3 id="general-observations-1">General observations
+&lt;/h3>&lt;ul>
+&lt;li>Syntax feels more closely reminiscent of Swift UI than other web frameworks i.e. React&lt;/li>
+&lt;li>Requires conditionally switching between iOS / Android / web widgets manually&lt;/li>
+&lt;li>Android and iOS development seem solid, web however had some issues I was unable to resolve in a reasonable timeframe&lt;/li>
+&lt;li>Ships with components, or &amp;lsquo;widgets&amp;rsquo;, implementing &lt;a class="link" href="https://docs.flutter.dev/ui/widgets#design-systems" target="_blank" rel="noopener"
+>both Apple&amp;rsquo;s Human Interface Guidelines and Material Design&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h4 id="pros-1">Pros
+&lt;/h4>&lt;ul>
+&lt;li>Quick to get up and running&lt;/li>
+&lt;li>Useful VS Code extension&lt;/li>
+&lt;li>Hot reloading works really nicely, maintains state through app changes&lt;/li>
+&lt;li>Dart DevTools look like they could be incredibly helpful&lt;/li>
+&lt;li>&lt;code>flutter doctor&lt;/code> command quite useful for getting development environment set up&lt;/li>
+&lt;li>Similarly, &lt;code>flutter devices&lt;/code> and &lt;code>flutter emulators&lt;/code> are handy - CLI tooling is quite solid overall&lt;/li>
+&lt;li>Building app files is straightforward with &lt;code>flutter build &amp;lt;target&amp;gt;&lt;/code> with &lt;code>apk&lt;/code>, &lt;code>ios&lt;/code>, &lt;code>macos&lt;/code>, &lt;code>web&lt;/code> etc.&lt;/li>
+&lt;/ul>
+&lt;h4 id="cons-1">Cons
+&lt;/h4>&lt;ul>
+&lt;li>Requires learning a new language (Dart)&lt;/li>
+&lt;li>Widgets aligned to platforms (Material UI vs. iOS) need to manually be implemented conditionally or rely on third-party packages for auto-switching between them&lt;/li>
+&lt;li>Issues running app in debug mode for web (see &lt;a class="link" href="#web-1" >Web&lt;/a> section)&lt;/li>
+&lt;/ul>
+&lt;h3 id="platform-specific-observations-1">Platform-specific observations
+&lt;/h3>&lt;h4 id="android-1">Android
+&lt;/h4>&lt;ul>
+&lt;li>Running against an emulator is pretty straightforward once Android Studio is set up&lt;/li>
+&lt;li>Similarly, very easy to run against a real device once connected&lt;/li>
+&lt;li>VS Code integration seemed less useful here, with no way to select the target device / emulator&lt;/li>
+&lt;li>Material Design is the default, which makes it unsurprisingly very aligned to Android development&lt;/li>
+&lt;/ul>
+&lt;h4 id="ios-1">iOS
+&lt;/h4>&lt;ul>
+&lt;li>VS Code extension facilitates choosing from &lt;code>Simulator&lt;/code>, &lt;code>Mac Designed for iPad&lt;/code>, or &lt;code>macOS&lt;/code> as the target device&lt;/li>
+&lt;li>Some permissions need to be enabled manually e.g. HTTP calls fail until adding the appropriate entitlement&lt;/li>
+&lt;li>Appears that a paid developer account is required to develop locally against a real device, however actually connecting to seems relatively straightforward&lt;/li>
+&lt;li>Without going too deep, the available &lt;a class="link" href="https://docs.flutter.dev/ui/widgets/cupertino" target="_blank" rel="noopener"
+>Cupertino widgets&lt;/a> look like they provide a solid ecosystem for developing complete apps aligned to the Human Interface Guidelines&lt;/li>
+&lt;/ul>
+&lt;h4 id="web-1">Web
+&lt;/h4>&lt;ul>
+&lt;li>Checking for &lt;code>Platform.IsIOS&lt;/code> etc. breaks on web, and requires ensuring that those checks are only run &lt;em>after&lt;/em> checking that we&amp;rsquo;re not in a web browser&lt;/li>
+&lt;li>Hot reloading doesn&amp;rsquo;t work here, only hot &lt;em>restarting&lt;/em>&lt;/li>
+&lt;li>VS Code not showing web / browser as a target, could be due to using a non-standard browser; needed to launch via CLI or manually created launch configuration for VS Code&lt;/li>
+&lt;li>Ultimately, I had this time-boxed and was unable to actually get the web view to load — perhaps this is due to using a niche browser (Arc, which &lt;em>is&lt;/em> however Chromium-based) — in either case this seems to be a widely reported issue with no concrete solution&lt;/li>
+&lt;/ul>
+&lt;h3 id="summary-1">Summary
+&lt;/h3>&lt;p>Ultimately Flutter looks like a very promising option if we&amp;rsquo;re targeting only Android and iOS. Once any issues are resolved for web, that likely becomes a valid target, however web as a target felt like a second-class citizen.&lt;/p>
+&lt;p>The Cupertino widgets make Flutter appear quite capable of producing a rich, native-like application, despite needing to more often than not implement separate Android and iOS widgets. Material Design as the other widget ecosystem provided by default produces a native-like Android experience.&lt;/p>
+&lt;p>The learning curve would be quite high owing to the need to learn a new language in Dart, especially when it comes to navigation and state management.&lt;/p>
+&lt;h2 id="capacitor--ionic">Capacitor / Ionic
+&lt;/h2>&lt;h3 id="general-observations-2">General observations
+&lt;/h3>&lt;ul>
+&lt;li>Came as a bit of a surprise upon spinning up a new project — Ionic still uses &lt;code>react-scripts&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h4 id="pros-2">Pros
+&lt;/h4>&lt;ul>
+&lt;li>Syntax is &lt;em>very&lt;/em> close to what a typical React web project looks like - very little learning curve and familiar workflows&lt;/li>
+&lt;li>Shipped Ionic components implement both iOS and Material Design styles that automatically switch based on the platform&lt;/li>
+&lt;/ul>
+&lt;h4 id="cons-2">Cons
+&lt;/h4>&lt;ul>
+&lt;li>General consensus based on some articles / conversation is that performance is not very good, especially compared to e.g. Flutter&lt;/li>
+&lt;li>Community sentiment seems to be quite poor, often recommending Flutter and React Native as much better alternatives&lt;/li>
+&lt;li>Documentation is a little lacking when setting up for running on other devices — requires &lt;code>@capacitor/core&lt;/code> and &lt;code>@capacitor/cli&lt;/code>, run &lt;code>npx cap init&lt;/code> before we can add iOS / Android with &lt;code>npx cap add iOS&lt;/code> etc.&lt;/li>
+&lt;/ul>
+&lt;h3 id="platform-specific-observations-2">Platform-specific observations
+&lt;/h3>&lt;h4 id="android-2">Android
+&lt;/h4>&lt;ul>
+&lt;li>Running against emulator seems to work as expected, but as with iOS was unable to get live reloading working here&lt;/li>
+&lt;li>Running against a real device seemed to be on par with the emulator experience for Android&lt;/li>
+&lt;/ul>
+&lt;h4 id="ios-2">iOS
+&lt;/h4>&lt;ul>
+&lt;li>Initial build worked fine, subsequent builds yielded a blank screen and no useful logs were not easy to find, assuming they exist&lt;/li>
+&lt;li>Attemps to run on a real device yielded an error &amp;ldquo;Device is busy&amp;rdquo;&lt;/li>
+&lt;li>While documentation suggests it is possible, could not get live reloading working when the builds did work&lt;/li>
+&lt;/ul>
+&lt;h4 id="web-2">Web
+&lt;/h4>&lt;ul>
+&lt;li>Compared to Flutter and React Native, web feels like a first-class citizen under Ionic&lt;/li>
+&lt;li>Hot reloading works well for web&lt;/li>
+&lt;/ul>
+&lt;h3 id="summary-2">Summary
+&lt;/h3>&lt;p>Ionic feels like it has a nice happy path, but once anything goes slightly astray it starts to feel quite shaky. I would have dismissed this as the byproduct of trying to squeeze a brief intro into a single day, but this is consistent with my experience using it a couple of years prior.&lt;/p>
+&lt;p>The component rendering is quite nice and it&amp;rsquo;s very handy just needing to render a single component and have it displayed relatively correctly per the target platform, but again this relies on that happy path. Going back to my previous experience and any custom styling etc. can be quite difficult.&lt;/p>
+&lt;p>Ultimately Ionic felt a fair way off the more polished experiences of Flutter and React Native. It likely has a place for a quick prototype where the majority of active development can be done in the web browser and device or emulator builds are used more sparingly. There may be another half-point here when it comes to web development specifically, but I would be more inclined to use one of the other offerings.&lt;/p>
+&lt;h2 id="net-maui">.NET MAUI
+&lt;/h2>&lt;h3 id="general-observations-3">General observations
+&lt;/h3>&lt;ul>
+&lt;li>Little confusing to start re: ability to also cover targeting web — ultimately scrapped the default MAUI project in lieu of the &lt;code>.NET MAUI Blazor Hybrid and Web App&lt;/code> template&lt;/li>
+&lt;/ul>
+&lt;h4 id="pros-3">Pros
+&lt;/h4>&lt;ul>
+&lt;li>Similar to Blazor, being able to maintain this under a single solution makes sharing data contracts etc. much more straightforward&lt;/li>
+&lt;li>Looks like it&amp;rsquo;s essentially Blazor from here on out, which with some experience makes me feel confident of a reasonable framework for development&lt;/li>
+&lt;li>Being unable to run on iOS or Android I was unable to confirm, but the MAUI controls such as the &lt;a class="link" href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.maui.controls.listview?view=net-maui-9.0" target="_blank" rel="noopener"
+>&lt;code>ListView&lt;/code>&lt;/a> did not appear to implement any platofrm-specific styling or functionality, appearing that this would require manual work or third-party implementations&lt;/li>
+&lt;/ul>
+&lt;h4 id="cons-3">Cons
+&lt;/h4>&lt;ul>
+&lt;li>Trouble debugging via VS Code, needed to revert to running via CLI&lt;/li>
+&lt;li>Running via CLI not working out of the box for iOS or Android (&lt;code>dotnet build&lt;/code> works for all three targets)&lt;/li>
+&lt;li>VS Code on macOS troubles seem to be common — seems that Rider is likely a better option&lt;/li>
+&lt;/ul>
+&lt;h3 id="platform-specific-observations-3">Platform-specific observations
+&lt;/h3>&lt;h4 id="android-3">Android
+&lt;/h4>&lt;ul>
+&lt;li>Unable to run via VS Code or CLI&lt;/li>
+&lt;li>From my understanding, using the template required to support web means that the app will essentially be the web app rendered inside a web view — unsure of implications on performance or platform interactivity etc.&lt;/li>
+&lt;/ul>
+&lt;h4 id="ios-3">iOS
+&lt;/h4>&lt;ul>
+&lt;li>Unable to run via VS Code or CLI&lt;/li>
+&lt;li>From my understanding, using the template required to support web means that the app will essentially be the web app rendered inside a web view — unsure of implications on performance or platform interactivity etc.&lt;/li>
+&lt;/ul>
+&lt;h4 id="web-3">Web
+&lt;/h4>&lt;ul>
+&lt;li>Little confusing to start, needing to re-create project with &lt;code>.NET MAUI Blazor Hybrid and Web App&lt;/code> template&lt;/li>
+&lt;li>Started up as expected&lt;/li>
+&lt;li>Hot reload worked initially, but stopped after the first update and subsequent changes did not trigger any reload&lt;/li>
+&lt;/ul>
+&lt;h3 id="summary-3">Summary
+&lt;/h3>&lt;p>MAUI came with the most troublesome setup, to the point that I was unable to get it running on iOS or Android emulated devices within a timebox. While this may have been environment-specific, I didn&amp;rsquo;t want to consider using a specific IDE as a valid solution.&lt;/p>
+&lt;p>The apparent lack of out-of-the-box support for platform-specific styling also painted a less than ideal picture.&lt;/p>
+&lt;p>There was also some confusion over how the framework was intended to be used, with a new project based on the &lt;code>.NET MAUI&lt;/code> template looking very different to the &lt;code>.NET MAUI Blazor Hybrid App and Web App&lt;/code> template.&lt;/p>
+&lt;p>It didn&amp;rsquo;t take long for me to begin feeling that this wasn&amp;rsquo;t a framework I wanted to work with, despite some attraction to the idea of being able to use Blazor or a Blazor-like syntax, having used it in the past.&lt;/p>
+&lt;h2 id="conclusion">Conclusion
+&lt;/h2>&lt;p>The following is very much based around my specific environment and some aggressive timeboxes, and is reflective of my background in using predominantly React for front-end development.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Framework&lt;/th>
+&lt;th>Would use?&lt;/th>
+&lt;th>Setup / getting started&lt;/th>
+&lt;th>Tooling&lt;/th>
+&lt;th>Learning curve&lt;/th>
+&lt;th>OOTB components*&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>React Native&lt;/td>
+&lt;td>👍&lt;/td>
+&lt;td>⭐⭐&lt;/td>
+&lt;td>⭐⭐⭐&lt;/td>
+&lt;td>📕&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Flutter&lt;/td>
+&lt;td>👍&lt;/td>
+&lt;td>⭐⭐⭐&lt;/td>
+&lt;td>⭐⭐⭐&lt;/td>
+&lt;td>📕 📕 📕&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Ionic&lt;/td>
+&lt;td>➖&lt;/td>
+&lt;td>⭐⭐&lt;/td>
+&lt;td>⭐&lt;/td>
+&lt;td>📕&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>.NET MAUI&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>⭐&lt;/td>
+&lt;td>⭐&lt;/td>
+&lt;td>📕 📕&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;div class="alert">* Specifically, out-of-the-box &lt;strong>&lt;em>platform-specific&lt;/em>&lt;/strong> components&lt;/div>
+&lt;p>Ultimately I would not, based on this experience, want to move forward with .NET MAUI for any of the targets.&lt;/p>
+&lt;p>Ionic felt a little better but this experience did little outside of reaffirming my sentiment in not wanting to use this again. I do believe however that due to the relatively pleasant happy path it provides, it may still have a place for rapidly building a simple prototype with the out-of-the-box platform-specific components. I would not pick this over Flutter or React Native for a more serious project.&lt;/p>
+&lt;p>React Native and Flutter felt quite even, but the deciding factors for me would be &lt;strong>time constraints&lt;/strong>, specifically regarding the learning curve, and &lt;strong>target platforms&lt;/strong>, looking whether we intend to target web.&lt;/p>
+&lt;p>For strictly iOS and Android development, it&amp;rsquo;s hard to look past the out-of-the-box components that Flutter ships with. While they need to be implemented conditionally, I feel that this workflow would still be preferred to leaning on third-party components or requiring manual implementations as React Native would require.&lt;/p>
+&lt;p>If web was intended as a priority target alongside the two main mobile platforms, I feel that React Native creeps ahead here. There is a small caveat in the as-of-yet unexplored navigation, where the existence of the &lt;code>Solito&lt;/code> library suggests some pain around navigation where web and native platforms are being used. This may be either addressed in recent versions, or by third-party libraries e.g. &lt;code>Solito&lt;/code>.&lt;/p>
+&lt;p>I did walk away from this experience feeling that Flutter had more upside to it, but given the above considerations I would need to factor in the learning curve against the shipped platform-specific components. If pressed, I would feel compelled to choose React Native should I be starting a project today, but Flutter looks to be a very promising avenue for professional development and future usage.&lt;/p></description></item><item><title>Performance testing with Grafana k6</title><link>https://vivecuervo7.github.io/dev-blog/p/performance-testing-k6/</link><pubDate>Sun, 20 Oct 2024 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/performance-testing-k6/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/performance-testing-k6/cover.jpg" alt="Featured image of post Performance testing with Grafana k6" />&lt;h2 id="context">Context
+&lt;/h2>&lt;p>A client I have worked for previously often provided us with a list of requirements for any solution we built. One of those was around performance, quoting a target average response time of under 2 seconds for all requests. More often than not this was tested late into the project via some third-party scripts, leaving us with little time to resolve any issues.&lt;/p>
+&lt;p>Having previously needed to work on improving performance on an API we had built elsewhere, I was interested in learning how we might be able to enhance our workflow to ensure we could meet such constraints, and that any degradation was caught early and could be resolved or at the very least communicated to the client.&lt;/p>
+&lt;h2 id="grafana-k6">Grafana k6
+&lt;/h2>&lt;p>Straight from the opening blurb of &lt;a class="link" href="https://grafana.com/docs/k6/latest/" target="_blank" rel="noopener"
+>the website&lt;/a>, k6 sounded like it would be the right tool for the job.&lt;/p>
+&lt;blockquote>
+&lt;p>Grafana k6 is an open-source, developer-friendly, and extensible load testing tool. k6 allows you to prevent performance issues and proactively improve reliability.&lt;/p>
+&lt;/blockquote>
+&lt;p>It landed on all of the features I needed and more, and the documentation is superb, clearly explaining all the features with plenty of &lt;a class="link" href="https://grafana.com/docs/k6/latest/examples/" target="_blank" rel="noopener"
+>examples&lt;/a>. k6 also provides a list of &lt;a class="link" href="https://grafana.com/docs/k6/latest/extensions/" target="_blank" rel="noopener"
+>extensions&lt;/a> which looked pretty useful despite not finding myself needing any of them.&lt;/p>
+&lt;p>&lt;strong>Types of load tests&lt;/strong>&lt;/p>
+&lt;p>The k6 documentation talks through the different supported &lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/" target="_blank" rel="noopener"
+>types of tests&lt;/a>.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/smoke-testing/" target="_blank" rel="noopener"
+>Smoke tests&lt;/a> — minimal load&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/load-testing/" target="_blank" rel="noopener"
+>Average-load tests&lt;/a> — normal conditions&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/stress-testing/" target="_blank" rel="noopener"
+>Stress tests&lt;/a> — abnormal average&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/soak-testing/" target="_blank" rel="noopener"
+>Soak tests&lt;/a> — reliability and performance over extended periods&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/spike-testing/" target="_blank" rel="noopener"
+>Spike tests&lt;/a> — behavior and survival in cases of sudden increases in activity&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/breakpoint-testing/" target="_blank" rel="noopener"
+>Breakpoint tests&lt;/a> — gradual increase to identify capacity limits&lt;/li>
+&lt;/ul>
+&lt;p>Given the context above, much of my focus here was around average-load tests, however it was pleasant to find that through k6&amp;rsquo;s scenarios it would be quite trivial to switch between load test types.&lt;/p>
+&lt;h2 id="getting-started">Getting started
+&lt;/h2>&lt;p>Getting up and running with k6 was very straightforward. I&amp;rsquo;m using macOS, so the following commands might need to be adjusted for your system.&lt;/p>
+&lt;p>Install k6 with the following command.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">brew install k6
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>You can either create the file yourself or use the following to initialise a &lt;code>script.js&lt;/code> file with some helpful commented-out code and explanations.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">k6 new
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://test.k6.io&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Run the tests!&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">k6 run script.js
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="adding-virtual-users">Adding virtual users
+&lt;/h3>&lt;p>The number of virtual users and duration can be set via the command line, or via an exported &lt;code>options&lt;/code> in &lt;code>script.js&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">k6 run --vus &lt;span class="m">10&lt;/span> --duration 30s script.js
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kr">const&lt;/span> &lt;span class="nx">options&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">vus&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">duration&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;30s&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://test.k6.io&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="alert">&lt;p>The documentation covers some &lt;a class="link" href="https://grafana.com/docs/k6/latest/set-up/fine-tune-os/" target="_blank" rel="noopener"
+>fine-tuning for different operating systems&lt;/a>. Using macOS I didn&amp;rsquo;t run into any of the problems mentioned in the docs, however I did encounter a persistent &amp;ldquo;connection reset by peer&amp;rdquo; error when trying to use a high number of virtual users.&lt;/p>
+&lt;p>Running &lt;code>sudo sysctl -w kern.ipc.somaxconn={DESIRED_VALUE}&lt;/code> with an increased value allowed me to run previously failing tests with far higher concurrent users.&lt;/p>
+&lt;/div>
+&lt;h3 id="adding-typescript">Adding typescript
+&lt;/h3>&lt;p>Fortunately we do have access to some typings to allow us to use typescript while building our test file(s).&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">npm init
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">npm install -D @types/k6
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Which allows us to import and use types such as the following. Don&amp;rsquo;t forget to rename the file to &lt;code>*.ts&lt;/code>!&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-ts" data-lang="ts">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">Options&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;k6/options&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kr">const&lt;/span> &lt;span class="nx">options&lt;/span>: &lt;span class="kt">Options&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">vus&lt;/span>: &lt;span class="kt">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">duration&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;30s&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>At this point, attempting to run the tests will lead to an error. We need to use k6&amp;rsquo;s experimental enhanced compatibility mode. This can be supplied as a flag via command line, or we can add an npm script to our newly-created &lt;code>package.json&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">package.json&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="s2">&amp;#34;scripts&amp;#34;&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;test&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;k6 run script.ts --compatibility-mode=experimental_enhanced&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="test-output">Test output
+&lt;/h3>&lt;p>There are multiple outputs when running tests with k6 which can be explored &lt;a class="link" href="https://grafana.com/docs/k6/latest/results-output/" target="_blank" rel="noopener"
+>here&lt;/a>. The most useful of these I found was the web dashboard and generated HTML report, however there are also options to export a summary as CSV or JSON, or stream metrics to multiple services.&lt;/p>
+&lt;p>There is also an options to export a &lt;code>handleSummary&lt;/code> function which can be used to customise the output of a test run.&lt;/p>
+&lt;p>&lt;strong>Web dashboard&lt;/strong>&lt;/p>
+&lt;p>The bundled &lt;a class="link" href="https://grafana.com/docs/k6/latest/results-output/web-dashboard/" target="_blank" rel="noopener"
+>web dashboard&lt;/a> was very handy, and can also be used to &lt;a class="link" href="https://grafana.com/docs/k6/latest/results-output/web-dashboard/#generate-html-test-reports" target="_blank" rel="noopener"
+>generate a report&lt;/a>.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/performance-testing-k6/images/dashboard.jpg"
+width="1360"
+height="563"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/performance-testing-k6/images/dashboard_hu6436437036375259649.jpg 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/performance-testing-k6/images/dashboard_hu14665316658704872851.jpg 1024w"
+loading="lazy"
+alt="Screenshot of k6s web dashboard"
+class="gallery-image"
+data-flex-grow="241"
+data-flex-basis="579px"
+>&lt;/p>
+&lt;p>To launch the dashboard, we simply need to set the &lt;code>K6_WEB_DASHBOARD&lt;/code> environment variable to &lt;code>true&lt;/code>. There are options to change the port and such, but for the sake of brevity we&amp;rsquo;ll just use the defaults which will serve the dashboard at &lt;code>http://localhost:5665&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="nv">K6_WEB_DASHBOARD&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span> k6 run script.js
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Setting &lt;code>K6_WEB_DASHBOARD_OPEN=true&lt;/code> will also cause the browser window to be opened automatically. From this page it is possible to save the report manually, although the likely more useful option — especially for CI/CD etc. is to simply tell k6 to output the report for us. Set &lt;code>K6_WEB_DASHBOARD_EXPORT&lt;/code> to the name of the file you wish to output.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="nv">K6_WEB_DASHBOARD&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span> &lt;span class="nv">K6_WEB_DASHBOARD_EXPORT&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;report.html&amp;#34;&lt;/span> k6 run script.js
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="features">Features
+&lt;/h2>&lt;p>Below are some of the most prominent features. More information can be found in the &lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/" target="_blank" rel="noopener"
+>k6 documentation&lt;/a>.&lt;/p>
+&lt;h3 id="options">Options
+&lt;/h3>&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/k6-options/" target="_blank" rel="noopener"
+>Options&lt;/a> can be provided to k6 via different means. Below is the priority order should multiple sources be provided. The more interesting thing to note is the ability to specify a &lt;code>--config&lt;/code> flag which targets a file, allowing us to switch predefined options files easily.&lt;/p>
+&lt;ul>
+&lt;li>Default values&lt;/li>
+&lt;li>Configuration file specified via the &lt;code>--config&lt;/code> flag&lt;/li>
+&lt;li>Script values&lt;/li>
+&lt;li>Environment variables&lt;/li>
+&lt;li>Command line flags&lt;/li>
+&lt;/ul>
+&lt;h3 id="test-lifecycle">Test lifecycle
+&lt;/h3>&lt;p>k6 executes the test script in the following order.&lt;/p>
+&lt;ul>
+&lt;li>The optional &lt;code>setup&lt;/code> function runs, setting up the test environment and generating data&lt;/li>
+&lt;li>The required default or scenario function, running for as long and as many times as the options define&lt;/li>
+&lt;li>The optional &lt;code>teardown&lt;/code> function runs, cleaning up the test environment&lt;/li>
+&lt;/ul>
+&lt;p>Data created in the &lt;code>setup&lt;/code> function can be accessed via a &lt;code>data&lt;/code> parameter in the default and &lt;code>teardown&lt;/code> functions.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="nx">setup&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">res&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://httpbin.test.k6.io/get&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">data&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">json&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="nx">teardown&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">JSON&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">stringify&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">JSON&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">stringify&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="scenarios">Scenarios
+&lt;/h3>&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/scenarios/" target="_blank" rel="noopener"
+>Scenarios&lt;/a> give us the flexibility to mimic more realistic usage through more granular control over virtual users (VUs) and iteration scheduling patterns. Scenarios are defined in the &lt;code>options&lt;/code> object, and can be used in place of the otherwise required &lt;code>default&lt;/code> function.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kr">const&lt;/span> &lt;span class="nx">options&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">scenarios&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">shared_iter_scenario&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">executor&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;shared-iterations&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">vus&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">iterations&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">100&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">startTime&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;0s&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">per_vu_scenario&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">executor&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;per-vu-iterations&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">vus&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">iterations&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">startTime&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;10s&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://test.k6.io/&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Executors&lt;/strong>&lt;/p>
+&lt;p>The VU workload for each scenario is scheduled by an &lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/scenarios/executors/" target="_blank" rel="noopener"
+>executor&lt;/a>, which configure how long the test runs for, and how workload is managed.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Value&lt;/th>
+&lt;th>Description&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;code>shared-iterations&lt;/code>&lt;/td>
+&lt;td>Fixed iterations shared between VUs&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>per-vu-iterations&lt;/code>&lt;/td>
+&lt;td>Each VU executes an exact number of iterations&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>constant-vus&lt;/code>&lt;/td>
+&lt;td>Fixed VUs execute as many iterations as possible for an amount of time&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>ramping-vus&lt;/code>&lt;/td>
+&lt;td>Variable VUs execute as many iterations as possible for an amount of time&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>constant-arrival-rate&lt;/code>&lt;/td>
+&lt;td>Fixed iterations are executed in a specified period of time&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>ramping-arrival-rate&lt;/code>&lt;/td>
+&lt;td>Variable iterations are executed in a specified period of time&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="thresholds">Thresholds
+&lt;/h3>&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/thresholds/" target="_blank" rel="noopener"
+>Thresholds&lt;/a> allow us to define parameters that we can measure &lt;a class="link" href="#metrics" >metrics&lt;/a> against. Some examples of thresholds that can be defined are as follows. These can be incredibly useful in scenarios where we may want to either raise an alert against a live environment or fail a CI build. If any of the thresholds fail, k6 will exit with a non-zero exit code.&lt;/p>
+&lt;ul>
+&lt;li>Less than 1% of requests return an error&lt;/li>
+&lt;li>95% of requests have a response time below 200ms&lt;/li>
+&lt;li>99% of requests have a response time below 400ms&lt;/li>
+&lt;li>A specific endpoint always responds within 300ms&lt;/li>
+&lt;/ul>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kr">const&lt;/span> &lt;span class="nx">options&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">thresholds&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http_req_failed&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;rate&amp;lt;0.01&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="c1">// http errors should be less than 1%
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">http_req_duration&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;p(95)&amp;lt;200&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="c1">// 95% of requests should be below 200ms
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://test-api.k6.io/public/crocodiles/1/&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="metrics">Metrics
+&lt;/h3>&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/metrics/" target="_blank" rel="noopener"
+>Metrics&lt;/a> measure how a system performs under test conditions. Metrics fall into four broad types:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/javascript-api/k6-metrics/counter/" target="_blank" rel="noopener"
+>Counters&lt;/a> — sum values&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/javascript-api/k6-metrics/gauge/" target="_blank" rel="noopener"
+>Gauges&lt;/a> — track the smallest, largest, and latest values&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/javascript-api/k6-metrics/rate/" target="_blank" rel="noopener"
+>Rates&lt;/a> — track how frequently a non-zero value occurs&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/javascript-api/k6-metrics/trend/" target="_blank" rel="noopener"
+>Trends&lt;/a> — calculates statistics for multiple values (mean, mode or percentile)&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Built-in metrics&lt;/strong>&lt;/p>
+&lt;p>k6 includes many &lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/metrics/reference/" target="_blank" rel="noopener"
+>built-in metrics&lt;/a>. The list is quite long, so it&amp;rsquo;s worth a skim through to learn what data is being collected by default.&lt;/p>
+&lt;p>Example built-in metrics:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>http_reqs&lt;/code> — total requests&lt;/li>
+&lt;li>&lt;code>http_req_failed&lt;/code> — error rate&lt;/li>
+&lt;li>&lt;code>http_req_duration&lt;/code> — request duration&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Custom metrics&lt;/strong>&lt;/p>
+&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/metrics/create-custom-metrics/" target="_blank" rel="noopener"
+>Custom metrics&lt;/a> can be used to capture additional data points not covered by the built-in metrics. Below is an example of creating a custom metric.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">Trend&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/metrics&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">myTrend&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">Trend&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;waiting_time&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">r&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://httpbin.test.k6.io&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">myTrend&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">r&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">timings&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">waiting&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">myTrend&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">name&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Which will output something similar to the below.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">iteration_duration.............: // omitted
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">iterations.....................: // omitted
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">waiting_time...................: avg=265.245396 min=265.245396 med=265.245396 max=265.245396 p(90)=265.245396 p(95)=265.245396
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="checks">Checks
+&lt;/h3>&lt;p>Crossing more into the realm of functional testing, &lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/checks/" target="_blank" rel="noopener"
+>checks&lt;/a> allow us to provide some assertions over the functionality of our tests. Failed checks do not directly result in a failed test, however they do produce metrics which can be combined with &lt;a class="link" href="#thresholds" >thresholds&lt;/a>.&lt;/p>
+&lt;p>While there is a lot of potential crossover with functional testing, checks may be worth considering as a way to ensure that our tests are actually testing the whole functionality of an endpoint. For example, should we have a long-running database query triggered by an endpoint, we may wish to ensure that the HTTP request is actually performing the database call. If the database doesn&amp;rsquo;t exist, we may find that an error is returned very quickly and without a check we may assume that the query ran to completion in under our threshold.&lt;/p>
+&lt;h3 id="categorisation">Categorisation
+&lt;/h3>&lt;p>To help you visualize, sort, and filter your test results, k6 provides tags and groups as ways to categorise entities.&lt;/p>
+&lt;p>&lt;strong>Tags&lt;/strong>&lt;/p>
+&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/tags-and-groups/#tags" target="_blank" rel="noopener"
+>Tags&lt;/a> quite simply allow us to categorise the following entities. Some of these tags are built-in and applied by default, however custom tags can easily be applied where required. It is also possible to tag an entire test, enabling comparing test results from across separate test runs.&lt;/p>
+&lt;ul>
+&lt;li>Requests&lt;/li>
+&lt;li>Checks&lt;/li>
+&lt;li>Thresholds&lt;/li>
+&lt;li>Custom metrics&lt;/li>
+&lt;/ul>
+&lt;p>With tags applied, the output of our test run looks something like this.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;type &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Point &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;data &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;time &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;2017-05-09T14:34:45.239531499+02:00 &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;value &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mf">459.865729&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;tags &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;group &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;::my group::json &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;method &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;GET &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;status &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;200 &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;url &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;https://httpbin.test.k6.io/get &amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;metric &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;http_req_duration &amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Groups&lt;/strong>&lt;/p>
+&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/tags-and-groups/#groups" target="_blank" rel="noopener"
+>Groups&lt;/a> allow us to organise a load script by functions. These can be nested, and the test output will have a tag called &lt;code>group&lt;/code> with all wrapping group names.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">group&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;visit product listing page&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;add several products to the shopping cart&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;visit login page&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;authenticate&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;checkout process&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="misc">Misc
+&lt;/h2>&lt;p>k6 offers a collection of other &lt;a class="link" href="https://grafana.com/docs/k6/latest/misc/integrations/" target="_blank" rel="noopener"
+>integrations and tools&lt;/a>, including links to examples or guides on things such as setting up a CI/CD pipeline with k6.&lt;/p>
+&lt;h3 id="openapi-integration">OpenAPI integration
+&lt;/h3>&lt;p>While probably not the most useful feature in practise, this may have some usefulness in very quickly setting up a test file as a starting point. &lt;a class="link" href="https://k6.io/blog/load-testing-your-api-with-swagger-openapi-and-k6/" target="_blank" rel="noopener"
+>This article&lt;/a> goes into more depth, but as a quick reference the following will generate a test script. However, the script itself will need to be cleaned up prior to being run.&lt;/p>
+&lt;p>Pull the container down.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">docker pull openapitools/openapi-generator-cli
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Run the container, substituting the &lt;code>-i&lt;/code> and &lt;code>-o&lt;/code> flags for your respective input and output paths.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">docker run --rm -v &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nv">PWD&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">:/local&amp;#34;&lt;/span> openapitools/openapi-generator-cli generate &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -i https://httpbin.test.k6.io/spec.json &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -g k6 &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -o /local/k6-test/ &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --skip-validate-spec
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>Generating swagger.json&lt;/strong>&lt;/p>
+&lt;p>I was using a .NET Core API project, and to generate the &lt;code>swagger.json&lt;/code> file the following steps were required.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">dotnet tool install swashbuckle.aspnetcore.cli
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">dotnet swagger tofile --output &lt;span class="o">{&lt;/span>OUTPUT_PATH&lt;span class="o">}&lt;/span> &lt;span class="s2">&amp;#34;{PATH_TO_PROJECT}/bin/Debug/net8.0/{PROJECT_NAME}.dll&amp;#34;&lt;/span> v1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="test-authoring-tools">Test authoring tools
+&lt;/h3>&lt;p>While these looked promising I didn&amp;rsquo;t look at either beyond reading the article, preferring to simply write the test scripts myself.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/test-authoring/test-builder/" target="_blank" rel="noopener"
+>Test builder&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/test-authoring/create-tests-from-recordings/using-the-browser-recorder/" target="_blank" rel="noopener"
+>Browser recorder&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h3 id="sample-repository">Sample repository
+&lt;/h3>&lt;p>There is a very light sample repository available on &lt;a class="link" href="https://github.com/vivecuervo7/k6-performance-testing" target="_blank" rel="noopener"
+>GitHub&lt;/a> which includes a sample of the generated HTML report.&lt;/p></description></item><item><title>Re-mapping our estimations</title><link>https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/</link><pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/cover.jpg" alt="Featured image of post Re-mapping our estimations" />&lt;h2 id="whats-the-issue">What&amp;rsquo;s the issue?
+&lt;/h2>&lt;p>After working on a number of software projects, I have growth increasingly disenchanted with the amount of time spent &lt;del>arguing&lt;/del> politely discussing the intricacies of a 3-point story compared to a 5-point story.&lt;/p>
+&lt;p>What&amp;rsquo;s the difference between a 2-point story and a 3-point story? &lt;em>Why&lt;/em> is it different? Does such a trivial difference really matter?&lt;/p>
+&lt;p>I wanted to explore what a simplified model of estimations might look like, which more clearly conveys whether a thing is a typical piece of work, or whether it&amp;rsquo;s bigger or smaller.&lt;/p>
+&lt;h3 id="counting-stories">Counting stories
+&lt;/h3>&lt;p>While certainly not the norm, I&amp;rsquo;ve worked on &lt;em>a&lt;/em> project in the past where we simply treated every story as a single point.&lt;/p>
+&lt;p>Granted, it was a short, sharp project with a small team of two, and we didn&amp;rsquo;t really have the time to get into debate over what each story point meant. This led to a pleasantly simple world, in which we just added stories and worried about finishing them.&lt;/p>
+&lt;p>Even with the short time frame, by the end of the project we were left with the reflection that there were a couple of stories that might have been better communicated as a larger task than the others, but overall the process worked for us.&lt;/p>
+&lt;h3 id="fibonacci">Fibonacci
+&lt;/h3>&lt;p>The majority of projects I&amp;rsquo;ve been involved with to date have all used the Fibonacci sequence as our story point scale. I have never found this disagreeable, as it gives us a good idea of the relative complexity of our work items.&lt;/p>
+&lt;p>Typically, without poring through the entire backlog ahead of time we would aim to estimate the higher priority or more well-known work items, deferring estimation of the remainder until we got closer to them or the story was more fleshed out. As far as burn-up charts are concerned, all of the not-yet-estimated work items would simply reflect an average of the estimated backlog&amp;rsquo;s points.&lt;/p>
+&lt;p>This works, and tends to work well.&lt;/p>
+&lt;p>It also takes time. Even on a smaller team, varying levels of experience with a technology will likely mean that one person&amp;rsquo;s 3 might be another person&amp;rsquo;s 5. On the lower end, if I&amp;rsquo;ve had a good week and I&amp;rsquo;m on a roll, those 3&amp;rsquo;s start looking an awful lot like 2&amp;rsquo;s.&lt;/p>
+&lt;p>Then there&amp;rsquo;s a whole round of discussion required, digging through &lt;em>why&lt;/em> we&amp;rsquo;re estimating the way we are, how it&amp;rsquo;s justified based on last week&amp;rsquo;s estimations, and then possibly another round of estimations. Granted, these discussions are often useful for uncovering some potential technical complexities, so they&amp;rsquo;re not a total loss.&lt;/p>
+&lt;h2 id="is-there-a-middle-ground">Is there a middle ground?
+&lt;/h2>&lt;p>After experiencing the two approaches outlined above, it wasn&amp;rsquo;t hard to realise that much of the angst should be levelled at the &lt;strong>scale&lt;/strong> we&amp;rsquo;re using to estimate stories, rather than the estimation process as a whole. After all, we still need &lt;em>something&lt;/em> to communicate our progress to stakeholders, and we needed a way to assign those points.&lt;/p>
+&lt;p>And so, much of my thoughts started leaning into the idea that we could simplify things down to a typical user story, and using a smaller set of numbers to indicate whether the thing was bigger or smaller.&lt;/p>
+&lt;p>1, 2 and 3.&lt;/p>
+&lt;h3 id="how-would-this-work">How would this work?
+&lt;/h3>&lt;p>Where the single-point approach was dead simple and just required adding a point for each story, the broader scale of the Fibonacci sequence meant that quite often we go into estimation without much of an idea of that story&amp;rsquo;s complexity as far as points are concerned. We would run through the acceptance criteria and individually vote for where we think the story points should land, taking the majority number or discussing and re-estimating.&lt;/p>
+&lt;p>How I would envision a simpler scale to work would be that every story is by default a 2 at the moment estimation for that story begins. Thus, the question becomes &amp;ldquo;does anybody think this work item is significantly more or less complex than a typical work item?&amp;rdquo;.&lt;/p>
+&lt;p>Based on the answer and ensuing discussion, it would either be changed to a 1 to represent a smaller or easier piece of work, and a 3 where the work was determined to be more complex.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/smaller-default-larger.png"
+width="800"
+height="304"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/smaller-default-larger_hu6618684941051386536.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/smaller-default-larger_hu3739612218723352690.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="263"
+data-flex-basis="631px"
+>&lt;/p>
+&lt;p>While not yet used in practice, this feels like a &lt;em>much&lt;/em> easier question to answer. And sure, there might still be disagreements — but it narrows down any discussion to only the stories which somebody has called out as easier or harder.&lt;/p>
+&lt;h3 id="a-real-world-analysis">A real-world analysis
+&lt;/h3>&lt;p>After briefly talking over this idea with a couple of people, I decided it would be worth looking at some real-world data and seeing what a burn-up chart would look like if it were re-mapped to the simplified scale.&lt;/p>
+&lt;p>&lt;strong>Counts&lt;/strong>&lt;/p>
+&lt;p>To do this, I essentially counted all of the completed work items and grouped them by their story points. Further consolidating them into groups of &amp;rsquo;less than 3&amp;rsquo;, &amp;lsquo;between 3 and 8&amp;rsquo;, and &amp;lsquo;more than 8&amp;rsquo; gave me the most accurate simplified grouping.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/count-original.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/count-original_hu18241436682483197303.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/count-original_hu7595883188085116445.png 1024w"
+loading="lazy"
+alt="Number of stories grouped by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/count-consolidated.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/count-consolidated_hu2325273879461951705.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/count-consolidated_hu804029593397391895.png 1024w"
+loading="lazy"
+alt="Consolidated number of stories by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+>&lt;/p>
+&lt;p>&lt;strong>Values&lt;/strong>&lt;/p>
+&lt;p>Satisfied with the overlap between the original and simplified counts, I multiplied the counts by their respective story points and graphed those similarly — including what the numbers look like when re-mapped to the proposed 1-2-3 scale.&lt;/p>
+&lt;p>The resulting curve was fairly standard and further reinforced that the &amp;ldquo;typical&amp;rdquo; story worth the proposed 2 points would fairly cleanly overlap with what we would otherwise have estimated at between 3 and 8 points. The lack of resolution made it difficult to say whether or not this would pan out in practice, but things still lined up well enough to keep digging.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/values-original.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/values-original_hu6060831946037838340.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/values-original_hu3645975152888985055.png 1024w"
+loading="lazy"
+alt="Value of stories grouped by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/values-consolidated.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/values-consolidated_hu9260140407737258966.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/values-consolidated_hu15984836142645361097.png 1024w"
+loading="lazy"
+alt="Consolidated value of stories by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/values-remapped.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/values-remapped_hu14055115701688571442.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/values-remapped_hu11264673069665182739.png 1024w"
+loading="lazy"
+alt="Re-mapped value of stories by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+>&lt;/p>
+&lt;p>&lt;strong>Burn-up chart&lt;/strong>&lt;/p>
+&lt;p>Looking to provide some more useful evidence, I also wanted to include the big thing that we use to communicate progress to our stakeholders — the burn-up chart.&lt;/p>
+&lt;p>A relatively simple experiment to set up, I took the previous mappings and filled in our usual burn-up data with the original values, and then compared them to what the curve would look like for the re-mapped values.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-original.png"
+width="517"
+height="373"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-original_hu3439770376740705368.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-original_hu6273887457879594301.png 1024w"
+loading="lazy"
+alt="Burn-up chart with original values"
+class="gallery-image"
+data-flex-grow="138"
+data-flex-basis="332px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-remapped.png"
+width="517"
+height="373"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-remapped_hu2430358461540235387.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-remapped_hu10450906262298260939.png 1024w"
+loading="lazy"
+alt="Burn-up chart with re-mapped values"
+class="gallery-image"
+data-flex-grow="138"
+data-flex-basis="332px"
+>&lt;/p>
+&lt;p>At a glance these look pretty similar, with the differences only really noticeable when overlaid on top of each other.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-overlay.png"
+width="485"
+height="365"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-overlay_hu3839511740621354589.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-overlay_hu15700680714869078249.png 1024w"
+loading="lazy"
+alt="Burn-up chart overlay"
+class="gallery-image"
+data-flex-grow="132"
+data-flex-basis="318px"
+>&lt;/p>
+&lt;p>Where I &lt;em>did&lt;/em> notice a significant discrepancy was when looking at projections based on the preceding 5-week period. While the dotted projection line observed a like-for-like movement, the lower numbers in general led to a more dire forecast. I&amp;rsquo;ve included a projection based on the single-point method, and the re-mapped values are clearly a better middle ground.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-original-projection.png"
+width="504"
+height="341"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-original-projection_hu14315792848149287862.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-original-projection_hu10150446407367935068.png 1024w"
+loading="lazy"
+alt="Project 1: Original values"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-remapped-projection.png"
+width="504"
+height="341"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-remapped-projection_hu10208160195201829448.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-remapped-projection_hu4118027801887062527.png 1024w"
+loading="lazy"
+alt="Project 1: Re-mapped values"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-single-point-projection.png"
+width="506"
+height="343"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-single-point-projection_hu1676379654884420427.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/burnup-single-point-projection_hu14558073262440097744.png 1024w"
+loading="lazy"
+alt="Project 1: Single-point method"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+>&lt;/p>
+&lt;p>&lt;strong>Can the projection be fixed?&lt;/strong>&lt;/p>
+&lt;p>Kind of. I did fiddle with the numbers a bit, and was able to find a model that mapped pretty well for &lt;em>this&lt;/em> project. The following changes gave me a significantly more accurate projection &lt;em>and&lt;/em> curve, but they came at the cost of simplicity.&lt;/p>
+&lt;ul>
+&lt;li>Changed the grouping to &amp;rsquo;less than 3&amp;rsquo;, &amp;lsquo;between 3 and 5&amp;rsquo;, and &amp;lsquo;more than 5&amp;rsquo;&lt;/li>
+&lt;li>Made the &amp;ldquo;bigger&amp;rdquo; value worth 5 points instead of 3&lt;/li>
+&lt;/ul>
+&lt;p>Most concerning was the required change to grouping. The change in complexity to move something either side of &amp;ldquo;typical&amp;rdquo; no longer felt balanced, and what would have likely been estimated as an 8 might still be left as a 2 under the proposed model, where for the more accurate projection it would need to have been moved to a 3.&lt;/p>
+&lt;p>Given the additional complexity and the original ideal of a process which alleviated much of the friction while maintaining better accuracy than the single-point method, I don&amp;rsquo;t think it&amp;rsquo;s worth trying to fiddle with the numbers here.&lt;/p>
+&lt;h2 id="conclusion">Conclusion
+&lt;/h2>&lt;p>There&amp;rsquo;s a pretty big question sitting front and centre — would I use it?&lt;/p>
+&lt;p>I &lt;em>think&lt;/em> so. I&amp;rsquo;d like to compare burn-up charts for a couple of other projects — specifically the projections around the 30-40% mark. The other real-world backlog I had at my disposal was &lt;a class="link" href="#projections-for-other-projects" >similarly mapped&lt;/a> and shows a better outlook for simplified approaches to estimation.&lt;/p>
+&lt;p>That said, I did also map the burn-up chart using the single-point-per-story method, and the projection discrepancy was even more pronounced — and I have seen this method used successfully, although the shorter engagement it was used for may have obscured any problems that might have arisen over a longer period.&lt;/p>
+&lt;h3 id="projections-for-other-projects">Projections for other projects
+&lt;/h3>&lt;p>Another real-world project with their projections compared, with much more accurate projections than the first project. That said, the mapping for the single-point method looked pretty much on the money as well.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/alt-burnup-original-projection.png"
+width="506"
+height="343"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/alt-burnup-original-projection_hu14677206626709405335.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/alt-burnup-original-projection_hu4566026636850016890.png 1024w"
+loading="lazy"
+alt="Project 2: Original values"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/alt-burnup-remapped-projection.png"
+width="506"
+height="343"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/alt-burnup-remapped-projection_hu8206754361255540239.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/alt-burnup-remapped-projection_hu9116094818111699558.png 1024w"
+loading="lazy"
+alt="Project 2: Re-mapped values"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/image.png"
+width="506"
+height="343"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/image_hu14186703669561260639.png 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/remapping-our-estimations/images/image_hu9792013503311734801.png 1024w"
+loading="lazy"
+alt="Project 2: Single-point method"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+>&lt;/p></description></item><item><title>Creating a React component library with Vite</title><link>https://vivecuervo7.github.io/dev-blog/p/react-component-library-with-vite/</link><pubDate>Tue, 08 Oct 2024 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/react-component-library-with-vite/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/react-component-library-with-vite/cover.jpg" alt="Featured image of post Creating a React component library with Vite" />&lt;h2 id="context">Context
+&lt;/h2>&lt;p>A brief discussion with a client recently reminded me of something I&amp;rsquo;d long wanted to look into. The conversation was around the consolidation of designs across their rather broad suite of applications, and given the frequency with which React was used it got me wondering if it might be worth looking into creating a reusable component library.&lt;/p>
+&lt;p>Plenty of resources popped up when I started looking into the topic, and ultimately I discovered two promising avenues:&lt;/p>
+&lt;ul>
+&lt;li>Rollup&lt;/li>
+&lt;li>Vite (or more specifically, Vite&amp;rsquo;s &lt;a class="link" href="https://vite.dev/guide/build.html#library-mode" target="_blank" rel="noopener"
+>Library Mode&lt;/a>)&lt;/li>
+&lt;/ul>
+&lt;p>Of the above options, Rollup seemed to be the more &amp;ldquo;traditional&amp;rdquo; approach and so that&amp;rsquo;s where I started.&lt;/p>
+&lt;h2 id="rollup">Rollup
+&lt;/h2>&lt;p>&lt;a class="link" href="https://dev.to/alexeagleson/how-to-create-and-publish-a-react-component-library-2oe" target="_blank" rel="noopener"
+>This post&lt;/a> by &lt;a class="link" href="https://dev.to/alexeagleson" target="_blank" rel="noopener"
+>Alex Eagleson&lt;/a> was instrumental in helping me get my head around what needed to be done. There&amp;rsquo;s also a fantastic accompanying video tutorial linked on his post.&lt;/p>
+&lt;p>The tutorial is a little outdated so not all of the steps work as described, however there is a good amount of discussion in the comments with updated instructions. In any case, it proved to be informative enough to get me started in building a component library.&lt;/p>
+&lt;p>Hopefully it saves any pain, but one thing that caught me was a change to &lt;code>@rollup/plugin-typescript&lt;/code> in version 12 which was causing errors, especially when trying to create multiple outputs. Rolling back to version 11 restored the original functionality and allowed me to progress with the tutorial.&lt;/p>
+&lt;p>This resource was incredibly helpful in introducing me to the core concepts of how to bundle and publish a component library, and I highly recommend reading through it for anyone unfamiliar with Rollup and how to use it in this context.&lt;/p>
+&lt;h2 id="vite">Vite
+&lt;/h2>&lt;p>After running through the tutorial above and using the resulting library&amp;rsquo;s simple button component in another React application, I decided to look at Vite before continuing.&lt;/p>
+&lt;p>Of the resources I used, &lt;a class="link" href="https://victorlillo.dev/blog/react-typescript-vite-component-library" target="_blank" rel="noopener"
+>this post&lt;/a> by &lt;a class="link" href="https://victorlillo.dev/" target="_blank" rel="noopener"
+>Víctor Lillo&lt;/a> proved to be the most complete as it covered all of the aspects I wanted to look at.&lt;/p>
+&lt;p>Initially I disliked this approach due to the need to create a full-blown React application and subsequently remove all the bits we didn&amp;rsquo;t need, however it was still &lt;em>relatively&lt;/em> painless and came with a few nice things working straight out of the box — CSS as an example.&lt;/p>
+&lt;h3 id="exporting-components">Exporting components
+&lt;/h3>&lt;p>I did prefer the way components were exported in the first tutorial I followed, so I stuck with that here. This approach used an explicit &lt;code>index.ts&lt;/code> file at each level of the hierarchy.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">src/components/Button/index.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;./Button&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">src/components/index.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kr">as&lt;/span> &lt;span class="nx">Button&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;./Button&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">src/index.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;./components&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="library-mode">Library mode
+&lt;/h3>&lt;p>The initial config required on the Vite side was relatively straightforward. Setting the required values for &lt;code>build.lib&lt;/code> under &lt;code>vite.config.ts&lt;/code> is all we needed, where we set our entry point.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">vite.config.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">/// &amp;lt;reference types=&amp;#34;vite/client&amp;#34; /&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">resolve&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;node:path&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">defineConfig&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;vite&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">react&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;@vitejs/plugin-react&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="nx">defineConfig&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">plugins&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="nx">react&lt;/span>&lt;span class="p">()],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">build&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">lib&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">entry&lt;/span>: &lt;span class="kt">resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">__dirname&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;src/index.ts&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">formats&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;es&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="dependencies">Dependencies
+&lt;/h4>&lt;p>Another important piece of configuration here is to make sure we&amp;rsquo;re not bundling up a bunch of dependencies that we don&amp;rsquo;t need, such as React itself. We do this by extending &lt;code>vite.config.ts&lt;/code> to include &lt;code>build.rollupOptions&lt;/code> under both &lt;code>external&lt;/code> and &lt;code>output.globals&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">vite.config.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">//...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="nx">defineConfig&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">plugins&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="c1">//...,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">build&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">lib&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="c1">//...,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">rollupOptions&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">external&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;react&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;react-dom&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;react/jsx-runtime&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">output&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">globals&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">react&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;React&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;react-dom&amp;#34;&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;React-dom&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;react/jsx-runtime&amp;#34;&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;react/jsx-runtime&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>In my particular case, I was using &lt;code>classnames&lt;/code> as a dependency for some styling, and ran into a few options when it came to ensuring any consumers of the library would have all the required dependencies.&lt;/p>
+&lt;p>&lt;strong>Bundled with the application&lt;/strong>&lt;/p>
+&lt;p>Leaving &lt;code>classnames&lt;/code> under &lt;code>devDependencies&lt;/code> in &lt;code>package.json&lt;/code> and simply having referenced it in the bundled code meant that &lt;code>classnames&lt;/code> itself would also be bundled into the library itself. While there may be some cases where this makes sense, if the consuming application was using &lt;code>classnames&lt;/code> already then we&amp;rsquo;ve essentially forced them to bundle the code in their application twice.&lt;/p>
+&lt;p>&lt;strong>Making it a regular dependency&lt;/strong>&lt;/p>
+&lt;p>Moving &lt;code>classnames&lt;/code> into the &lt;code>dependencies&lt;/code> list in &lt;code>package.json&lt;/code> might work, but that would lead to the consuming application needing to unnecessarily include &lt;code>classnames&lt;/code> as a runtime dependency.&lt;/p>
+&lt;p>&lt;strong>Peer dependencies&lt;/strong>&lt;/p>
+&lt;p>Having not seen this prior to the covered tutorials, it took some reasoning to understand what this was used for. Essentially, moving &lt;code>classnames&lt;/code> into the &lt;code>peerDependencies&lt;/code> would mean that it was a requirement of the library that the consuming application must have a matching version of the package installed. Thus, some leniency was required when specifying the version.&lt;/p>
+&lt;p>Installation was a concern that crossed my mind, however as of npm 7 &lt;a class="link" href="https://github.blog/news-insights/product-news/npm-7-is-now-generally-available/#peer-dependencies" target="_blank" rel="noopener"
+>peer dependencies are installed by default&lt;/a>, meaning that a consumer need not go and manually install the peer dependencies themselves.&lt;/p>
+&lt;p>Ultimately I went with the &lt;strong>peer dependencies&lt;/strong> approach as it seemed to have the fewest drawbacks.&lt;/p>
+&lt;h4 id="entry-points-and-css">Entry points and CSS
+&lt;/h4>&lt;p>As mentioned in the tutorial, style sheets aren&amp;rsquo;t automatically imported in the generated code and thus the consumer needs to import it themselves manually. This can be resolved by using the &lt;a class="link" href="https://www.npmjs.com/package/vite-plugin-lib-inject-css" target="_blank" rel="noopener"
+>vite-plugin-lib-inject-css&lt;/a> plugin. Once installed, it needs to be added to &lt;code>vite.config.ts&lt;/code> under &lt;code>plugins&lt;/code>.&lt;/p>
+&lt;p>This fixes our issue, however we now have a single import statement in our generated &lt;code>index.js&lt;/code> file, meaning the entire style sheet needs to be imported if we use even a single component from our library. &lt;a class="link" href="https://rollupjs.org/configuration-options/#input" target="_blank" rel="noopener"
+>Rollup recommends&lt;/a> that we instead turn every file into an entry point, which will result in individual CSS files for each component — allowing us to import and use a single component, and only require that component&amp;rsquo;s style sheet.&lt;/p>
+&lt;p>Adding the following to &lt;code>build.rollupOptions&lt;/code> allows us to generate individual files for each component. The addition to &lt;code>build.rollupOptions.output&lt;/code> is also necessary to retain our folder structure in the generated code.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">vite.config.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">export default defineConfig({
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> build: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> rollupOptions: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ input: Object.fromEntries(
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ glob
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ .sync(&amp;#39;src/**/*.{ts,tsx}&amp;#39;)
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ .map((file: string) =&amp;gt; [
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ path.relative(&amp;#39;src&amp;#39;, file.slice(0, file.length - path.extname(file).length)),
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ fileURLToPath(new URL(file, import.meta.url))
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ ])
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ ),
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> output: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ entryFileNames: &amp;#39;[name].js&amp;#39;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ assetFileNames: &amp;#39;assets/[name][extname]&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> },
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> },
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> },
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">})
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>This will result in the &lt;code>dist/assets/&lt;/code> folder containing a CSS file for each component, which are imported accordingly.&lt;/p>
+&lt;h4 id="type-generation">Type generation
+&lt;/h4>&lt;p>&lt;a class="link" href="https://www.npmjs.com/package/vite-plugin-dts" target="_blank" rel="noopener"
+>vite-plugin-dts&lt;/a> is the plugin required to generate our type declarations. Similar to &lt;code>vite-plugin-lib-inject-css&lt;/code>, install it and add it to the &lt;code>plugins&lt;/code> array in &lt;code>vite.config.ts&lt;/code>.&lt;/p>
+&lt;p>Again bridging the two tutorials, I preferred the single-file approach taken by the first tutorial, and as such I added the plugin with the option &lt;code>rollupTypes&lt;/code> set to &lt;code>true&lt;/code>.&lt;/p>
+&lt;p>Assuming the &lt;code>rollupTypes&lt;/code> option was enabled, the generated code should now contain an &lt;code>index.d.ts&lt;/code> file with all of the types declared within it.&lt;/p>
+&lt;h4 id="setting-up-packagejson">Setting up package.json
+&lt;/h4>&lt;p>The other important file that requires some changes is the &lt;code>package.json&lt;/code> file. Add or update the following fields.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">package.json&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">{
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;type&amp;#34;: &amp;#34;module&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;files&amp;#34;: [&amp;#34;dist&amp;#34;],
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;module&amp;#34;: &amp;#34;dist/index.js&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;types&amp;#34;: &amp;#34;dist/index.d.ts&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Some more information regarding the new or updated fields:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>type&lt;/code>: should be set to &lt;code>module&lt;/code>. to indicate that we&amp;rsquo;re using ES module syntax&lt;/li>
+&lt;li>&lt;code>files&lt;/code>: describes the files to be included when the package is published&lt;/li>
+&lt;li>&lt;code>module&lt;/code>: not an official Node feature, but supported by some bundlers&lt;/li>
+&lt;li>&lt;code>types&lt;/code>: exposes the type declarations entry point&lt;/li>
+&lt;li>&lt;code>exports&lt;/code>: &lt;em>Optional&lt;/em> the entry points to the library&lt;/li>
+&lt;li>&lt;code>main&lt;/code>: This is used to specify the entry point for &lt;code>cjs&lt;/code>, which we&amp;rsquo;re not supporting&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Life cycle scripts&lt;/strong>&lt;/p>
+&lt;p>A script is also useful to specify here. While using &lt;code>prepublishOnly&lt;/code> makes sense if we&amp;rsquo;re planning to publish the library via &lt;code>npm publish&lt;/code>, using &lt;code>prepare&lt;/code> will run both on &lt;code>npm publish&lt;/code> and &lt;code>npm install&lt;/code> which allows us to install the library locally.&lt;/p>
+&lt;p>Add the following to &lt;code>package.json&lt;/code> under &lt;code>scripts&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">package.json&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">{
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &amp;#34;scripts&amp;#34;: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;prepare&amp;#34;: &amp;#34;vite build&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> }
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>More information on these &amp;ldquo;life cycle scripts&amp;rdquo; can be found &lt;a class="link" href="https://arc.net/l/quote/qplfovup" target="_blank" rel="noopener"
+>here&lt;/a>.&lt;/p>
+&lt;h2 id="development">Development
+&lt;/h2>&lt;p>The following are simply some additions to the development tooling for the library itself. This won&amp;rsquo;t be a guide on how to use any of the tooling, but simply provides some basic installation steps and ensuring that the files are not bundled into our generated library code.&lt;/p>
+&lt;h3 id="storybook">Storybook
+&lt;/h3>&lt;p>Storybook can be installed by running the following command.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">pnpm dlx storybook@latest init
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The &lt;code>src/stories/&lt;/code> folder can be removed if desired as it only contains some sample stories and documentation.&lt;/p>
+&lt;p>Stories can now be added for any of our components — documentation on how to do so can be found &lt;a class="link" href="https://storybook.js.org/docs/writing-stories" target="_blank" rel="noopener"
+>here&lt;/a>. Once stories have been added, run Storybook with the following command.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">pnpm storybook
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>Ignoring Storybook files&lt;/strong>&lt;/p>
+&lt;p>The last thing we need to do here is to ensure that we aren&amp;rsquo;t bundling our stories in the generated code. We do this by extending the &lt;code>glob.sync&lt;/code> command we added to &lt;code>build.rollupOptions.input&lt;/code> in &lt;code>vite.config.ts&lt;/code> and providing an &lt;code>ignore&lt;/code> field to the options as follows.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">vite.config.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="nx">glob&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">sync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;src/**/*.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">ignore&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;src/**/*.stories.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="vitest">Vitest
+&lt;/h3>&lt;p>Vitest, jsdom and the React Testing Library (we&amp;rsquo;ll need all three) can be installed with the following command.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">pnpm i -D vitest jsdom @testing-library/react
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Add a &lt;code>test&lt;/code> script to &lt;code>package.json&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">package.json&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">{
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &amp;#34;scripts&amp;#34;: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;test&amp;#34;: &amp;#34;vitest&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> }
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Next we need to update our &lt;code>vite.config.ts&lt;/code> file.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">vite.config.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+/// &amp;lt;reference types=&amp;#34;vitest&amp;#34; /&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>export default defineConfig({
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ test: {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ environment: &amp;#34;jsdom&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ globals: true,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ root: &amp;#34;src/&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ },
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>});
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>And to get those globals working nicely so we don&amp;rsquo;t need to repeatedly import &lt;code>describe&lt;/code>, &lt;code>test&lt;/code> etc. we need to add the following to &lt;code>tsconfig.json&lt;/code> under &lt;code>compilerOptions&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">tsconfig.json&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">{
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &amp;#34;compilerOptions&amp;#34;: {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;types&amp;#34;: [&amp;#34;vitest/globals&amp;#34;]
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> }
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Ignoring test files&lt;/strong>&lt;/p>
+&lt;p>Similar to Storybook, we also need to make sure we&amp;rsquo;re not generated code for our tests. Update the &lt;code>glob.sync&lt;/code> command in &lt;code>vite.config.ts&lt;/code> under &lt;code>build.rollupOptions.input&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">vite.config.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="nx">glob&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">sync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;src/**/*.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">ignore&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;src/**/*.stories.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;src/**/*.test.{ts,tsx}&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="using-the-library">Using the library
+&lt;/h2>&lt;p>Both of the linked tutorials go into publishing the library on npm, however due to the nature of a sample library I didn&amp;rsquo;t want to delve into the publishing side of things.&lt;/p>
+&lt;p>However, outside of publishing it on npm I was unsure as to how I could actually use the library, and to my pleasure it was actually incredibly straightforward.&lt;/p>
+&lt;p>&lt;strong>Github repository&lt;/strong>&lt;/p>
+&lt;p>Very simple, this allows you to install directly from the repository using the following command.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">pnpm i -D GITHUB_NAME/REPOSITORY_NAME
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Which results in the following &lt;code>package.json&lt;/code> entry under &lt;code>devDependencies&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">package.json&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;PACKAGE_NAME&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;github:GITHUB_NAME/REPOSITORY_NAME&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Local reference&lt;/strong>&lt;/p>
+&lt;p>Equally as straightforward, the following command can be run to create a local reference.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">pnpm i -D PATH_TO_LIBRARY
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Which similar to the above results in the following &lt;code>package.json&lt;/code> entry under &lt;code>devDependencies&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">package.json&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;PACKAGE_NAME&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;link:PATH_TO_LIBRARY&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="sample-repository">Sample repository
+&lt;/h3>&lt;p>I did end up with a functional component library — albeit one with all of two components and a custom hook. It&amp;rsquo;s available on GitHub &lt;a class="link" href="https://github.com/vivecuervo7/demolib" target="_blank" rel="noopener"
+>here&lt;/a>, or it can be used as above with the following command.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">pnpm i -D vivecuervo7/demolib
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Setting up Keycloak</title><link>https://vivecuervo7.github.io/dev-blog/p/keycloak-setup/</link><pubDate>Mon, 05 Aug 2024 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/keycloak-setup/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/keycloak-setup/cover.jpg" alt="Featured image of post Setting up Keycloak" />&lt;h2 id="context">Context
+&lt;/h2>&lt;p>&lt;a class="link" href="https://www.keycloak.org/" target="_blank" rel="noopener"
+>Keycloak&lt;/a> is an open-source identity and access management solution designed to manage users and secure applications. It provides features such as single sign-on (SSO), social login integration, and user federation.&lt;/p>
+&lt;p>It also offers a user-friendly administration console for managing users, roles, and permissions, as well as customizable user interfaces for login, registration, and account management&lt;/p>
+&lt;p>&lt;strong>Why use a local auth server?&lt;/strong>&lt;/p>
+&lt;p>Being able to run a local auth server means we won&amp;rsquo;t find ourselves blocked while waiting for a client to configure their own auth server. Often picking up a piece of work involving client-owned authentication results in some delays while requests are sent around, and more often than not leaves us unable to write our application code until the auth server has been configured.&lt;/p>
+&lt;p>It also allows us to have full control over our own local dev environment, including the ability to create any number of users with specific roles. This means we can easily run multi-user scenarios locally for testing, demoes or debugging, and prevents needing to comment out or tweak application code just to replicate a bug.&lt;/p>
+&lt;h2 id="getting-started">Getting started
+&lt;/h2>&lt;p>To start the Keycloak dev server, simply run the following command in your terminal. This will expose Keycloak on port &lt;code>8080&lt;/code>, and creates an initial admin user with the credentials &lt;code>admin:admin&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">docker run -p 8080:8080 -e &lt;span class="nv">KEYCLOAK_ADMIN&lt;/span>&lt;span class="o">=&lt;/span>admin -e &lt;span class="nv">KEYCLOAK_ADMIN_PASSWORD&lt;/span>&lt;span class="o">=&lt;/span>admin quay.io/keycloak/keycloak:25.0.2 start-dev
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Opening &lt;a class="link" href="http://localhost:8080/" target="_blank" rel="noopener"
+>http://localhost:8080/&lt;/a> in your browser should show you the login page for the Keycloak admin interface. Sign in with the previously created admin credentials &lt;code>admin:admin&lt;/code>. Once logged in, you should be greeted with the Keycloak admin console.&lt;/p>
+&lt;h2 id="configuring-keycloak">Configuring Keycloak
+&lt;/h2>&lt;h3 id="creating-a-realm">Creating a realm
+&lt;/h3>&lt;ol>
+&lt;li>Open the admin console and login using our admin credentials &lt;code>admin:admin&lt;/code>&lt;/li>
+&lt;li>Open the dropdown that currently says &lt;strong>Keycloak&lt;/strong> and select &lt;strong>Create realm&lt;/strong>&lt;/li>
+&lt;li>Enter the desired name for the realm, in this case using &lt;code>local-dev&lt;/code>&lt;/li>
+&lt;li>Finish creating the realm by clicking the &amp;ldquo;Create&amp;rdquo; button&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-realm.jpg"
+width="3217"
+height="1213"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-realm_hu12201303175039187883.jpg 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-realm_hu4145968943072315519.jpg 1024w"
+loading="lazy"
+alt="Creating a new realm"
+class="gallery-image"
+data-flex-grow="265"
+data-flex-basis="636px"
+>&lt;/p>
+&lt;h3 id="adding-a-user">Adding a user
+&lt;/h3>&lt;ol>
+&lt;li>Select &lt;strong>Users&lt;/strong> from the sidebar, then click &lt;strong>Create new user&lt;/strong>&lt;/li>
+&lt;li>Fill in the details for a new user, in this case using &lt;code>test-user&lt;/code> as the username&lt;/li>
+&lt;li>(Optional) ticking &lt;strong>Email verified&lt;/strong> means our test user can skip this step&lt;/li>
+&lt;li>Select &lt;strong>Credentials&lt;/strong> from the tab bar, then click &lt;strong>Set password&lt;/strong>&lt;/li>
+&lt;li>Enter and confirm the user&amp;rsquo;s password, in this case using &lt;code>password&lt;/code>&lt;/li>
+&lt;li>(Optional) uncheck &lt;strong>Temporary&lt;/strong> to prevent needing to update the password at first login for this user&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-user.jpg"
+width="2897"
+height="1536"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-user_hu7326194628856796544.jpg 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-user_hu11207211305343889722.jpg 1024w"
+loading="lazy"
+alt="Creating a new user"
+class="gallery-image"
+data-flex-grow="188"
+data-flex-basis="452px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/set-password.jpg"
+width="3216"
+height="1537"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/set-password_hu4951614244676879102.jpg 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/set-password_hu18263307766710068895.jpg 1024w"
+loading="lazy"
+alt="Setting a users password"
+class="gallery-image"
+data-flex-grow="209"
+data-flex-basis="502px"
+>&lt;/p>
+&lt;p>You can test the newly created user&amp;rsquo;s account at &lt;a class="link" href="http://localhost:8080/realms/myrealm/account" target="_blank" rel="noopener"
+>http://localhost:8080/realms/myrealm/account&lt;/a>. Opening the link and signing in with our user&amp;rsquo;s credentials &lt;code>test-user:password&lt;/code> gives us access to a user-facing interface that allows updating of details, passwords, and the setting up of two-factor authentication.&lt;/p>
+&lt;h3 id="registering-a-client">Registering a client
+&lt;/h3>&lt;ol>
+&lt;li>Select &lt;strong>Clients&lt;/strong> in the sidebar, then click &lt;strong>Create client&lt;/strong>&lt;/li>
+&lt;li>Make sure to leave &lt;code>OpenID Connect&lt;/code> selected as the &lt;strong>Client type&lt;/strong>&lt;/li>
+&lt;li>Enter the desired client name, in this case using &lt;code>local-dev-client&lt;/code>&lt;/li>
+&lt;li>Click &lt;strong>Next&lt;/strong>&lt;/li>
+&lt;li>Ensure that &lt;strong>Standard flow&lt;/strong> remains checked&lt;/li>
+&lt;li>Click &lt;strong>Next&lt;/strong>&lt;/li>
+&lt;li>To facilitate testing, make the following changes to the &lt;strong>Login settings&lt;/strong>
+&lt;ul>
+&lt;li>Set &lt;strong>Valid redirect URIs&lt;/strong> to &lt;code>https://www.keycloak.org/app/*&lt;/code>&lt;/li>
+&lt;li>Set &lt;strong>Web origins&lt;/strong> to &lt;code>https://www.keycloak.org&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Click &lt;strong>Save&lt;/strong>&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-client-1.jpg"
+width="2642"
+height="1216"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-client-1_hu812501262880541363.jpg 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-client-1_hu3086720389269009206.jpg 1024w"
+loading="lazy"
+alt="Creating a new client"
+class="gallery-image"
+data-flex-grow="217"
+data-flex-basis="521px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-client-2.jpg"
+width="2642"
+height="1216"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-client-2_hu6742566747077957143.jpg 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/create-client-2_hu2503968840255213723.jpg 1024w"
+loading="lazy"
+alt="Login settings for client"
+class="gallery-image"
+data-flex-grow="217"
+data-flex-basis="521px"
+>&lt;/p>
+&lt;p>You can test the newly created client by using &lt;a class="link" href="https://www.keycloak.org/app/" target="_blank" rel="noopener"
+>https://www.keycloak.org/app/&lt;/a>. Enter the details from our previously created realm and client, and press &lt;strong>Save&lt;/strong>. Once saved, you can sign in with the test user created earlier.&lt;/p>
+&lt;h4 id="audience-claim">Audience claim
+&lt;/h4>&lt;p>You may also need to set the audience claim correctly, which might become apparent when wiring this up to an application.&lt;/p>
+&lt;ol>
+&lt;li>Select &lt;strong>Clients&lt;/strong> in the sidebar, select our newly created client &lt;code>local-dev-client&lt;/code>, then select &lt;strong>Client scopes&lt;/strong> from the tabs along the top&lt;/li>
+&lt;li>Select the &lt;strong>Assigned client scope&lt;/strong> named &lt;code>&amp;lt;client-id&amp;gt;-dedicated&lt;/code>, in our case &lt;code>local-dev-client-dedicated&lt;/code>&lt;/li>
+&lt;li>Click the &lt;strong>Add mapper&lt;/strong> button, and select &lt;strong>By configuration&lt;/strong>&lt;/li>
+&lt;li>Select &lt;strong>Audience&lt;/strong> from the list of options, and then configure as per below
+&lt;ul>
+&lt;li>&lt;strong>Name&lt;/strong> can be whatever you choose, I&amp;rsquo;ve gone with &lt;code>audience&lt;/code> here&lt;/li>
+&lt;li>Selecting &lt;strong>Included Client Audience&lt;/strong> will open a dropdown; select the newly created client &lt;code>local-dev-client&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/client-scopes.jpg"
+width="3216"
+height="1947"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/client-scopes_hu16268515813643728486.jpg 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/client-scopes_hu10882931585526443522.jpg 1024w"
+loading="lazy"
+alt="Configuring client scopes"
+class="gallery-image"
+data-flex-grow="165"
+data-flex-basis="396px"
+> &lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/audience-mapper.jpg"
+width="2617"
+height="1648"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/audience-mapper_hu5474277538284736924.jpg 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-setup/images/audience-mapper_hu7677680125292531973.jpg 1024w"
+loading="lazy"
+alt="Adding audience mapper"
+class="gallery-image"
+data-flex-grow="158"
+data-flex-basis="381px"
+>&lt;/p>
+&lt;p>This should finish configuring our client to correctly populate the audience claim in any generated tokens.&lt;/p>
+&lt;h2 id="persisting-keycloak-configuration">Persisting Keycloak configuration
+&lt;/h2>&lt;p>Of course, once we tear down our Docker container we lose any of the previously configured values. &lt;a class="link" href="https://docs.docker.com/storage/volumes/" target="_blank" rel="noopener"
+>Docker volumes&lt;/a> provide a nice solution here, which we can easily configure using &lt;code>docker-compose&lt;/code>.&lt;/p>
+&lt;p>Save the following as &lt;code>docker-compose.yml&lt;/code> and run by calling &lt;code>docker-compose up -d&lt;/code> in your terminal.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">docker-compose.yml&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">keycloak&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">quay.io/keycloak/keycloak:25.0.2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">container_name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">keycloak&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">ports&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="m">8080&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="m">8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">environment&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">KEYCLOAK_ADMIN=admin&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">KEYCLOAK_ADMIN_PASSWORD=admin&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">keycloak-data:/opt/keycloak/data/&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">restart&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">always&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">command&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;start-dev&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">keycloak-data&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">keycloak-data&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div></description></item><item><title>Importing and exporting Keycloak configuration</title><link>https://vivecuervo7.github.io/dev-blog/p/keycloak-import-export/</link><pubDate>Mon, 05 Aug 2024 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/keycloak-import-export/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/keycloak-import-export/cover.jpg" alt="Featured image of post Importing and exporting Keycloak configuration" />&lt;h2 id="context">Context
+&lt;/h2>&lt;p>Keycloak allows us to import and export realms, which can make it much easier to share configurations amongst team members.&lt;/p>
+&lt;h2 id="exporting-an-existing-realm">Exporting an existing realm
+&lt;/h2>&lt;p>The following instructions to export a realm from Keycloak will assume the use of a docker compose file similar to this.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">docker-compose.yml&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">keycloak&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">quay.io/keycloak/keycloak:25.0.2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">container_name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">keycloak&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">ports&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="m">8080&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="m">8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">environment&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">KEYCLOAK_ADMIN=admin&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">KEYCLOAK_ADMIN_PASSWORD=admin&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">keycloak-data:/opt/keycloak/data/&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">restart&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">always&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">command&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;start-dev&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">keycloak-data&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">keycloak-data&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>The easiest way to export a realm when using docker compose is to add a second compose file. Call this &lt;code>docker-compose.export.yml&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">docker-compose.export.yml&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">keycloak&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">command&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;export --dir /opt/keycloak/data/export/ --realm local-dev --users realm_file&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">./output:/opt/keycloak/data/export&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Run the following in your terminal to export the configured realm.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">docker-compose -f &lt;span class="s2">&amp;#34;docker-compose.yml&amp;#34;&lt;/span> -f &lt;span class="s2">&amp;#34;docker-compose.export.yml&amp;#34;&lt;/span> up --exit-code-from keycloak
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>You should now have a directory called &lt;code>output&lt;/code> that contains a file called &lt;code>local-dev-realm.json&lt;/code>. This file can be imported manually when creating a new realm, or Keycloak can be configured to automatically import this realm when the service starts (attempting to import an already-existing realm will fail to prevent overwrites).&lt;/p>
+&lt;p>An important caveat to note is that Keycloak is designed to export from a &lt;em>stopped&lt;/em> server, meaning you will need to ensure that your configuration has been persisted through some means.&lt;/p>
+&lt;p>Keycloak also allows for multiple options when it comes to if and how users should be exported. The example above uses the simpler approach of combining them into the realm file. See the &lt;a class="link" href="https://www.keycloak.org/server/importExport" target="_blank" rel="noopener"
+>Keycloak documentation&lt;/a> for more details.&lt;/p>
+&lt;h2 id="importing-a-realm-from-a-file">Importing a realm from a file
+&lt;/h2>&lt;p>The updated Docker compose file below uses a bind mount to an &lt;code>import&lt;/code> directory. Once any &lt;code>realm.json&lt;/code> files have been exported, placing the files in the &lt;code>import&lt;/code> directory will allow Keycloak to automatically pick those realms up and import them on first run.&lt;/p>
+&lt;p>Update your &lt;code>docker-compose.yml&lt;/code> to the following and run by calling &lt;code>docker-compose up -d&lt;/code> in your terminal.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">docker-compose.yml&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">keycloak&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">quay.io/keycloak/keycloak:25.0.2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">container_name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">keycloak&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">ports&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="m">8080&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="m">8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">environment&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">KEYCLOAK_ADMIN=admin&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">KEYCLOAK_ADMIN_PASSWORD=admin&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">./import:/opt/keycloak/data/import&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">restart&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">always&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">command&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;start-dev&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;--import-realm&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Note the removal of the persisted Docker volume — this effectively gives us an auth server that can be modified on the fly, but will reset back to the exported realm whenever it restarts.&lt;/p>
+&lt;p>As Keycloak won&amp;rsquo;t overwrite an existing realm with the import method, the Docker volume can always be reintroduced and will essentially mean our import file serves as a starting point upon which changes can be persisted.&lt;/p></description></item><item><title>Using Keycloak with a React SPA + MSAL</title><link>https://vivecuervo7.github.io/dev-blog/p/keycloak-react-spa-msal/</link><pubDate>Mon, 05 Aug 2024 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/keycloak-react-spa-msal/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/keycloak-react-spa-msal/cover.jpg" alt="Featured image of post Using Keycloak with a React SPA + MSAL" />&lt;h2 id="context">Context
+&lt;/h2>&lt;p>One of my main motivations for looking into Keycloak was to decouple local development from a third party authentication server which needed to be configured by the client. More often than not, this is done using Microsoft Entra ID, and in a typical React application we would use MSAL to set up client authentication.&lt;/p>
+&lt;p>This serves as a short guide to resolving some of the issues encountered when trying to use MSAL with a locally-configured Keycloak server.&lt;/p>
+&lt;p>See the example repo &lt;a class="link" href="https://github.com/vivecuervo7/local-auth-with-keycloak-example" target="_blank" rel="noopener"
+>here&lt;/a>.&lt;/p>
+&lt;h2 id="running-keycloak-with-https">Running Keycloak with HTTPS
+&lt;/h2>&lt;p>Keycloak will be exposed at &lt;a class="link" href="http://localhost:8080" target="_blank" rel="noopener"
+>http://localhost:8080&lt;/a> which is all well and good for most cases, however I was wanting to drop this in as a local auth replacement for MSAL in a typical React project.&lt;/p>
+&lt;p>Since &lt;code>@azure/msal-browser&lt;/code> &lt;a class="link" href="https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/6631" target="_blank" rel="noopener"
+>doesn&amp;rsquo;t allow us to use a HTTP authority&lt;/a>, the default Keycloak endpoint won&amp;rsquo;t work. The following steps allow for running Keycloak with HTTPS.&lt;/p>
+&lt;h3 id="creating-a-self-signed-certificate-using-dotnet-dev-certs">Creating a self-signed certificate using dotnet dev-certs
+&lt;/h3>&lt;p>Since dotnet-certs are typically used for local dev when building .NET applications, it seemed easiest to simply repurpose the same tooling to create other local dev certs.&lt;/p>
+&lt;p>Create the self-signed certificate by running the following in your terminal, in this case using &lt;code>password&lt;/code> as the credential to create the following two files: &lt;code>certificate.crt&lt;/code> and &lt;code>certificate.key&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">dotnet dev-certs https -ep ./certificate.crt -p password --trust --format PEM
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Use &lt;code>openssl&lt;/code> to decrypt the certificate key, overwriting &lt;code>certificate.key&lt;/code> with the decrypted copy.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">openssl rsa -in certificate.key -out certificate.key
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>As a matter of preference, I tend to rename these files to &lt;code>cert.pem&lt;/code> and &lt;code>key.pem&lt;/code>. The remainder of this guide assumes this naming.&lt;/p>
+&lt;h3 id="running-keycloak-with-the-certificate">Running Keycloak with the certificate
+&lt;/h3>&lt;p>The following changes expect that the certificate files we just created are present in a &lt;code>certificates&lt;/code> directory. Go ahead and create the folder and copy both the certificate and key into it.&lt;/p>
+&lt;p>Create or update your &lt;code>docker-compose.yml&lt;/code> file to the following and run by calling &lt;code>docker-compose up -d&lt;/code> in your terminal.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">docker-compose.yml&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yml" data-lang="yml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">keycloak&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">quay.io/keycloak/keycloak:25.0.2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">container_name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">keycloak&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">ports&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="m">8080&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="m">8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="m">8443&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="m">8443&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">environment&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">KEYCLOAK_ADMIN=admin&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">KEYCLOAK_ADMIN_PASSWORD=admin&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">volumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">./import:/opt/keycloak/data/import&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">./certificates:/opt/keycloak/data/certificates&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">restart&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">always&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">command&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;start-dev&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;--import-realm&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;--https-certificate-file=/opt/keycloak/data/certificates/cert.pem&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;--https-certificate-key-file=/opt/keycloak/data/certificates/key.pem&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>You can now access the Keycloak server at either &lt;a class="link" href="http://localhost:8080" target="_blank" rel="noopener"
+>http://localhost:8080&lt;/a> or &lt;a class="link" href="https://localhost:8443" target="_blank" rel="noopener"
+>https://localhost:8443&lt;/a>. Using the HTTPS endpoint should allow us to use Keycloak with &lt;a class="link" href="https://github.com/AzureAD/microsoft-authentication-library-for-js" target="_blank" rel="noopener"
+>@azure/msal-browser&lt;/a>.&lt;/p>
+&lt;h2 id="configuring-msal-to-work-with-keycloak">Configuring MSAL to work with Keycloak
+&lt;/h2>&lt;p>Without delving too deep into how we might hold MSAL in a typical React application, the biggest change we need to make is to manually provide some of the configuration that usually works out of the box with MSAL when using Microsoft Entra ID.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">msalConfig&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">auth&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">clientId&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;local-dev-client&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">authority&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">knownAuthorities&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">redirectUri&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;https://localhost:5173&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">postLogoutRedirectUri&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;https://localhost:5173&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">protocolMode&lt;/span>: &lt;span class="kt">ProtocolMode.OIDC&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">authorityMetadata&lt;/span>: &lt;span class="kt">JSON.stringify&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">authorization_endpoint&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/auth&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">token_endpoint&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/token&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">issuer&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">userinfo_endpoint&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/userinfo&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">end_session_endpoint&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/logout&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">msalInstance&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">PublicClientApplication&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">msalConfig&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>There are of course a few more data points required, which may then need to be manually provided again when configuring this to work with both Keycloak locally &lt;em>and&lt;/em> Microsoft Entra ID when deployed. A small amount of pain to endure for the benefits of decoupling ourselves from a customer-provided auth server.&lt;/p>
+&lt;p>Of course, in practice we would make these string more easily configurable, but I&amp;rsquo;ve opted to hardcode them to better demonstrate.&lt;/p>
+&lt;p>See the &lt;a class="link" href="https://github.com/vivecuervo7/local-auth-with-keycloak-example" target="_blank" rel="noopener"
+>sample repo&lt;/a> to see these changes in more context.&lt;/p>
+&lt;p>&lt;strong>OpenID Endpoint Configuration&lt;/strong>&lt;/p>
+&lt;p>The trickier part here might be knowing where to obtain these strings from. Navigating to the realm settings of our Keycloak server&amp;rsquo;s admin interface, find the &lt;strong>OpenID Endpoint Configuration&lt;/strong> link.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-react-spa-msal/images/realm-settings.jpg"
+width="1408"
+height="975"
+srcset="https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-react-spa-msal/images/realm-settings_hu1282812861186996796.jpg 480w, https://vivecuervo7.github.io/dev-blog/dev-blog/p/keycloak-react-spa-msal/images/realm-settings_hu14666237576286157937.jpg 1024w"
+loading="lazy"
+alt="OpenID Endpoint Configuration link"
+class="gallery-image"
+data-flex-grow="144"
+data-flex-basis="346px"
+>&lt;/p>
+&lt;p>Opening this will yield a new page with all of our endpoints that we need to populate this config.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;issuer&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;authorization_endpoint&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/auth&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;token_endpoint&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/token&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;userinfo_endpoint&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/userinfo&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;end_session_endpoint&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/logout&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="running-react-with-https">Running React with HTTPS
+&lt;/h3>&lt;p>We may also need to run our React application with HTTPS as well. To achieve this, we need to update &lt;code>vite.config.ts&lt;/code> to contain the following. Fortunately, we can repurpose the same certificates we created for Keycloak.&lt;/p>
+&lt;p>Note that while omitted below, it may be useful to split the &lt;code>serve&lt;/code> and &lt;code>build&lt;/code> commands so we keep our changes away from any deployed code.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">vite.config.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">import { defineConfig, loadEnv } from &amp;#34;vite&amp;#34;;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">import react from &amp;#34;@vitejs/plugin-react-swc&amp;#34;;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">export default defineConfig(({ command, mode }) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> return {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> plugins: [react()],
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ server: {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ https: {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ cert: process.env.VITE_CERT ?? &amp;#34;&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ key: process.env.VITE_CERT_KEY ?? &amp;#34;&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ },
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ },
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> };
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">});
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>And then we&amp;rsquo;ll also need to add a &lt;code>.env&lt;/code> (and &lt;code>.env.local&lt;/code>) with the correct paths.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">.env&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ VITE_CERT=../local-dev/certificates/cert.pem
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ VITE_CERT_KEY=../local-dev/certificates/key.pem
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Now running the React application with &lt;code>pnpm dev&lt;/code> should serve it using HTTPS.&lt;/p>
+&lt;h3 id="missing-parameter-id_token_hint">Missing parameter: id_token_hint
+&lt;/h3>&lt;p>I did run into a small issue with the setup, where a user was unable to logout completely. Attempting to logout was yielding an error due to the absence of either a &lt;code>client_id&lt;/code> or &lt;code>id_token_hint&lt;/code> when requesting the &lt;code>post_logout_redirect_uri&lt;/code>.&lt;/p>
+&lt;p>Ultimately, this was easily resolved by obtaining an access token &lt;em>before&lt;/em> attempting to logout, and using the &lt;code>id_token&lt;/code> from that.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">main.tsx&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">handleLogout&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="kr">async&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">response&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">await&lt;/span> &lt;span class="nx">instance&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">acquireTokenSilent&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">scopes&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;openid&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">await&lt;/span> &lt;span class="nx">instance&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">logoutRedirect&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">idTokenHint&lt;/span>: &lt;span class="kt">response.idToken&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="optional-adding-a-secured-net-backend">Optional: Adding a secured .NET backend
+&lt;/h2>&lt;p>The &lt;a class="link" href="https://github.com/vivecuervo7/local-auth-with-keycloak-example" target="_blank" rel="noopener"
+>sample repo&lt;/a> contains code that also connects the React application to a .NET API with a secured endpoint.&lt;/p>
+&lt;p>The configuration here is relatively straightforward to work with our local Keycloak server.&lt;/p>
+&lt;p>The main changes we&amp;rsquo;ll need to make are to &lt;code>Program.cs&lt;/code>, where we simply add our necessary configuration (truncated for brevity).&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">Program.cs&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ using Microsoft.AspNetCore.Authentication.JwtBearer;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> var builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ builder
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ .Services.AddAuthentication(options =&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ })
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ .AddJwtBearer(options =&amp;gt; builder.Configuration.Bind(&amp;#34;JwtBearerOptions&amp;#34;, options));
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ builder
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ .Services.AddAuthorizationBuilder()
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ .AddDefaultPolicy(&amp;#34;RequireAuthenticatedUser&amp;#34;, policy =&amp;gt; policy.RequireAuthenticatedUser());
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> var app = builder.Build();
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> app.UseHttpsRedirection();
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ app.UseAuthentication();
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ app.UseAuthorization();
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> app.MapGet(&amp;#34;/weatherforecast&amp;#34;, () =&amp;gt; [])
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> .WithName(&amp;#34;GetWeatherForecast&amp;#34;)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> .WithOpenApi()
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ .RequireAuthorization();
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> await app.RunAsync();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>And providing the appropriate configuration via appsettings.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">appsettings.json&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">{
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;JwtBearerOptions&amp;#34;: {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;Authority&amp;#34;: &amp;#34;https://localhost:8443/realms/local-dev&amp;#34;,
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;#34;Audience&amp;#34;: &amp;#34;local-dev-client&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Running the code in the sample repo will result in the React application displaying a button which calls the &lt;code>/weatherforecast&lt;/code> endpoint to illustrate the correct responses are returned depending on whether the client has been authenticated or not.&lt;/p></description></item></channel></rss>
