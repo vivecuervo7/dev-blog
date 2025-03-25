@@ -1,6 +1,6 @@
 baseurl = "https://vivecuervo7.github.io/dev-blog/"
 languageCode = "en-us"
-paginate = 5
+pagination.pagerSize = 5
 title = "Isaac Dedini"
 
 # Theme i18n support
