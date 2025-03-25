@@ -1,7 +1,7 @@
 ---
-title: Using a database as the source of truth
-description: Streamline updates and maintain data consistency across your codebase
-slug: database-as-source-of-truth
+title: Harnessing database-driven code generation
+description: Use database introspection and code generation to enhance workflows and reflect schema changes across your entire codebase
+slug: database-driven-codegen
 date: 2025-03-25 00:00:00+0000
 image: cover.jpg
 categories:
