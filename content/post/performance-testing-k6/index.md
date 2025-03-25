@@ -7,7 +7,6 @@ image: cover.jpg
 categories:
   - Testing
 tags:
-  - Load testing
   - k6
 weight: 1
 links:
