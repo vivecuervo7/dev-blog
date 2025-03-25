@@ -12,6 +12,7 @@ tags:
   - Kysely
   - Codegen
   - Zod
+weight: 1
 links:
   - title: graphile-migrate
     description: Opinionated SQL-powered productive roll-forward migration tool for PostgreSQL
