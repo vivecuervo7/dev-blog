@@ -13,7 +13,7 @@ links:
 
 ## What's the issue?
 
-After working on a number of software projects, I have growth increasingly disenchanted with the amount of time spent ~arguing~ politely discussing the intricacies of a 3-point story compared to a 5-point story.
+After working on a number of software projects, I have grown increasingly disenchanted with the amount of time spent ~arguing~ politely discussing the intricacies of a 3-point story compared to a 5-point story.
 
 What's the difference between a 2-point story and a 3-point story? _Why_ is it different? Does such a trivial difference really matter?
 
