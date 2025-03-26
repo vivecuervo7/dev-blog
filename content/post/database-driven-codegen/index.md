@@ -30,7 +30,9 @@ links:
 
 ## Context
 
-As I started to really dive into SvelteKit, I couldn't help but find myself drawn to this idea of writing as little code as possible. Don't get me wrong &mdash; I still love working with C#, and honestly it's still where I'd turn to in a heartbeat if I had need to model a complex business domain. I haven't been able to shake the thought that quite often we end up building rather small applications that have no need for the sheer performance of C# relative to that which can be offered by these Node-based frameworks.
+As I started to really dive into SvelteKit, I couldn't help but find myself drawn to this idea of writing as little code as possible. Don't get me wrong &mdash; I still love working with C#, and honestly it's still where I'd turn to in a heartbeat if I had need to model a complex business domain.
+
+I haven't been able to shake the thought though, that quite often we end up building rather small applications that have no need for the sheer performance of C# relative to that which can be offered by these Node-based frameworks.
 
 A lot of my focus of late has been on exploring the tools available to us when considering an application built entirely using one of these full-stack meta-frameworks. While SvelteKit has been my poison of choice in that regard, what is outlined here is framework-agnostic and should be applicable to any of the current offerings.
 
@@ -38,7 +40,7 @@ A lot of my focus of late has been on exploring the tools available to us when c
 
 I have to admit to feeling a little lost when I first stepped into the idea of managing persistence without my trusty Entity Framework Core. Instinctively, I reached for an ORM and did some poking around.
 
-I came across [this fantastic post](https://sveltekit.io/blog/drizzle-sveltekit-integration) outlining the usage of [Drizzle](https://orm.drizzle.team/). I was pretty excited, things looked nice and easy to implement. Getting started was fairly straightforward using a Postgres database, but as I looked around I started stumbling across discussion such as [this one](https://github.com/thetutlage/meta/discussions/8), outlining the shortcomings of Drizzle.
+I came across [this fantastic post](https://sveltekit.io/blog/drizzle-sveltekit-integration) outlining the usage of [Drizzle](https://orm.drizzle.team/). I was pretty excited, things looked nice and easy to implement. Getting started was fairly straightforward using a Postgres database, but as I looked around I started stumbling across discussions such as [this one](https://github.com/thetutlage/meta/discussions/8) outlining the shortcomings of Drizzle.
 
 Nice as it was, I decided to keep looking.
 
@@ -62,7 +64,7 @@ This resonated with me, as someone who typically preferred a data-first approach
 
 After a bit of a dig at just writing plain SQL, I decided to finally give [Kysely](https://kysely.dev/) a crack &mdash; a simple, no-nonsense query builder for TypeScript. It had consistently received high praise wherever I had seen it mentioned, and suffice to say I was _not_ disappointed when I finally used it.
 
-But first, we needed some data!
+But first, we need some data!
 
 ### graphile-migrate
 
@@ -202,7 +204,7 @@ export class PlayerRepository extends RepositoryBase {
 
 Kysely provides us with `Selectable<T>`, `Insertable<T>` and `Updateable<T>` wrappers for each table, which should give us the correct types for each respective operation.
 
-Additionally, you can replace `execute()` with `compile()` or `explain()` to get an idea of what's being generated under the hood. See the following for some masked and truncated output based on running `compile()` against the `create(...)` command above.
+Additionally, you can replace `execute()` with `compile()` or `explain()` to get an idea of what's being generated under the hood. See the following for a truncated example based on running `compile()` against the `create(...)` command above.
 
 ```json
 {
@@ -221,7 +223,7 @@ Additionally, you can replace `execute()` with `compile()` or `explain()` to get
 
 I was pretty happy with what I had landed on here, but I started wondering if we might be able to also extract some additional metadata and generate validation schema based on some of the database properties &mdash; namely wherever we've used `varchar(n)`.
 
-Yeah, as you can probably tell I've run into a few cases where our application's validation hasn't been updated to reflect a chance in the database schema. I wanted to try and fix that.
+Yeah, as you can probably tell I've run into a few cases where our application's validation hasn't been updated to reflect a change in the database schema. I wanted to try and fix that.
 
 I started out here looking around at various options, including replacing `kysely-codegen` with [kanel-kysely](https://github.com/kristiandupont/kanel/tree/main/packages/kanel-kysely) just so I could leverage [kanel-zod](https://www.npmjs.com/package/kanel-zod) for this purpose. I was left underwhelmed at what was actually generated, and decided to go back to the drawing board.
 
@@ -229,7 +231,7 @@ I started out here looking around at various options, including replacing `kysel
 
 The [0.18.0 release](https://github.com/RobinBlomberg/kysely-codegen/releases/tag/0.18.0) of `kysely-codegen` introduced the ability to define custom serializers, largely related to this [GitHub discussion](https://github.com/RobinBlomberg/kysely-codegen/issues/86). This gave me _most_ of what I was after once I'd extended the example provided in the linked release notes to include more extensive mappings.
 
-Something that appeared to be missing yet was one of the key reasons I wanted to look into generating Zod schema based on database introspection was the ability to extract maximum character lengths for `varchar` columns. Of course, there is advice floating around that suggests preferring `text` instead of `varchar`, but it's a habit I can't shake.
+Something that appeared to be missing yet as one of the key reasons I wanted to look into database-driven Zod schema was the ability to extract maximum character lengths for `varchar` columns. Of course, [there is advice floating](https://wiki.postgresql.org/wiki/Don't_Do_This#Don.27t_use_varchar.28n.29_by_default) around that suggests preferring `text` instead of `varchar`, but it's a habit I can't shake.
 
 I also wanted to refrain from mapping check constraints &mdash; I needed to draw a line here and stopping short of check constraints felt like a good balance between simplicity and functionality. So, consider that to be a caveat of this approach, although nothing is stopping you from extending the serializer to account for check constraints either.
 
