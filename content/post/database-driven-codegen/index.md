@@ -7,7 +7,7 @@ image: cover.jpg
 categories:
   - Development
 tags:
-  - Persistence
+  - Postgres
   - Typescript
   - Kysely
   - Codegen
