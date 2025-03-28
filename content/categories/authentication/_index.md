@@ -1,6 +1,6 @@
 ---
 title: Authentication
-image: secured.svg
+image: folder-secure.svg
 
 style:
   background: "#5181B1"

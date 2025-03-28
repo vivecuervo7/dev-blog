@@ -5,6 +5,7 @@ slug: react-component-library-with-vite
 date: 2024-10-08 00:00:00+0000
 image: cover.jpg
 categories:
+  - Development
   - React
 tags:
   - React

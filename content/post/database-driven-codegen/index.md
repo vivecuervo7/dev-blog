@@ -8,6 +8,7 @@ categories:
   - Development
 tags:
   - Postgres
+  - SQL
   - Typescript
   - Kysely
   - Codegen

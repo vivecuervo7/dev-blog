@@ -5,6 +5,7 @@ slug: keycloak-react-spa-msal
 date: 2024-08-05 00:00:00+0000
 image: cover.jpg
 categories:
+  - Development
   - Authentication
 tags:
   - Keycloak
