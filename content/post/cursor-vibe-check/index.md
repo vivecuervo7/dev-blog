@@ -22,7 +22,7 @@ Alright, I've scoffed enough at the ridiculous notion of [vibe coding](https://e
 
 No, I'm not about to become a vibe coder. But I have found the concept of Cursor intriguing, and I can't help but to be curious about what the tool has to offer. GitHub Copilot has only been able to feel like a roided-up Intellisense &mdash; maybe Cursor can actually feel like the magic AI assistant I was promised.
 
-To be completely fair to Cursor, I wanted to see how it performed without going into setting up custom [project rules](https://docs.cursor.com/context/rules-for-ai) and in hindsight I _may_ not have set up up entirely for success.
+To be completely fair to Cursor, I wanted to see how it performed without going into setting up custom [project rules](https://docs.cursor.com/context/rules-for-ai) and in hindsight I _may_ not have set it up entirely for success.
 
 ## A brand new project for a brand new world
 
