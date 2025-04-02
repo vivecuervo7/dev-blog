@@ -19,8 +19,6 @@ links:
     website: https://www.docker.com/
 ---
 
-## Context
-
 Keycloak allows us to import and export realms, which can make it much easier to share configurations amongst team members.
 
 ## Exporting an existing realm

@@ -32,8 +32,6 @@ links:
     website: https://dotnet.microsoft.com/en-us/
 ---
 
-## Context
-
 One of my main motivations for looking into Keycloak was to decouple local development from a third party authentication server which needed to be configured by the client. More often than not, this is done using Microsoft Entra ID, and in a typical React application we would use MSAL to set up client authentication.
 
 This serves as a short guide to resolving some of the issues encountered when trying to use MSAL with a locally-configured Keycloak server.

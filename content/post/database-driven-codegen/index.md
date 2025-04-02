@@ -29,8 +29,6 @@ links:
     website: https://zod.dev/
 ---
 
-## Context
-
 As I started to really dive into SvelteKit, I couldn't help but find myself drawn to this idea of writing as little code as possible. Don't get me wrong &mdash; I still love working with C#, and honestly it's still where I'd turn to in a heartbeat if I had need to model a complex business domain.
 
 I haven't been able to shake the thought though, that quite often we end up building rather small applications that might be simpler and faster to write using one of the current full-stack meta-frameworks. While SvelteKit has been my poison of choice in that regard, what is outlined here is framework-agnostic and should be applicable to any of the current offerings.

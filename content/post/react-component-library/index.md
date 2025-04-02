@@ -23,8 +23,6 @@ links:
     website: https://victorlillo.dev/blog/react-typescript-vite-component-librarymenu
 ---
 
-## Context
-
 A brief discussion with a client recently reminded me of something I'd long wanted to look into. The conversation was around the consolidation of designs across their rather broad suite of applications, and given the frequency with which React was used it got me wondering if it might be worth looking into creating a reusable component library.
 
 Plenty of resources popped up when I started looking into the topic, and ultimately I discovered two promising avenues:

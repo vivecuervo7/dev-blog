@@ -33,7 +33,7 @@ links:
     website: https://dotnet.microsoft.com/en-us/apps/maui
 ---
 
-## Context
+I have at times felt myself wondering what the landscape of hybrid app development looks like, and after a less-than-positive experience using Ionic in the past I wanted to give myself some time to truly explore the options I had at my disposal.
 
 The idea of this will be to write a very basic implementation of a Todo app for each of the following frameworks, providing brief findings around setup and the inner dev loop. None of the frameworks yielded a complete Todo app and this had little bearing on the findings, but it did provide a common ground to anchor any findings to.
 

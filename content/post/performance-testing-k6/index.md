@@ -8,14 +8,14 @@ categories:
   - Testing
 tags:
   - k6
+  - Grafana
+  - Performance
 weight: 1
 links:
   - title: Grafana k6
     description: Documentation for Grafana k6
     website: https://grafana.com/docs/k6/latest/
 ---
-
-## Context
 
 A client I have worked for previously often provided us with a list of requirements for any solution we built. One of those was around performance, quoting a target average response time of under 2 seconds for all requests. More often than not this was tested late into the project via some third-party scripts, leaving us with little time to resolve any issues.
 
