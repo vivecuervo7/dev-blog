@@ -4,7 +4,7 @@ description: Exploring the 3D web landscape with Three.js, React Three Fiber and
 slug: react-three-fiber
 date: 2025-07-02 00:00:00+1000
 lastmod: 2025-07-08 08:24:00+1000
-image: cover.jpg
+image: image.png
 categories:
   - Development
 tags:
