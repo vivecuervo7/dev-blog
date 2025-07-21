@@ -250,9 +250,9 @@ Tip: the **App Manager** role is required for uploading an app in our CI/CD pipe
 
 This once caught me out yet again a little when it came to implementing this in the pipeline. Once again information was inconsistent and left me wondering what the recommended way to deploy an app was. Initially I landed on using the App Store Connect API directly.
 
-Eventually I realised that using the API directly wasn't required, but we still needed the key we'd otherwise create to support using `altool` for deployment.
+Eventually I realised that using the API directly wasn't required, but we still needed the key we'd otherwise have created, to support using `altool` for deployment.
 
-Creating an API key was pretty straightforward. Navigate to [App Store Connect > Users and Access > Integrations](https://appstoreconnect.apple.com/access/integrations/api), and click the blue plus. There are lots of links around to help out. Very shortly, I had a key created and the three requisite secrets added to GitHub &mdash; we'll need the **Issuer ID**, **Key ID** and the key itself &mdash;.
+Creating an API key was pretty straightforward. Navigate to [App Store Connect > Users and Access > Integrations](https://appstoreconnect.apple.com/access/integrations/api), and click the blue plus. There are lots of links around to help out. Very shortly, I had a key created and the three requisite secrets added to GitHub &mdash; we'll need the **Issuer ID**, **Key ID** and the key itself.
 
 ![](images/gh-secrets-app-store-connect.png)
 
@@ -316,7 +316,7 @@ A few additional entries into our export options are required.
 </plist>
 ```
 
-A quick explainer for each of these values is provided below.
+A quick explainer for each of these values is provided below. While a few of them indicate that the defaults should be fine, I decided to err towards being overly explicit.
 
 | Key                  | Value                                                                                                                                                                    |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
