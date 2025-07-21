@@ -1,5 +1,5 @@
 ---
-title: Deploying as iOS app to TestFlight
+title: Deploying an iOS app to TestFlight
 description: Getting an iOS app into a tester's hands should be easy, right?
 slug: deploying-ios-app-to-testflight
 date: 2025-07-21 00:00:00+1000
