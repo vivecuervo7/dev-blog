@@ -20,9 +20,9 @@ links:
 
 Alrighty. Staring down the barrel of some upcoming work with iOS, and I needed to re-familiarise myself with all things iOS and SwiftUI.
 
-With some previous, very light experience with iOS development, I was reasonably comfortable with my ability to create working functionality within an app. Not a whole lot different there to the typical work I would be doing for a web app. Make UI do a thing, wire it up to a backend, and voila.
+With some previous, very light experience with iOS development, I was reasonably comfortable with my ability to create working functionality within an app. Not a whole lot different to the typical work I would be doing for a web app. Make UI do a thing, wire it up to a backend, and voila.
 
-However, this time I was going to need to get it _out there_. Or, at least as far as TestFlight. I realised I had no idea how to build the "bread" of an iOS-flavoured sandwich, all I knew was the middle.
+However, this time I was going to need to get it _out there_. Or, at least as far as TestFlight. I realised I had no idea how to build the "bread" of an iOS-flavoured sandwich; all I knew was the middle.
 
 ## The checklist
 
@@ -89,7 +89,7 @@ I decided that my foray into the world of deploying an iOS app should tick a few
 - Deploys via GitHub Actions with passing tests
 - Pushes the app to TestFlight
 
-The first two were pretty straightforward. Whizzed through some of the basic tutorials, and realised I had never really covered testing. Ended up with a very small, tutorial-driven app that I could both test and deploy.
+The first two were pretty straightforward. Whizzed through some of the basic tutorials and realised I had never really covered testing. Ended up with a very small, tutorial-driven app that I could both test and deploy.
 
 ### Environment setup
 
@@ -204,7 +204,7 @@ It is my understanding that the signing request itself is platform-agnostic, mea
 
 #### Creating the certificate
 
-After saving the signing request, navigate to [Apple Developer Resources > Cerfiticates > Add](https://developer.apple.com/account/resources/certificates/add).
+After saving the signing request, navigate to [Apple Developer Resources > Certificates > Add](https://developer.apple.com/account/resources/certificates/add).
 
 Select **Apple Distribution**, and upload the signing request.
 
