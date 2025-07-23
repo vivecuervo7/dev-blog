@@ -79,23 +79,23 @@ The Ollama GitHub repository also provided this helpful note, providing some gui
 You should have at least 8 GB of RAM available to run the 7B models, 16 GB to run the 13B models, and 32 GB to run the 33B models.
 {{< /alert >}}
 
-To expand slightly on quantization as that was a completely new term for me, quantization is the process of converting a model's weights from high precision data types to lower precision types. What this generally translates to a smaller resource footprint, it comes at the cost of a potential reduction in accuracy and quality.
+To expand slightly on quantization as that was a completely new term for me, quantization is the process of converting a model's weights from high precision data types to lower precision types. While this generally translates to a smaller resource footprint, it comes at the cost of a potential reduction in accuracy and quality.
 
 Models can get even more complex than that, and I found [this page](https://developers.redhat.com/articles/2025/04/03/how-navigate-llm-model-names#) does a good job of explaining the terms without going too deep. In fact, it's just about where I pulled that little quantization explainer from.
 
-Personally, I landed on the `qwen2.5-coder:3b-instruct-q4_K_M` and `qwen2.5-coder:7b-instruct-q4_K_M` models. The 3B model was nice and quick, and seemed to handle most basic tasks with ease. I did find myself frequently bumping things up to the 7B model when it just seemed to be a bit too much for the smaller model.
+Personally, I landed on the `qwen2.5-coder:3b-instruct-q4_K_M` and `qwen2.5-coder:7b-instruct-q4_K_M` models. The 3B model was nice and quick, and seemed to handle most basic tasks with ease. I did find myself frequently switching to the 7B model when the smaller one wasn't quite doing the job.
 
 I also spent about half an hour looking at new PCs.
 
 ## Open WebUI
 
-As nice as it is to be able to start running models locally with such ease, the interface leaves a little be desired.
+As nice as it is to be able to start running models locally with such ease, the interface leaves a little to be desired.
 
 [Open WebUI](https://openwebui.com/) offers us a much nicer way to interact with our models &mdash; even allowing us to run multiple models side-by-side, which is perfect for comparing the output of various models.
 
 ![](images/open-webui.png)
 
-Running the following should both pull and start the docker container. Note that this does also create a volume, so settings, chats etc. will be persisted.
+Running the following should both pull and start the docker container. Note that this does also create a volume, so settings, chats, etc. will be persisted.
 
 ```shell
 docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
@@ -117,15 +117,15 @@ Cool. So we've got a fast-enough-to-be-usable machine running AI models. Unfortu
 
 _\* by which I mean, of course, the times I'd love to be playing games if life could just stop throwing me side quests_
 
-I'm certainly no network buff, and I chose the path of least resistance. I quickly installed [ngrok](https://ngrok.com/) and exposed my Ollama endpoint (`http://localhost:11434`) to see if this was workable. Navigating to the endpoint that ngrok assigned for me, and I could see the very simple page that told me Ollama was running. Sweet!
+I'm certainly no network buff, and I chose the path of least resistance. I quickly installed [ngrok](https://ngrok.com/) and exposed my Ollama endpoint (`http://localhost:11434`) to see if it was workable. Navigating to the endpoint that ngrok assigned for me, and I could see the very simple page that told me Ollama was running. Sweet!
 
-Now, I really should clean this up &mdash; since I only intend to use this while I'm sitting within arm's reach of both laptops, I really could just serve this over my local network. For the sake of experimentation however, that's tomorrow's problem.
+Now, I really should clean this up &mdash; since I only intend to use this while I'm sitting within arm's reach of both laptops, I really could just serve this over my local network. For the sake of experimentation, however, that's tomorrow's problem.
 
 ### Open WebUI
 
 I guess this one can come first since we've already talked about setting it up.
 
-Since I already had this up and running on my MacBook, I just needed to pop into the settings. Under the option for **Connections** there is a section called **Manage Direct Connections**. This is where we can add the URL to our Ollama server.
+Since I already had this up and running on my MacBook, I just needed to pop into the settings. Under the option for **Connections** there is a section called **Manage Direct Connections**. This is where we can add the URL of our Ollama server.
 
 With a bit of trial and error, I found that I needed to append the ngrok-provided URL with `/v1` to get it working. It should pick up the models automatically, although they can be specified explicitly if we want.
 
@@ -151,7 +151,7 @@ The only annoyance I found with this is that I had two different sizes of the sa
 
 Basically, one of the things I've disliked is this idea that I have a generic AI helper that I constantly need to keep feeding cues to. I have a coding style, and part of what has been turning me away from AI is that it won't write the code that I want it to write!
 
-While, yes, in the context of GitHub Copilot, Cursor etc. I can just throw a set of rules at it, I disliked the notion that I would need to maintain this on a per-project basis, constantly re-synchronising them with my other projects... Nope. That's not saving me time.
+While, yes, in the context of GitHub Copilot, Cursor, etc., I can just throw a set of rules at it, I disliked the notion that I would need to maintain this on a per-project basis, constantly re-synchronising them with my other projects... Nope. That's not saving me time.
 
 So, I started looking into custom models. Here's the [Modelfile reference](https://ollama.readthedocs.io/en/modelfile/#examples), which goes into a lot more detail than I have below.
 
