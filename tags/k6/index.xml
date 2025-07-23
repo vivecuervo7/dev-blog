@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>K6 on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/k6/</link><description>Recent content in K6 on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 20 Oct 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/k6/index.xml" rel="self" type="application/rss+xml"/><item><title>Performance testing with Grafana k6</title><link>https://vivecuervo7.github.io/dev-blog/p/performance-testing-k6/</link><pubDate>Sun, 20 Oct 2024 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/performance-testing-k6/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/performance-testing-k6/cover.jpg" alt="Featured image of post Performance testing with Grafana k6" />&lt;p>A client I have worked for previously often provided us with a list of requirements for any solution we built. One of those was around performance, quoting a target average response time of under 2 seconds for all requests. More often than not this was tested late into the project via some third-party scripts, leaving us with little time to resolve any issues.&lt;/p>
+&lt;p>Having previously needed to work on improving performance on an API we had built elsewhere, I was interested in learning how we might be able to enhance our workflow to ensure we could meet such constraints, and that any degradation was caught early and could be resolved or at the very least communicated to the client.&lt;/p>
+&lt;h2 id="grafana-k6">Grafana k6
+&lt;/h2>&lt;p>Straight from the opening blurb of &lt;a class="link" href="https://grafana.com/docs/k6/latest/" target="_blank" rel="noopener"
+>the website&lt;/a>, k6 sounded like it would be the right tool for the job.&lt;/p>
+&lt;blockquote>
+&lt;p>Grafana k6 is an open-source, developer-friendly, and extensible load testing tool. k6 allows you to prevent performance issues and proactively improve reliability.&lt;/p>&lt;/blockquote>
+&lt;p>It landed on all of the features I needed and more, and the documentation is superb, clearly explaining all the features with plenty of &lt;a class="link" href="https://grafana.com/docs/k6/latest/examples/" target="_blank" rel="noopener"
+>examples&lt;/a>. k6 also provides a list of &lt;a class="link" href="https://grafana.com/docs/k6/latest/extensions/" target="_blank" rel="noopener"
+>extensions&lt;/a> which looked pretty useful despite not finding myself needing any of them.&lt;/p>
+&lt;p>&lt;strong>Types of load tests&lt;/strong>&lt;/p>
+&lt;p>The k6 documentation talks through the different supported &lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/" target="_blank" rel="noopener"
+>types of tests&lt;/a>.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/smoke-testing/" target="_blank" rel="noopener"
+>Smoke tests&lt;/a> — minimal load&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/load-testing/" target="_blank" rel="noopener"
+>Average-load tests&lt;/a> — normal conditions&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/stress-testing/" target="_blank" rel="noopener"
+>Stress tests&lt;/a> — abnormal average&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/soak-testing/" target="_blank" rel="noopener"
+>Soak tests&lt;/a> — reliability and performance over extended periods&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/spike-testing/" target="_blank" rel="noopener"
+>Spike tests&lt;/a> — behavior and survival in cases of sudden increases in activity&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/testing-guides/test-types/breakpoint-testing/" target="_blank" rel="noopener"
+>Breakpoint tests&lt;/a> — gradual increase to identify capacity limits&lt;/li>
+&lt;/ul>
+&lt;p>Given the context above, much of my focus here was around average-load tests, however it was pleasant to find that through k6&amp;rsquo;s scenarios it would be quite trivial to switch between load test types.&lt;/p>
+&lt;h2 id="getting-started">Getting started
+&lt;/h2>&lt;p>Getting up and running with k6 was very straightforward. I&amp;rsquo;m using macOS, so the following commands might need to be adjusted for your system.&lt;/p>
+&lt;p>Install k6 with the following command.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">brew install k6
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>You can either create the file yourself or use the following to initialise a &lt;code>script.js&lt;/code> file with some helpful commented-out code and explanations.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">k6 new
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://test.k6.io&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Run the tests!&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">k6 run script.js
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="adding-virtual-users">Adding virtual users
+&lt;/h3>&lt;p>The number of virtual users and duration can be set via the command line, or via an exported &lt;code>options&lt;/code> in &lt;code>script.js&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">k6 run --vus &lt;span class="m">10&lt;/span> --duration 30s script.js
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kr">const&lt;/span> &lt;span class="nx">options&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">vus&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">duration&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;30s&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://test.k6.io&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="alert">&lt;p>The documentation covers some &lt;a class="link" href="https://grafana.com/docs/k6/latest/set-up/fine-tune-os/" target="_blank" rel="noopener"
+>fine-tuning for different operating systems&lt;/a>. Using macOS I didn&amp;rsquo;t run into any of the problems mentioned in the docs, however I did encounter a persistent &amp;ldquo;connection reset by peer&amp;rdquo; error when trying to use a high number of virtual users.&lt;/p>
+&lt;p>Running &lt;code>sudo sysctl -w kern.ipc.somaxconn={DESIRED_VALUE}&lt;/code> with an increased value allowed me to run previously failing tests with far higher concurrent users.&lt;/p>
+&lt;/div>
+&lt;h3 id="adding-typescript">Adding typescript
+&lt;/h3>&lt;p>Fortunately we do have access to some typings to allow us to use typescript while building our test file(s).&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">npm init
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">npm install -D @types/k6
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Which allows us to import and use types such as the following. Don&amp;rsquo;t forget to rename the file to &lt;code>*.ts&lt;/code>!&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.ts&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-ts" data-lang="ts">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">Options&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s2">&amp;#34;k6/options&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kr">const&lt;/span> &lt;span class="nx">options&lt;/span>: &lt;span class="kt">Options&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">vus&lt;/span>: &lt;span class="kt">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">duration&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;30s&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>At this point, attempting to run the tests will lead to an error. We need to use k6&amp;rsquo;s experimental enhanced compatibility mode. This can be supplied as a flag via command line, or we can add an npm script to our newly-created &lt;code>package.json&lt;/code>.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">package.json&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="s2">&amp;#34;scripts&amp;#34;&lt;/span>&lt;span class="err">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;test&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;k6 run script.ts --compatibility-mode=experimental_enhanced&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="test-output">Test output
+&lt;/h3>&lt;p>There are multiple outputs when running tests with k6 which can be explored &lt;a class="link" href="https://grafana.com/docs/k6/latest/results-output/" target="_blank" rel="noopener"
+>here&lt;/a>. The most useful of these I found was the web dashboard and generated HTML report, however there are also options to export a summary as CSV or JSON, or stream metrics to multiple services.&lt;/p>
+&lt;p>There is also an options to export a &lt;code>handleSummary&lt;/code> function which can be used to customise the output of a test run.&lt;/p>
+&lt;p>&lt;strong>Web dashboard&lt;/strong>&lt;/p>
+&lt;p>The bundled &lt;a class="link" href="https://grafana.com/docs/k6/latest/results-output/web-dashboard/" target="_blank" rel="noopener"
+>web dashboard&lt;/a> was very handy, and can also be used to &lt;a class="link" href="https://grafana.com/docs/k6/latest/results-output/web-dashboard/#generate-html-test-reports" target="_blank" rel="noopener"
+>generate a report&lt;/a>.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/performance-testing-k6/images/dashboard.jpg"
+width="1360"
+height="563"
+srcset="https://vivecuervo7.github.io/dev-blog/p/performance-testing-k6/images/dashboard_hu_4dfb927deeabd112.jpg 480w, https://vivecuervo7.github.io/dev-blog/p/performance-testing-k6/images/dashboard_hu_732e46835a7a12eb.jpg 1024w"
+loading="lazy"
+alt="Screenshot of k6’s web dashboard"
+class="gallery-image"
+data-flex-grow="241"
+data-flex-basis="579px"
+>&lt;/p>
+&lt;p>To launch the dashboard, we simply need to set the &lt;code>K6_WEB_DASHBOARD&lt;/code> environment variable to &lt;code>true&lt;/code>. There are options to change the port and such, but for the sake of brevity we&amp;rsquo;ll just use the defaults which will serve the dashboard at &lt;code>http://localhost:5665&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="nv">K6_WEB_DASHBOARD&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span> k6 run script.js
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Setting &lt;code>K6_WEB_DASHBOARD_OPEN=true&lt;/code> will also cause the browser window to be opened automatically. From this page it is possible to save the report manually, although the likely more useful option — especially for CI/CD etc. is to simply tell k6 to output the report for us. Set &lt;code>K6_WEB_DASHBOARD_EXPORT&lt;/code> to the name of the file you wish to output.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="nv">K6_WEB_DASHBOARD&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span> &lt;span class="nv">K6_WEB_DASHBOARD_EXPORT&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;report.html&amp;#34;&lt;/span> k6 run script.js
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="features">Features
+&lt;/h2>&lt;p>Below are some of the most prominent features. More information can be found in the &lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/" target="_blank" rel="noopener"
+>k6 documentation&lt;/a>.&lt;/p>
+&lt;h3 id="options">Options
+&lt;/h3>&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/k6-options/" target="_blank" rel="noopener"
+>Options&lt;/a> can be provided to k6 via different means. Below is the priority order should multiple sources be provided. The more interesting thing to note is the ability to specify a &lt;code>--config&lt;/code> flag which targets a file, allowing us to switch predefined options files easily.&lt;/p>
+&lt;ul>
+&lt;li>Default values&lt;/li>
+&lt;li>Configuration file specified via the &lt;code>--config&lt;/code> flag&lt;/li>
+&lt;li>Script values&lt;/li>
+&lt;li>Environment variables&lt;/li>
+&lt;li>Command line flags&lt;/li>
+&lt;/ul>
+&lt;h3 id="test-lifecycle">Test lifecycle
+&lt;/h3>&lt;p>k6 executes the test script in the following order.&lt;/p>
+&lt;ul>
+&lt;li>The optional &lt;code>setup&lt;/code> function runs, setting up the test environment and generating data&lt;/li>
+&lt;li>The required default or scenario function, running for as long and as many times as the options define&lt;/li>
+&lt;li>The optional &lt;code>teardown&lt;/code> function runs, cleaning up the test environment&lt;/li>
+&lt;/ul>
+&lt;p>Data created in the &lt;code>setup&lt;/code> function can be accessed via a &lt;code>data&lt;/code> parameter in the default and &lt;code>teardown&lt;/code> functions.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="nx">setup&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">res&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://httpbin.test.k6.io/get&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">data&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">json&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="nx">teardown&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">JSON&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">stringify&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">JSON&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">stringify&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">data&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="scenarios">Scenarios
+&lt;/h3>&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/scenarios/" target="_blank" rel="noopener"
+>Scenarios&lt;/a> give us the flexibility to mimic more realistic usage through more granular control over virtual users (VUs) and iteration scheduling patterns. Scenarios are defined in the &lt;code>options&lt;/code> object, and can be used in place of the otherwise required &lt;code>default&lt;/code> function.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kr">const&lt;/span> &lt;span class="nx">options&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">scenarios&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">shared_iter_scenario&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">executor&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;shared-iterations&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">vus&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">iterations&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">100&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">startTime&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;0s&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">per_vu_scenario&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">executor&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;per-vu-iterations&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">vus&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">iterations&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">startTime&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;10s&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://test.k6.io/&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Executors&lt;/strong>&lt;/p>
+&lt;p>The VU workload for each scenario is scheduled by an &lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/scenarios/executors/" target="_blank" rel="noopener"
+>executor&lt;/a>, which configure how long the test runs for, and how workload is managed.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Value&lt;/th>
+&lt;th>Description&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;code>shared-iterations&lt;/code>&lt;/td>
+&lt;td>Fixed iterations shared between VUs&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>per-vu-iterations&lt;/code>&lt;/td>
+&lt;td>Each VU executes an exact number of iterations&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>constant-vus&lt;/code>&lt;/td>
+&lt;td>Fixed VUs execute as many iterations as possible for an amount of time&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>ramping-vus&lt;/code>&lt;/td>
+&lt;td>Variable VUs execute as many iterations as possible for an amount of time&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>constant-arrival-rate&lt;/code>&lt;/td>
+&lt;td>Fixed iterations are executed in a specified period of time&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>ramping-arrival-rate&lt;/code>&lt;/td>
+&lt;td>Variable iterations are executed in a specified period of time&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="thresholds">Thresholds
+&lt;/h3>&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/thresholds/" target="_blank" rel="noopener"
+>Thresholds&lt;/a> allow us to define parameters that we can measure &lt;a class="link" href="#metrics" >metrics&lt;/a> against. Some examples of thresholds that can be defined are as follows. These can be incredibly useful in scenarios where we may want to either raise an alert against a live environment or fail a CI build. If any of the thresholds fail, k6 will exit with a non-zero exit code.&lt;/p>
+&lt;ul>
+&lt;li>Less than 1% of requests return an error&lt;/li>
+&lt;li>95% of requests have a response time below 200ms&lt;/li>
+&lt;li>99% of requests have a response time below 400ms&lt;/li>
+&lt;li>A specific endpoint always responds within 300ms&lt;/li>
+&lt;/ul>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kr">const&lt;/span> &lt;span class="nx">options&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">thresholds&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http_req_failed&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;rate&amp;lt;0.01&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="c1">// http errors should be less than 1%
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">http_req_duration&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;p(95)&amp;lt;200&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="c1">// 95% of requests should be below 200ms
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://test-api.k6.io/public/crocodiles/1/&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="metrics">Metrics
+&lt;/h3>&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/metrics/" target="_blank" rel="noopener"
+>Metrics&lt;/a> measure how a system performs under test conditions. Metrics fall into four broad types:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/javascript-api/k6-metrics/counter/" target="_blank" rel="noopener"
+>Counters&lt;/a> — sum values&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/javascript-api/k6-metrics/gauge/" target="_blank" rel="noopener"
+>Gauges&lt;/a> — track the smallest, largest, and latest values&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/javascript-api/k6-metrics/rate/" target="_blank" rel="noopener"
+>Rates&lt;/a> — track how frequently a non-zero value occurs&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/javascript-api/k6-metrics/trend/" target="_blank" rel="noopener"
+>Trends&lt;/a> — calculates statistics for multiple values (mean, mode or percentile)&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Built-in metrics&lt;/strong>&lt;/p>
+&lt;p>k6 includes many &lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/metrics/reference/" target="_blank" rel="noopener"
+>built-in metrics&lt;/a>. The list is quite long, so it&amp;rsquo;s worth a skim through to learn what data is being collected by default.&lt;/p>
+&lt;p>Example built-in metrics:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>http_reqs&lt;/code> — total requests&lt;/li>
+&lt;li>&lt;code>http_req_failed&lt;/code> — error rate&lt;/li>
+&lt;li>&lt;code>http_req_duration&lt;/code> — request duration&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Custom metrics&lt;/strong>&lt;/p>
+&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/metrics/create-custom-metrics/" target="_blank" rel="noopener"
+>Custom metrics&lt;/a> can be used to capture additional data points not covered by the built-in metrics. Below is an example of creating a custom metric.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">http&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/http&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">Trend&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6/metrics&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">myTrend&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">Trend&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;waiting_time&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">r&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">http&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;https://httpbin.test.k6.io&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">myTrend&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">r&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">timings&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">waiting&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">myTrend&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">name&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Which will output something similar to the below.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">iteration_duration.............: // omitted
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">iterations.....................: // omitted
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">waiting_time...................: avg=265.245396 min=265.245396 med=265.245396 max=265.245396 p(90)=265.245396 p(95)=265.245396
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="checks">Checks
+&lt;/h3>&lt;p>Crossing more into the realm of functional testing, &lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/checks/" target="_blank" rel="noopener"
+>checks&lt;/a> allow us to provide some assertions over the functionality of our tests. Failed checks do not directly result in a failed test, however they do produce metrics which can be combined with &lt;a class="link" href="#thresholds" >thresholds&lt;/a>.&lt;/p>
+&lt;p>While there is a lot of potential crossover with functional testing, checks may be worth considering as a way to ensure that our tests are actually testing the whole functionality of an endpoint. For example, should we have a long-running database query triggered by an endpoint, we may wish to ensure that the HTTP request is actually performing the database call. If the database doesn&amp;rsquo;t exist, we may find that an error is returned very quickly and without a check we may assume that the query ran to completion in under our threshold.&lt;/p>
+&lt;h3 id="categorisation">Categorisation
+&lt;/h3>&lt;p>To help you visualize, sort, and filter your test results, k6 provides tags and groups as ways to categorise entities.&lt;/p>
+&lt;p>&lt;strong>Tags&lt;/strong>&lt;/p>
+&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/tags-and-groups/#tags" target="_blank" rel="noopener"
+>Tags&lt;/a> quite simply allow us to categorise the following entities. Some of these tags are built-in and applied by default, however custom tags can easily be applied where required. It is also possible to tag an entire test, enabling comparing test results from across separate test runs.&lt;/p>
+&lt;ul>
+&lt;li>Requests&lt;/li>
+&lt;li>Checks&lt;/li>
+&lt;li>Thresholds&lt;/li>
+&lt;li>Custom metrics&lt;/li>
+&lt;/ul>
+&lt;p>With tags applied, the output of our test run looks something like this.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;type &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Point &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;data &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;time &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;2017-05-09T14:34:45.239531499+02:00 &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;value &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mf">459.865729&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;tags &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;group &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;::my group::json &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;method &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;GET &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;status &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;200 &amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;url &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;https://httpbin.test.k6.io/get &amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;metric &amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;http_req_duration &amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Groups&lt;/strong>&lt;/p>
+&lt;p>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/tags-and-groups/#groups" target="_blank" rel="noopener"
+>Groups&lt;/a> allow us to organise a load script by functions. These can be nested, and the test output will have a tag called &lt;code>group&lt;/code> with all wrapping group names.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">script.js&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">group&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s2">&amp;#34;k6&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="k">default&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;visit product listing page&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;add several products to the shopping cart&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;visit login page&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;authenticate&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">group&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;checkout process&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="misc">Misc
+&lt;/h2>&lt;p>k6 offers a collection of other &lt;a class="link" href="https://grafana.com/docs/k6/latest/misc/integrations/" target="_blank" rel="noopener"
+>integrations and tools&lt;/a>, including links to examples or guides on things such as setting up a CI/CD pipeline with k6.&lt;/p>
+&lt;h3 id="openapi-integration">OpenAPI integration
+&lt;/h3>&lt;p>While probably not the most useful feature in practise, this may have some usefulness in very quickly setting up a test file as a starting point. &lt;a class="link" href="https://k6.io/blog/load-testing-your-api-with-swagger-openapi-and-k6/" target="_blank" rel="noopener"
+>This article&lt;/a> goes into more depth, but as a quick reference the following will generate a test script. However, the script itself will need to be cleaned up prior to being run.&lt;/p>
+&lt;p>Pull the container down.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">docker pull openapitools/openapi-generator-cli
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Run the container, substituting the &lt;code>-i&lt;/code> and &lt;code>-o&lt;/code> flags for your respective input and output paths.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">docker run --rm -v &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nv">PWD&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">:/local&amp;#34;&lt;/span> openapitools/openapi-generator-cli generate &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -i https://httpbin.test.k6.io/spec.json &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -g k6 &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -o /local/k6-test/ &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --skip-validate-spec
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>Generating swagger.json&lt;/strong>&lt;/p>
+&lt;p>I was using a .NET Core API project, and to generate the &lt;code>swagger.json&lt;/code> file the following steps were required.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">dotnet tool install swashbuckle.aspnetcore.cli
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">dotnet swagger tofile --output &lt;span class="o">{&lt;/span>OUTPUT_PATH&lt;span class="o">}&lt;/span> &lt;span class="s2">&amp;#34;{PATH_TO_PROJECT}/bin/Debug/net8.0/{PROJECT_NAME}.dll&amp;#34;&lt;/span> v1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="test-authoring-tools">Test authoring tools
+&lt;/h3>&lt;p>While these looked promising I didn&amp;rsquo;t look at either beyond reading the article, preferring to simply write the test scripts myself.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/test-authoring/test-builder/" target="_blank" rel="noopener"
+>Test builder&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://grafana.com/docs/k6/latest/using-k6/test-authoring/create-tests-from-recordings/using-the-browser-recorder/" target="_blank" rel="noopener"
+>Browser recorder&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h3 id="sample-repository">Sample repository
+&lt;/h3>&lt;p>There is a very light sample repository available on &lt;a class="link" href="https://github.com/vivecuervo7/k6-performance-testing" target="_blank" rel="noopener"
+>GitHub&lt;/a> which includes a sample of the generated HTML report.&lt;/p></description></item></channel></rss>

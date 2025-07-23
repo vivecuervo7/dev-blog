@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>GitHub Copilot on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/github-copilot/</link><description>Recent content in GitHub Copilot on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 23 Jul 2025 00:00:00 +1000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/github-copilot/index.xml" rel="self" type="application/rss+xml"/><item><title>Running AI models locally with Ollama</title><link>https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/</link><pubDate>Wed, 23 Jul 2025 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/image.png" alt="Featured image of post Running AI models locally with Ollama" />&lt;p>Fine! I&amp;rsquo;ll have another look at AI. Geez.&lt;/p>
+&lt;p>At least, that&amp;rsquo;s how it felt when I begrudgingly decided to look at running some models locally.&lt;/p>
+&lt;p>A few months ago, I decided to have a look at &lt;a class="link" href="https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/" >vibe coding with Cursor&lt;/a>. Now, I&amp;rsquo;ll have to admit that I went into that experiment fairly biased despite my best efforts to keep an open mind, but I walked away not very impressed and with the notion that AI was over-hyped even further cemented in my mind.&lt;/p>
+&lt;p>Given a few months and some more poking around with GitHub Copilot, and I think I&amp;rsquo;m ready to say that while I&amp;rsquo;m still quite bearish on AI in general, it has certainly found a place in my workflow. Unfortunately, I have experienced some frustration with it — largely along the lines of running out of Claude requests and being left with GPT, which would at times just seemingly disconnect and wouldn&amp;rsquo;t return to working order until I restarted VS Code.&lt;/p>
+&lt;p>There&amp;rsquo;s also the whole privacy concern. Personally I find myself unbothered by it, but in the context of customer data I am &lt;em>very&lt;/em> cautious about the implications.&lt;/p>
+&lt;p>Anyway, waking up with a &amp;ldquo;what do I want to look into today&amp;rdquo; landed me on the topic of running AI models locally.&lt;/p>
+&lt;h2 id="getting-started">Getting started
+&lt;/h2>&lt;div class="alert">Tip: Install with &lt;code>brew install ollama&lt;/code> and then run &lt;code>ollama&lt;/code> to see the available commands.&lt;/div>
+&lt;p>No surprises that I landed here. Even as someone who has had my head half-buried in the sand when it comes to AI, I was well aware of &lt;a class="link" href="https://ollama.com/" target="_blank" rel="noopener"
+>Ollama&lt;/a>. A bit of light searching yielded alternatives, but I decided early on that I was just going to stick with the basics here.&lt;/p>
+&lt;p>Installation was a breeze, just needing a quick &lt;code>brew install ollama&lt;/code> to install it locally. Once installed, calling &lt;code>ollama&lt;/code> by itself shows us the relatively simple set of commands we can pass it, but to get started there&amp;rsquo;s only a couple we really need.&lt;/p>
+&lt;p>First of all though, to start the Ollama server run &lt;code>ollama serve&lt;/code>.&lt;/p>
+&lt;h2 id="models">Models
+&lt;/h2>&lt;p>The basic commands we&amp;rsquo;re after here are &lt;code>ollama run&lt;/code>, &lt;code>ollama list&lt;/code> and &lt;code>ollama rm&lt;/code> to run a model, list all models, and remove models.&lt;/p>
+&lt;p>The Ollama &lt;a class="link" href="https://ollama.com/search" target="_blank" rel="noopener"
+>models page&lt;/a> details a slew of models that we can run.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/ollama-models.png"
+width="3196"
+height="1344"
+srcset="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/ollama-models_hu_3c7ccc0a96541239.png 480w, https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/ollama-models_hu_3aaa39e87eb0fadf.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="237"
+data-flex-basis="570px"
+>&lt;/p>
+&lt;p>Actually installing and running a model is as simple as calling &lt;code>ollama run llama3.1&lt;/code>. This will download it if it hasn&amp;rsquo;t yet been pulled, and runs it immediately. Once installed, we can start typing prompts into the terminal!&lt;/p>
+&lt;h3 id="choosing-a-model">Choosing a model
+&lt;/h3>&lt;p>I&amp;rsquo;m not going to go too in-depth here — mostly because I still don&amp;rsquo;t really understand it! I&amp;rsquo;ll give it a red-hot crack anyway.&lt;/p>
+&lt;p>Looking at the list of available models, I saw a bunch of options and was completely lost as to which I needed. Looking at this heavily truncated list below, I was confused as to which I should use. Especially since there we easily 60+ variants to choose from!&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>llama3.1:405b-text-fp16&lt;/code>&lt;/li>
+&lt;li>&lt;code>llama3.1:70b-text-q3_K_S&lt;/code>&lt;/li>
+&lt;li>&lt;code>llama3.1:8b-instruct-q5_K_M&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>Anyway, after a bit of reading I was able to break it down to the following, using &lt;code>llama3.1:8b-instruct-q5_K_M&lt;/code> as a reference.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>llama3.1&lt;/code> — the name of the model, each may be better or worse at some things.&lt;/li>
+&lt;li>&lt;code>8b&lt;/code> — the number of parameters the model contains. Roughly, the &amp;ldquo;size&amp;rdquo; of the model.&lt;/li>
+&lt;li>&lt;code>instruct&lt;/code> — the purpose of the model, which generally is the main function of that model.&lt;/li>
+&lt;li>&lt;code>q5_K_M&lt;/code> — the model&amp;rsquo;s quantization, or roughly, level of optimisation.&lt;/li>
+&lt;/ul>
+&lt;p>The Ollama GitHub repository also provided this helpful note, providing some guidelines around system resource requirements for different model sizes.&lt;/p>
+&lt;div class="alert">You should have at least 8 GB of RAM available to run the 7B models, 16 GB to run the 13B models, and 32 GB to run the 33B models.&lt;/div>
+&lt;p>To expand slightly on quantization as that was a completely new term for me, quantization is the process of converting a model&amp;rsquo;s weights from high precision data types to lower precision types. While this generally translates to a smaller resource footprint, it comes at the cost of a potential reduction in accuracy and quality.&lt;/p>
+&lt;p>Models can get even more complex than that, and I found &lt;a class="link" href="https://developers.redhat.com/articles/2025/04/03/how-navigate-llm-model-names#" target="_blank" rel="noopener"
+>this page&lt;/a> does a good job of explaining the terms without going too deep. In fact, it&amp;rsquo;s just about where I pulled that little quantization explainer from.&lt;/p>
+&lt;p>Personally, I landed on the &lt;code>qwen2.5-coder:3b-instruct-q4_K_M&lt;/code> and &lt;code>qwen2.5-coder:7b-instruct-q4_K_M&lt;/code> models. The 3B model was nice and quick, and seemed to handle most basic tasks with ease. I did find myself frequently switching to the 7B model when the smaller one wasn&amp;rsquo;t quite doing the job.&lt;/p>
+&lt;p>I also spent about half an hour looking at new PCs.&lt;/p>
+&lt;h2 id="open-webui">Open WebUI
+&lt;/h2>&lt;p>As nice as it is to be able to start running models locally with such ease, the interface leaves a little to be desired.&lt;/p>
+&lt;p>&lt;a class="link" href="https://openwebui.com/" target="_blank" rel="noopener"
+>Open WebUI&lt;/a> offers us a much nicer way to interact with our models — even allowing us to run multiple models side-by-side, which is perfect for comparing the output of various models.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/open-webui.png"
+width="3202"
+height="1254"
+srcset="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/open-webui_hu_19c72c999ea360bd.png 480w, https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/open-webui_hu_50a7b16347c3c56a.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="255"
+data-flex-basis="612px"
+>&lt;/p>
+&lt;p>Running the following should both pull and start the docker container. Note that this does also create a volume, so settings, chats, etc. will be persisted.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">docker run -d -p 3000:8080 --add-host&lt;span class="o">=&lt;/span>host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="performance">Performance
+&lt;/h2>&lt;p>It didn&amp;rsquo;t take long for a wry smile to grow on my face. I&amp;rsquo;ve spent long enough bragging about how well my decision to go with a MacBook Air has been, and after about a year and a half I finally ran into the thing that made me wish I had a little more grunt under the hood.&lt;/p>
+&lt;p>Even some of the smallest models were slow enough to be a little annoying, and those that didn&amp;rsquo;t have smaller varieties were just slower than I would consider to be usable. Certainly, with no qualms about GPT harvesting my data, I was not about to pump the brakes on whatever thinking was going on under the hood.&lt;/p>
+&lt;p>I decided to flick open my dusty old Windows laptop (in fact it&amp;rsquo;s neither dusty nor old, currently it serves as my game streaming server using &lt;a class="link" href="https://github.com/LizardByte/Sunshine" target="_blank" rel="noopener"
+>Sunlight&lt;/a>) and install Ollama there.&lt;/p>
+&lt;p>Woah. Okay, now we&amp;rsquo;re running at what looked like 3-4x faster. Turns out having a GPU kinda helps.&lt;/p>
+&lt;h2 id="ollama-over-the-network">Ollama over the network
+&lt;/h2>&lt;p>Cool. So we&amp;rsquo;ve got a fast-enough-to-be-usable machine running AI models. Unfortunately, I don&amp;rsquo;t actually do any work on that laptop — it&amp;rsquo;s pretty much dedicated to gaming* these days. That said, I&amp;rsquo;d had a taste of how the models &lt;em>should&lt;/em> be running, and I couldn&amp;rsquo;t look back.&lt;/p>
+&lt;p>&lt;em>* by which I mean, of course, the times I&amp;rsquo;d love to be playing games if life could just stop throwing me side quests&lt;/em>&lt;/p>
+&lt;p>I&amp;rsquo;m certainly no network buff, and I chose the path of least resistance. I quickly installed &lt;a class="link" href="https://ngrok.com/" target="_blank" rel="noopener"
+>ngrok&lt;/a> and exposed my Ollama endpoint (&lt;code>http://localhost:11434&lt;/code>) to see if it was workable. Navigating to the endpoint that ngrok assigned for me, and I could see the very simple page that told me Ollama was running. Sweet!&lt;/p>
+&lt;p>Now, I really should clean this up — since I only intend to use this while I&amp;rsquo;m sitting within arm&amp;rsquo;s reach of both laptops, I really could just serve this over my local network. For the sake of experimentation, however, that&amp;rsquo;s tomorrow&amp;rsquo;s problem.&lt;/p>
+&lt;h3 id="open-webui-1">Open WebUI
+&lt;/h3>&lt;p>I guess this one can come first since we&amp;rsquo;ve already talked about setting it up.&lt;/p>
+&lt;p>Since I already had this up and running on my MacBook, I just needed to pop into the settings. Under the option for &lt;strong>Connections&lt;/strong> there is a section called &lt;strong>Manage Direct Connections&lt;/strong>. This is where we can add the URL of our Ollama server.&lt;/p>
+&lt;p>With a bit of trial and error, I found that I needed to append the ngrok-provided URL with &lt;code>/v1&lt;/code> to get it working. It should pick up the models automatically, although they can be specified explicitly if we want.&lt;/p>
+&lt;p>Alternatively, the likely easier way to achieve this would be to simply specify the &lt;code>OLLAMA_BASE_URL&lt;/code> while we&amp;rsquo;re creating the container, by adding &lt;code>-e OLLAMA_BASE_URL=&lt;/code> to the previous command. Here&amp;rsquo;s the command again, but you&amp;rsquo;ll need to replace the URL with your own.&lt;/p>
+&lt;p>Note that this approach does &lt;strong>not&lt;/strong> require us to append the URL with &lt;code>v1&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">docker run -d -p 3000:8080 --add-host&lt;span class="o">=&lt;/span>host.docker.internal:host-gateway -e &lt;span class="nv">OLLAMA_BASE_URL&lt;/span>&lt;span class="o">=&lt;/span>http://localhost:11434 -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="github-copilot">GitHub Copilot
+&lt;/h3>&lt;p>I was pretty stoked at this point, but GitHub Copilot was the big one.&lt;/p>
+&lt;p>I already knew Ollama was supported — in fact, hooking it up to Copilot was the first thing I did after running my first model. Wiring it up to Ollama running on a different computer proved to be a little less obvious, and fortunately I stumbled across a relevant &lt;a class="link" href="https://github.com/orgs/community/discussions/156483" target="_blank" rel="noopener"
+>GitHub discussion&lt;/a>.&lt;/p>
+&lt;p>The TL;DR for the above is that we&amp;rsquo;re looking for a setting called &lt;code>github.copilot.chat.byok.ollamaEndpoint&lt;/code>. Throwing my ngrok endpoint at that setting allowed me to select the models running on my other machine.&lt;/p>
+&lt;p>The only annoyance I found with this is that I had two different sizes of the same model, and GitHub Copilot&amp;rsquo;s interface just showed the same display name for each of them. As a workaround, it looks like I could possibly use a Modelfile to give my models better names, but that opened yet another door — and a welcome one at that.&lt;/p>
+&lt;h2 id="modelfiles">Modelfiles
+&lt;/h2>&lt;p>Basically, one of the things I&amp;rsquo;ve disliked is this idea that I have a generic AI helper that I constantly need to keep feeding cues to. I have a coding style, and part of what has been turning me away from AI is that it won&amp;rsquo;t write the code that I want it to write!&lt;/p>
+&lt;p>While, yes, in the context of GitHub Copilot, Cursor, etc., I can just throw a set of rules at it, I disliked the notion that I would need to maintain this on a per-project basis, constantly re-synchronising them with my other projects&amp;hellip; Nope. That&amp;rsquo;s not saving me time.&lt;/p>
+&lt;p>So, I started looking into custom models. Here&amp;rsquo;s the &lt;a class="link" href="https://ollama.readthedocs.io/en/modelfile/#examples" target="_blank" rel="noopener"
+>Modelfile reference&lt;/a>, which goes into a lot more detail than I have below.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">svelte-assistant.Modelfile&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">FROM qwen2.5-coder:3b-instruct-q4_K_M
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">SYSTEM You are an expert in SvelteKit, the full-stack meta-framework. You are familiar with Svelte 5 syntax. You are familiar with the Svelte documentation found here: https://svelte.dev/docs/svelte/overview and the SvelteKit documentation found here: https://svelte.dev/docs/kit/introduction. When a question or instruction appears to be targeted towards a different web framework, make a suggestion to use a specialised model. Endeavour to answer questions as quickly as possible. Omit any examples or lengthy explanations unless requested.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>I threw a couple of questions at it, and it answered as much as I expected it to.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; What do you specialise in?
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">I specialize in SvelteKit and related technologies, including Svelte 5 syntax, documentation from
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">svelte.dev/docs/svelte/overview, and the SvelteKit documentation at svelte.dev/docs/kit/introduction.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; Can you help me with a React project?
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">For React-related questions or assistance, I suggest using a model specialized in React development.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Knowing it was a Hail Mary at best, it unfortunately seemed to not be capable of looking up any information about the newer Svelte 5 syntax — which has thus far been a bit of a souring experience when it comes to using AI as a code assistant.&lt;/p>
+&lt;p>Additionally, if I asked it a more pointed question about React such as &amp;ldquo;can you show me an example React component&amp;rdquo;, it would just spit out a component instead of telling me to use a model specific to React.&lt;/p>
+&lt;p>Honestly, not such a big deal, but I was kind of hoping to get a few models with a &amp;ldquo;soft&amp;rdquo; specialisation that I could feed additional context into with the hope of being able to just run a bunch of smaller, faster, targeted models that better fit the way I tend to use AI.&lt;/p>
+&lt;p>At the very least, we can tweak a few parameters and set the &amp;ldquo;tone&amp;rdquo; for the model&amp;rsquo;s responses.&lt;/p>
+&lt;h2 id="conclusion">Conclusion
+&lt;/h2>&lt;p>It was pretty nice being able to get up and running as easily as it turned out to be. Given my laptop was churning out responses about as quickly as the network-bound GPT or Claude, I&amp;rsquo;m probably going to stick to running this locally for the time being, preserving my capped Claude requests for the truly difficult tasks.&lt;/p>
+&lt;p>I&amp;rsquo;m still curious about the potential for those smaller, targeted models, but a lot of the documentation I read about fine-tuning models just went straight over my head. I guess I&amp;rsquo;ll settle for something more within my means, and just set up my Ollama server to run over my local network instead of through ngrok.&lt;/p>
+&lt;p>Now to convince my wife that I really do need that expensive PC upgrade&amp;hellip;&lt;/p></description></item><item><title>Cursor: Are the vibes really worth it?</title><link>https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/</link><pubDate>Wed, 02 Apr 2025 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/cover.jpg" alt="Featured image of post Cursor: Are the vibes really worth it?" />&lt;p>Alright, I&amp;rsquo;ve scoffed enough at the ridiculous notion of &lt;a class="link" href="https://en.wikipedia.org/wiki/Vibe_coding" target="_blank" rel="noopener"
+>vibe coding&lt;/a>. Time to give &lt;a class="link" href="https://www.cursor.com/" target="_blank" rel="noopener"
+>Cursor&lt;/a> a whirl.&lt;/p>
+&lt;p>No, I&amp;rsquo;m not about to become a vibe coder. But I have found the concept of Cursor intriguing, and I can&amp;rsquo;t help but to be curious about what the tool has to offer. GitHub Copilot has only been able to feel like a roided-up Intellisense — maybe Cursor can actually feel like the magic AI assistant I was promised.&lt;/p>
+&lt;p>To be completely fair to Cursor, I wanted to see how it performed without going into setting up custom &lt;a class="link" href="https://docs.cursor.com/context/rules-for-ai" target="_blank" rel="noopener"
+>project rules&lt;/a> and in hindsight I &lt;em>may&lt;/em> not have set it up entirely for success.&lt;/p>
+&lt;h2 id="a-brand-new-project-for-a-brand-new-world">A brand new project for a brand new world
+&lt;/h2>&lt;p>I wanted to experience the deep end of the magic first. I wanted to see what the whole &amp;ldquo;build me an app&amp;rdquo; felt like, and so I decided to go straight down that path.&lt;/p>
+&lt;p>My first impression wasn&amp;rsquo;t exactly great. I knew based on what I had read online that Svelte 5 probably wasn&amp;rsquo;t going to be too well supported due to models having been trained on Svelte 4, and indeed it took some coaxing and I even needed to provide a link to the latest documentation to get it to use the new &lt;a class="link" href="https://svelte.dev/docs/cli/overview" target="_blank" rel="noopener"
+>Svelte CLI&lt;/a>.&lt;/p>
+&lt;p>While impressive that it did get there once I poked and prodded it a bit, it was also quick to go off one some very opinionated tangents, such as jumping straight into using &lt;a class="link" href="https://orm.drizzle.team/" target="_blank" rel="noopener"
+>Drizzle&lt;/a> for data persistence. Not my first choice, and it was lumped in with a bunch of other changes that wouldn&amp;rsquo;t have been fun to untangle.&lt;/p>
+&lt;p>I knew ahead of time this might happen, and so I decided to park Svelte for the time being. React it is!&lt;/p>
+&lt;h3 id="react">React
+&lt;/h3>&lt;p>React had the same problem that Svelte did re: not using the Svelte CLI. It immediately tried to use the deprecated &lt;a class="link" href="https://create-react-app.dev/docs/getting-started/" target="_blank" rel="noopener"
+>create-react-app&lt;/a>, and only decided to use Vite after I explicitly told it to. Not a &lt;em>great&lt;/em> start, but not the hardest thing to work around.&lt;/p>
+&lt;p>I could see this being a problem for the true vibe coders out there, although to be fair I didn&amp;rsquo;t really give Cursor a chance to see any deprecation warnings and adjust accordingly. Maybe it would have realised?&lt;/p>
+&lt;p>As far as setting up components and state management, it wrote pretty close to the sort of code I&amp;rsquo;d expect to see. I was pretty happy with this, at least while things were in a simple state.&lt;/p>
+&lt;h4 id="tailwindnt">Tailwindn&amp;rsquo;t
+&lt;/h4>&lt;p>I asked Cursor to improve the styling across my components, and it jumped enthusiastically into the task. I was watching a bunch of the code it was generating and it was getting &lt;em>busy&lt;/em>. But I wasn&amp;rsquo;t seeing any styling changes!&lt;/p>
+&lt;p>Turns out, Cursor ❤️ Tailwind. But Cursor hadn&amp;rsquo;t &lt;em>installed&lt;/em> Tailwind. D&amp;rsquo;oh!&lt;/p>
+&lt;p>Easy enough fix, but it did highlight that it could go off on and start using tools that you hadn&amp;rsquo;t even asked it to. I&amp;rsquo;m honestly still not sold on Tailwind anyway, and I probably wouldn&amp;rsquo;t have gone for it had it asked me first. Ah well, embrace the vibe, right?&lt;/p>
+&lt;p>It took me quite a few round trips of &amp;ldquo;didn&amp;rsquo;t work, here&amp;rsquo;s my error&amp;rdquo; and ultimately an &amp;ldquo;is Tailwind even installed?&amp;rdquo; before it actually figured out what was wrong.&lt;/p>
+&lt;h4 id="tailwindd">Tailwind&amp;rsquo;d
+&lt;/h4>&lt;p>With Tailwind &lt;em>actually&lt;/em> installed now, I was pleasantly surprised at how the front end looked with a few nudges in the direction I wanted it to go. I had asked for modern, card-based styling, and that&amp;rsquo;s pretty much what I received.&lt;/p>
+&lt;p>It wasn&amp;rsquo;t perfect, there were some areas where padding was missing or inputs were hard to read, but overall I was quite impressed with what it spat out. I am curious to see if adding &lt;a class="link" href="https://playwright.dev/docs/accessibility-testing" target="_blank" rel="noopener"
+>automated accessibility tests&lt;/a> or other might help to keep things on track re: the obvious contrast issues in the inputs.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/images/illegible-inputs.jpg"
+width="810"
+height="501"
+srcset="https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/images/illegible-inputs_hu_ea6d9f55b916fc64.jpg 480w, https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/images/illegible-inputs_hu_547cafdc3cb6f86d.jpg 1024w"
+loading="lazy"
+alt="Cursor didn’t quite get the input styling right"
+class="gallery-image"
+data-flex-grow="161"
+data-flex-basis="388px"
+>&lt;/p>
+&lt;h3 id="net-core">.NET Core
+&lt;/h3>&lt;p>I was pretty impressed with what it did here, as much as I enjoy using .NET Core I find that there&amp;rsquo;s often a lot of code that needs to be written across many files.&lt;/p>
+&lt;p>Cursor was able to create a bunch of the files that I would have otherwise had to write myself, all with minimal prompting. Awesome! Except, half the files were in the wrong directory. It had gone and created a &lt;code>backend/&lt;/code> directory, and then dumped my &lt;code>Program.cs&lt;/code> file outside of that, along with some other files. Another prompt re-created the files in the correct place but didn&amp;rsquo;t clean up the old ones.&lt;/p>
+&lt;p>Even once it started putting things in the right places, refactorings indicated a similar disdain for cleaning things up. I do really wonder if putting the right tooling around Cursor might help with a lot of these issues, as it showed a good responsiveness to linter errors and warnings in the frontend project. Perhaps exposing similar errors to Cursor would guide it towards making better decisions.&lt;/p>
+&lt;p>CORS issues came up — just like a real programmer! — and took another couple of spins on the merry-go-round before they were resolved. So far, I&amp;rsquo;ve been impressed by Cursor&amp;rsquo;s ability to resolve these issues, but somewhat unimpressed by the number of false resolutions.&lt;/p>
+&lt;p>A minor frustration was a perceived disconnect between the Postgres database credentials and our configuration. Despite the database connection working perfectly, it kept accusing the configuration of being wrong and would keep changing the database credentials and/or the appsettings. I decided to let it do its thing, and while it didn&amp;rsquo;t necessarily break things it did get annoying.&lt;/p>
+&lt;h4 id="do-as-i-say-not-as-i-do">Do as I say, not as I do?
+&lt;/h4>&lt;p>The biggest and most glaring issue encountered was in the, you know, not super-duper-important auth service, where it had written some code and whacked a comment above it essentially saying &amp;ldquo;don&amp;rsquo;t do this in production&amp;rdquo;. Whoops? I can definitely imagine a true vibe coder missing this altogether. If I&amp;rsquo;m being honest, I missed it until I was reviewing the output many commits later.&lt;/p>
+&lt;p>&lt;em>Maybe&lt;/em> some tooling could have shown an error here? I&amp;rsquo;m planning to also look into &lt;a class="link" href="https://www.coderabbit.ai/" target="_blank" rel="noopener"
+>CodeRabbit&lt;/a> for AI code review. It would be curious to watch an AI tool telling another to get it&amp;rsquo;s sh*t together.&lt;/p>
+&lt;h4 id="ef-core">EF Core
+&lt;/h4>&lt;p>Par for the course so far, things didn&amp;rsquo;t go perfectly at first although they did work in the end — which is the most important thing, right? Vibes!&lt;/p>
+&lt;p>No, it did a pretty good job at setting up and leveraging migrations, and this was pretty hands-off in general. One of the things that I find tedious with .NET development in general is the need to go and write a migration, apply it, update my model, update the DB context, all before I can even go and start using the new or updated entity. Cursor was definitely working hard to save me keystrokes here.&lt;/p>
+&lt;p>I don&amp;rsquo;t know if my trust issues would start to surface if and when it came time to actually migrate some data around though.&lt;/p>
+&lt;h2 id="a-brand-old-project-for-a-brand-new-world">A brand old* project for a brand new world
+&lt;/h2>&lt;p>Sweet, Cursor seems to be capable of building a brand spanking new project. But what about an existing project that already has some conventions about how to do things?&lt;/p>
+&lt;p>Given that Cursor seemed to have some trouble swallowing Svelte earlier, I decided to try loading an existing SvelteKit project. Specifically, this project is using Svelte 5, which has a significantly different syntax to previous versions — and this has been Cursor&amp;rsquo;s tripping point.&lt;/p>
+&lt;p>Let&amp;rsquo;s see how it handles some change requests!&lt;/p>
+&lt;h3 id="starting-small">Starting small
+&lt;/h3>&lt;p>I wanted to ask it to specifically make changes to a single file. In the true spirit of side projects I&amp;rsquo;d been a bit lax in keeping any relevant documentation up to date, and so I asked Cursor to update my root &lt;code>README.md&lt;/code> file to improve the project&amp;rsquo;s documentation.&lt;/p>
+&lt;p>Granted, there wasn&amp;rsquo;t a whole lot that needed to be written, but it did a solid job of inspecting the project to determine the tech stack, prerequisites, steps for getting started etc.&lt;/p>
+&lt;p>The only issue was that for some reason despite the project using &lt;code>npm&lt;/code>, Cursor decided to recommend &lt;code>pnpm&lt;/code> and use that for a bunch of examples. A quick prompt sorted that out, but again this could have easily been missed.&lt;/p>
+&lt;h3 id="database-migration">Database migration
+&lt;/h3>&lt;p>Okay, I was pretty impressed with this one. I wasn&amp;rsquo;t expecting it to pick up on my using &lt;a class="link" href="https://vivecuervo7.github.io/dev-blog/p/database-driven-codegen/#graphile-migrate" target="_blank" rel="noopener"
+>graphile-migrate&lt;/a> in this project, but it had a look at the tooling and it correctly updated my &lt;code>current.sql&lt;/code> migration file. Nice!&lt;/p>
+&lt;p>Using a prompt to &amp;ldquo;create a migration allowing for league member&amp;rsquo;s to assign teams for each round&amp;rdquo;, it created the table I would have expected to see, along with indexes and even a trigger to enforce the team size limit.&lt;/p>
+&lt;p>It didn&amp;rsquo;t pick up on the need for the migration to be idempotent, but a quick prompt and it was back on track.&lt;/p>
+&lt;h3 id="a-little-more-complicated">A little more complicated
+&lt;/h3>&lt;p>I went through a series of prompts, from simply showing new information to adding an entire new form.&lt;/p>
+&lt;p>Cursor picked up on the use of Kysely to build queries, continuing with a repository pattern and implementing database queries as necessary. It proved to be similarly competent when it came to building UI components, inserting the new code and resolving linting errors to come up with a working solution.&lt;/p>
+&lt;p>Where Cursor ran into a bit of a wall was accessing the database service. I had settled on a usage pattern of initialising the database service and passing it down the chain via &lt;a class="link" href="https://svelte.dev/docs/kit/hooks#Server-hooks-locals" target="_blank" rel="noopener"
+>locals&lt;/a>. Granted, this isn&amp;rsquo;t the most common approach (most tutorials suggest simply importing the database client and using it directly) however I thought there would be enough code there for Cursor to figure out the usage pattern.&lt;/p>
+&lt;p>Alas, every time Cursor wanted to use the database service, it would attempt to instantiate a new copy of it. Not what I had wanted at all, and despite a prompt fixing it on one occasion I found it faster to just go and clean up after it. I &lt;em>did&lt;/em> eventually see Cursor pick up on a linting error and subsequently explain to me that it should be using the &lt;code>locals.db&lt;/code> instead of creating a new one, so maybe I was just trying to fix Cursor&amp;rsquo;s mistakes a little too eagerly.&lt;/p>
+&lt;h2 id="overall-impressions">Overall impressions
+&lt;/h2>&lt;p>Honestly, it felt like taking a machine gun to my code. It felt very &lt;a class="link" href="https://fallout.fandom.com/wiki/Spray_n%27_Pray" target="_blank" rel="noopener"
+>Spray n&amp;rsquo; Pray&lt;/a>, and there was a &lt;em>lot&lt;/em> of &amp;ldquo;yeah, I&amp;rsquo;m just going to commit here because I&amp;rsquo;m probably going to throw away the next change a few times before it&amp;rsquo;s right&amp;rdquo;. The problem was that each thing I wanted to do would take multiple prompts, which made me quite hesitant to discard whatever I had so I would keep throwing prompts at it to try and make it right. That led to me feeling too invested (why hello, &lt;a class="link" href="https://thedecisionlab.com/biases/the-sunk-cost-fallacy" target="_blank" rel="noopener"
+>sunk cost fallacy&lt;/a>) to throw it all away.&lt;/p>
+&lt;p>A big sticking point for me was the potential for insecure code to make its way into the codebase. I don&amp;rsquo;t think I trust it fully to keep things secure, pending wrapping additional tooling around it. Even then, it would require a close watch and there is just so much code being generated in such a short amount of time that it&amp;rsquo;s hard to pick up on little things.&lt;/p>
+&lt;p>Cursor did doing a pretty good job of coming up with meaningful commit messages, although they got pretty long-winded which exposes an actual underlying problem in that the changes themselves can easily become quite extensive with a series of iterative prompts causing many files to be touched.&lt;/p>
+&lt;h3 id="cursor-turned-me-into-a-rubber-duck">Cursor turned me into a rubber duck
+&lt;/h3>&lt;p>Cursor felt like speed-running a &lt;a class="link" href="https://en.wikipedia.org/wiki/Pair_programming" target="_blank" rel="noopener"
+>pair programming&lt;/a> session with a coked-up auctioneer as the driver.&lt;/p>
+&lt;p>It talks through the decisions it&amp;rsquo;s making, and shows you the code being generated. I found I could &lt;em>just&lt;/em> keep up with it, occasionally spotting things that I wanted to ask about or prompt in another direction. It was nice to have that immediate feedback and it mitigated the feeling of blindly trusting Cursor to come up with a good solution, but there was an absolute flood of code to try and parse in very little time.&lt;/p>
+&lt;p>In particular, I found it curious to watch how it went about debugging issues, or more specifically the way it went about addressing linting errors and warnings. I wasn&amp;rsquo;t too impressed about the nonchalant way it dismissed warnings as essentially &amp;ldquo;meh, not critical so don&amp;rsquo;t bother&amp;rdquo; but we could either prompt it to address those concerns or just configure our project to treat warnings as errors etc.&lt;/p>
+&lt;h3 id="cursors-rules-for-ai">Cursor&amp;rsquo;s rules for AI
+&lt;/h3>&lt;p>As mentioned at the top of this post I did not make use of Cursor&amp;rsquo;s &lt;a class="link" href="https://docs.cursor.com/context/rules-for-ai" target="_blank" rel="noopener"
+>rules for AI&lt;/a>, which I imagine may have mitigated if not completely avoided many of the issues I ended up facing.&lt;/p>
+&lt;p>I may do a deep dive into these rules in the future to do a comparison — especially regarding the use of Svelte 5, as this proved to be something of a sticking point. A very quick dabble in this yielded the ability to specify any particular tooling that I wished to use — telling it to use Svelte 5, Kysely and &lt;code>graphile-migrate&lt;/code> did a pretty good job, although it still had trouble with the Svelte 5 syntax.&lt;/p>
+&lt;p>There are plenty of sample &lt;code>.cursorrules&lt;/code> files floating around — these are being phased out per the docs above in favour of &lt;code>.cursor/rules/&lt;/code> but still provide a good base for building the rules themselves. &lt;a class="link" href="https://gist.github.com/aashari/07cc9c1b6c0debbeb4f4d94a3a81339e" target="_blank" rel="noopener"
+>Here&amp;rsquo;s an example&lt;/a> of a relatively comprehensive set of general purpose Cursor rules.&lt;/p>
+&lt;p>And&amp;hellip; we can always ask Cursor to generate a set of rules for itself based on the current project!&lt;/p>
+&lt;p>I do get the sense that with the right rules Cursor could be kept largely in check, but I can&amp;rsquo;t help wondering if constantly tweaking those rules and needing to gauge the output might start eating significantly into whatever time Cursor initially saved.&lt;/p>
+&lt;h3 id="does-it-have-a-place-in-my-workflow">Does it have a place in my workflow?
+&lt;/h3>&lt;p>The biggest question of them all, and truth be told, I don&amp;rsquo;t really know.&lt;/p>
+&lt;p>A day spent playing with it doesn&amp;rsquo;t really give it the time it needs to really show its full potential — or frustrations, nor does the fact that I largely ignored setting up any rules.&lt;/p>
+&lt;p>I can certainly see how I might prefer this over GitHub Copilot purely due to the fact that it can use the entire codebase as context for my next operation — but I think for now I&amp;rsquo;d prefer to keep the changes scoped to the file I&amp;rsquo;m working on.&lt;/p>
+&lt;p>Cursor passes the vibe check, but of me a vibe coder it shall not make.&lt;/p></description></item></channel></rss>
