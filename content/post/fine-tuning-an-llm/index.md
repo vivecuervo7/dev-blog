@@ -57,7 +57,7 @@ There's a bit of manual work to say "this is where I want you to put the code", 
 
 Honestly, this approach has been working for me. It very quickly gives me a chunk of code that is small enough to either quickly tick off or tweak to my liking, and then I can move on and not need to think about that file again.
 
-The problem I have consistently run into however, is that the training for most (all?) of these LLMs was done prior to the release of Svelte 5. And Svelte 5 brought significant changes to the syntax. As one can imagine, this just amounted to a _lot_ of generated code that was just... wrong.
+The problem I have consistently run into however, is that the training for most (all?) of these LLMs was done prior to the release of Svelte 5. And Svelte 5 brought significant changes to the syntax. As one can imagine, this amounted to a _lot_ of generated code that was just... wrong.
 
 ### The litmus test
 
@@ -109,7 +109,7 @@ Generally speaking however, one pleasant experience was that I no longer needed 
 | GPT-4.1         | Created a _very_ simple counter component, but put it in the wrong place. Additionally, it was initially created with botched `<script>` tags, and when it finished trying to fix them they were just gone &mdash; resulting in code that wouldn't even compile.                                                                                                                                                                                                |
 | Claude Sonnet 4 | I guess someone had to show off, and that someone was Claude. By a _long_ way &mdash; but not necessarily in a _good_ way. Claude checked the project structure, then created the component at the right location. All the correct syntax was used, even cross-referencing other components to confirm. But, in typical Claude fashion, the component was a big 240-line block of code complete with styling and all of the functionality that I _didn't_ want. |
 
-I decided to push Claude a bit further here and managed to vibe code my way to a full-blown storefront for a shoe store. I was actually pretty surprised at how easily I could follow along this time &mdash; but truth be told, I have been working towards a very succinct stack which meant there was just less coder to review. Styling however did get a bit messy, and there were a lot of follow-up prompts to try and get it Claude to keep that manageable.
+I decided to push Claude a bit further here and managed to vibe code my way to a full-blown storefront for a shoe store. I was actually pretty surprised at how easily I could follow along this time &mdash; but truth be told, I have been working towards a very succinct stack which meant there was just less code to review. Styling however did get a bit messy, and there were a lot of follow-up prompts to try and get it Claude to keep that manageable.
 
 And really, that latter point is one of the main reasons why I didn't want to just stop here. If I were to just continue with this pattern, was I going to be looking up more and more documentation?
 
@@ -135,7 +135,7 @@ In the context of GitHub Copilot specifically, I had to keep telling it to look 
 
 So, feeling like I'd gotten _somewhere_ with the two approaches above, I really wanted to try and consolidate this into a single, consistent model that both GitHub Copilot and Open WebUI could use.
 
-Enter Ollama's Modelfiles. I [touched on these breifly]({{< relref "ollama-local-agent/#modelfiles">}}) while first looking into running models locally, but essentially they provide a way for me to create a completely new model based on an _existing_ model, with some additional tweaks for things such as parameters, **system prompts** and templates. The Modelfile reference can be found [here](https://ollama.readthedocs.io/en/modelfile/).
+Enter Ollama's Modelfiles. I [touched on these briefly]({{< relref "ollama-local-agent/#modelfiles">}}) while first looking into running models locally, but essentially they provide a way for me to create a completely new model based on an _existing_ model, with some additional tweaks for things such as parameters, **system prompts** and templates. The Modelfile reference can be found [here](https://ollama.readthedocs.io/en/modelfile/).
 
 Considering the success I'd had with the two earlier approaches, I figured that what I really needed was to just have a model that always had this in context, right? That's effectively what was happening with the two separate approaches &mdash; one was being very explicit in telling GitHub Copilot to _always_ consider the instructions, and the other was giving Open WebUI access to the file and _hoping_ that it always referenced it.
 
@@ -216,7 +216,7 @@ And the **text** format:
 
 #### Files required
 
-Now, training data on its own is all well and good, but we also need verification data. Since we're using `mlx-lm` for this (sorry, Windows folks &mdash; this one is Apple only, but there are options that should work just as well on Windows) we'll need the following files.
+Now, training data on its own is all well and good, but we also need verification data. Since we're using `mlx-lm` for this (sorry, Windows folks &mdash; this one is Apple only, but there are options that should work just as well on Windows), we'll need the following files.
 
 - `train.jsonl`
 - `valid.jsonl`
@@ -237,7 +237,7 @@ I'm not really sure which model gets used when you don't supply the argument, bu
 
 #### Training
 
-Now that we're done playing with our toys, it's time to do our best Sid from Toy Story impersonation, and start messing with the guts of our models.
+Now that we're done playing with our toys, it's time to do our best Sid from Toy Story impersonation and start messing with the guts of our models.
 
 ![](images/sid-workshop.gif)
 
@@ -352,7 +352,7 @@ The bit we really care about is being able to convert the Safetensor model into 
 python ../llama.cpp/convert_hf_to_gguf.py model --outfile model.gguf
 ```
 
-A keen eye might also notice a script sitting next to `convert_hf_to_gguf.py` called `convert_lora_to_gguf.py`. I had no success in running this, but the suggestion would be that we could actually convert the _adapter_ itself to a `.gguf` and pass that to Ollama via a Modelfile's `ADAPTER` instruction, saving us the need to fuse the adapter into the model.
+A keen eye might also notice a script called `convert_lora_to_gguf.py` sitting next to `convert_hf_to_gguf.py`. I had no success in trying to use this, but the suggestion is that we could actually convert the _adapter_ itself to a `.gguf` and pass that to Ollama via a Modelfile's `ADAPTER` instruction, saving us the need to fuse the adapter into the model.
 
 Anyway, once we have our `model.gguf` file, we can now create a model in Ollama that uses it.
 
@@ -364,7 +364,7 @@ We've already seen how to create a model for Ollama, but now we can use the `.gg
 FROM ./model.gguf
 ```
 
-The command to create our model doesn't change, so we run that. With a more appropriate name, this time.
+The command to create our model doesn't change, so we run that. With a more appropriate name.
 
 ```sh
 ollama create eight-in-a-row -f ./Modelfile
@@ -380,7 +380,7 @@ I was getting some really fun output, where a simple prompt of "Hello" would ret
 
 It was only after I spotted someone else showing the output of their model (via `ollama show`) that I noticed a difference between theirs and mine. Theirs had the `TEMPLATE` instruction filled in for their Modelfile. I don't know why it hadn't dawned on me earlier, but the example `TEMPLATE` instruction in the [Modelfile reference](https://ollama.readthedocs.io/en/modelfile/#template) looked a _lot_ like the `template` file [in the Ollama library](https://ollama.com/library/qwen3:1.7b/blobs/ae370d884f10).
 
-Pastig the contents of that file directly into the `TEMPLATE` instruction of my Modelfile, I was able to get the model to respond as expected. After much pain and suffering, I finally had it working!
+Pasting the contents of that file directly into the `TEMPLATE` instruction of my Modelfile, I was able to get the model to respond as expected. After much pain and suffering, I finally had it working!
 
 #### Parameters
 
@@ -522,7 +522,3 @@ Which got me thinking... what if instead of a calculator or other tool, we could
 Essentially, having a small orchestrator model that can interpret what language, framework, domain etc. the prompt is regarding, and then call the appropriate models to handle each specific task?
 
 Whether or not that's even a feasible idea is another story entirely, but it certainly feels like learning how to fine-tune a model has only increased my curiosity rather than quenched it.
-
-```
-
-```
