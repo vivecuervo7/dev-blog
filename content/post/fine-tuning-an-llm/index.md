@@ -412,9 +412,11 @@ Here are the datasets used, in the **messages** format:
 
 As for the actual parameters, I ran each with **200 iterations** and a **batch size of 1**. For **DoRA** training, I also limited it to training on **4 layers**. This was very focused around reducing the memory usage, as to date I had watched a few training processes crash due to running out of memory. Later on, I do look at the impact of changing the number of layers.
 
-{{< alert >}}
-The prompt used will be **_"How big is a rugby league field?"_**. For reference, the answer is **68m wide**, and **112-122m long**.
-{{< /alert >}}
+### The prompt
+
+The prompt used will be **_"How big is a rugby league field?"_**.
+
+For reference, the answer is **68m wide**, and **112-122m long**.
 
 ### Per-model results
 
