@@ -3,6 +3,7 @@ title: RAG to fine-tuning an LLM
 description: Building a galactic army of specialized LLMs with MLX
 slug: fine-tuning-an-llm
 date: 2025-07-31 00:00:00+1000
+lastmod: 2025-08-20 08:11:00+1000
 image: image.png
 categories:
   - Development
