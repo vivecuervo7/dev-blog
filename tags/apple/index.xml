@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Apple on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/apple/</link><description>Recent content in Apple on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 21 Jul 2025 00:00:00 +1000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/apple/index.xml" rel="self" type="application/rss+xml"/><item><title>Deploying an iOS app to TestFlight</title><link>https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/</link><pubDate>Mon, 21 Jul 2025 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/image.jpg" alt="Featured image of post Deploying an iOS app to TestFlight" />&lt;p>Alrighty. Staring down the barrel of some upcoming work with iOS, and I needed to re-familiarise myself with all things iOS and SwiftUI.&lt;/p>
+&lt;p>With some previous, very light experience with iOS development, I was reasonably comfortable with my ability to create working functionality within an app. Not a whole lot different to the typical work I would be doing for a web app. Make UI do a thing, wire it up to a backend, and voila.&lt;/p>
+&lt;p>However, this time I was going to need to get it &lt;em>out there&lt;/em>. Or, at least as far as TestFlight. I realised I had no idea how to build the &amp;ldquo;bread&amp;rdquo; of an iOS-flavoured sandwich; all I knew was the middle.&lt;/p>
+&lt;h2 id="the-checklist">The checklist
+&lt;/h2>&lt;p>Now, I should mention before I begin that this post was mostly written as a rant over the convoluted process of learning how to get an iOS app onto TestFlight. That said, I still wanted to leave behind a bit of a guide or checklist that I could refer to in the future. This is that checklist.&lt;/p>
+&lt;div class="alert">&lt;p>&lt;strong>Project setup&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>Project&lt;/code> in sidebar &amp;gt; &lt;code>Project&lt;/code> &amp;gt; &lt;code>Info&lt;/code> &amp;gt; &lt;code>Configurations&lt;/code>
+&lt;ul>
+&lt;li>Add entries for each environment, with both a &lt;strong>Release&lt;/strong> and &lt;strong>Debug&lt;/strong> version&lt;/li>
+&lt;li>Create an &lt;code>*.xcconfig&lt;/code> for each environment and link them under this section&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;code>Project&lt;/code> in sidebar &amp;gt; &lt;code>Target&lt;/code> &amp;gt; &lt;code>Build Settings&lt;/code>
+&lt;ul>
+&lt;li>Under &lt;code>Packaging&lt;/code>, set Bundle IDs for each environment (same values for &lt;strong>Release&lt;/strong> and &lt;strong>Dev&lt;/strong>)&lt;/li>
+&lt;li>Under &lt;code>Bundle Display Name&lt;/code>, set Bundle Display Name for each environment (same values for &lt;strong>Release&lt;/strong> and &lt;strong>Dev&lt;/strong>)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;code>Scheme&lt;/code> (dropdown at top of page) &amp;gt; &lt;code>Manage Schemes&lt;/code>
+&lt;ul>
+&lt;li>Modify the list to reflect the environments&lt;/li>
+&lt;li>Edit each scheme to ensure the correct &lt;strong>Build Configurations&lt;/strong> are set&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>App registration&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Register app
+&lt;ul>
+&lt;li>Under &lt;code>Identifiers&lt;/code>, register an App ID for each environment using &lt;strong>Explicit&lt;/strong> Bundle ID — these should match what we used for the Bundle IDs in our project setup&lt;/li>
+&lt;li>In &lt;a class="link" href="https://appstoreconnect.apple.com/apps" target="_blank" rel="noopener"
+>App Store Connect&lt;/a>, add a new app for each environment using those Bundle IDs&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Certificate
+&lt;ul>
+&lt;li>Create a certificate signing request, using Keychain will be easiest&lt;/li>
+&lt;li>Create an &lt;strong>Apple Distribution&lt;/strong> certificate via &lt;a class="link" href="https://developer.apple.com/account/resources/" target="_blank" rel="noopener"
+>Apple Developer Resources&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Provisioning profiles
+&lt;ul>
+&lt;li>Under &lt;code>Profiles&lt;/code>, create &lt;strong>App Store Connect&lt;/strong> provisioning profiles for each environment using the distribution certificate&lt;/li>
+&lt;li>Download the provisioning profiles, install locally, assign to each environment under &lt;code>Targets&lt;/code> &amp;gt; &lt;code>Signing &amp;amp; Capabilities&lt;/code> (uncheck &lt;strong>Automatically manage signing&lt;/strong> from each environment to manually manage provisioning profiles)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>App Store Connect API&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://appstoreconnect.apple.com/access/integrations/api" target="_blank" rel="noopener"
+>App Store Connect &amp;gt; Users and Access &amp;gt; Integrations&lt;/a>
+&lt;ul>
+&lt;li>Add new team key, download it and take note of &lt;strong>Issuer ID&lt;/strong> and &lt;strong>Key ID&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>CI/CD pipeline&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Create &lt;code>ExportOptions.plist&lt;/code> — run &lt;code>xcodebuild -help&lt;/code> for guidance on options
+&lt;ul>
+&lt;li>Make sure we specify the correct provisioning profile for each environment&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Prepare secrets, ideally using Base64 encoding
+&lt;ul>
+&lt;li>Export certificate from Keychain (including private key used for the certificate signing request)&lt;/li>
+&lt;li>Encode the provisioning profiles we downloaded for local installation&lt;/li>
+&lt;li>Add to GitHub secrets etc., including the &lt;strong>App Store Connect API&lt;/strong> details from above&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Pipeline steps:
+&lt;ul>
+&lt;li>Create temporary Keychain&lt;/li>
+&lt;li>Decode and install certificates&lt;/li>
+&lt;li>Decode and install provisioning profiles&lt;/li>
+&lt;li>Setup Xcode (use correct version)&lt;/li>
+&lt;li>Run tests etc. — &lt;code>xcodebuild test&lt;/code>&lt;/li>
+&lt;li>Build app archive — &lt;code>xcodebuild archive&lt;/code>&lt;/li>
+&lt;li>Export IPA — &lt;code>xcodebuild -exportArchive&lt;/code>&lt;/li>
+&lt;li>Set up the App Store Connect API key&lt;/li>
+&lt;li>Upload to App Store Connect — &lt;code>xcrun altool --upload-app&lt;/code>&lt;/li>
+&lt;li>Clean up temporary keychain, installed provisioning profiles etc.&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/div>
+&lt;h2 id="project-setup">Project setup
+&lt;/h2>&lt;p>I decided that my foray into the world of deploying an iOS app should tick a few boxes.&lt;/p>
+&lt;ul>
+&lt;li>Some basic functionality&lt;/li>
+&lt;li>Multiple environments that can be installed side-by-side&lt;/li>
+&lt;li>Deploys via GitHub Actions with passing tests&lt;/li>
+&lt;li>Pushes the app to TestFlight&lt;/li>
+&lt;/ul>
+&lt;p>The first two were pretty straightforward. Whizzed through some of the basic tutorials and realised I had never really covered testing. Ended up with a very small, tutorial-driven app that I could both test and deploy.&lt;/p>
+&lt;h3 id="environment-setup">Environment setup
+&lt;/h3>&lt;p>Environment? Hmm, well, not entirely sure I had this one set up correctly.&lt;/p>
+&lt;p>I had two targets set up, one for the app and another for the tests. From what I had uncovered with some Googling, was to be expected. I followed yet another guide on setting up multiple configurations.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/targets.png"
+width="322"
+height="316"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/targets_hu_d1eae1af085fab1a.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/targets_hu_5712f9f235e672e9.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="101"
+data-flex-basis="244px"
+>
+&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/configuration.png"
+width="1014"
+height="394"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/configuration_hu_f5b16ab97e041119.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/configuration_hu_d973ecb1ba882fd0.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="257"
+data-flex-basis="617px"
+>
+&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/configuration-files.png"
+width="534"
+height="282"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/configuration-files_hu_e98721b59e55c245.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/configuration-files_hu_d8df1f5c6f741ae4.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="189"
+data-flex-basis="454px"
+>&lt;/p>
+&lt;p>Popped in a quick &lt;code>APP_TITLE=Pilot&lt;/code> (adjusted for each environment), added it to &lt;code>Target &amp;gt; Info &amp;gt; Custom iOS Target Properties&lt;/code> and referenced the value in the app. A few steps to remember, but it worked.&lt;/p>
+&lt;p>Wait — I almost forgot. I also needed to set up the bundle IDs and display names&amp;hellip;&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/packaging.png"
+width="1114"
+height="490"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/packaging_hu_e0b7dd1aec70e6ec.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/packaging_hu_7df0d0bc48827b91.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="227"
+data-flex-basis="545px"
+>
+&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/bundle-display-names.png"
+width="846"
+height="478"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/bundle-display-names_hu_df35a4757cf5557b.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/bundle-display-names_hu_aeaad4a1852e1780.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="176"
+data-flex-basis="424px"
+>&lt;/p>
+&lt;p>Hmm. &lt;em>And&lt;/em> set up the schemas. More than just a few steps to remember at this point, but it seems like this is really a once-per-project task. I can stomach that. It&amp;rsquo;s the sort of thing I&amp;rsquo;ll need to find a reference for every time as well, which is at least half of the motivation for turning this into a blog post.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/schemas.png"
+width="1400"
+height="244"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/schemas_hu_c33b541cd8190083.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/schemas_hu_c3f096fb9320d850.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="573"
+data-flex-basis="1377px"
+>&lt;/p>
+&lt;h3 id="app-icon">App icon
+&lt;/h3>&lt;p>This one actually came towards the end, after I had written the CI/CD pipeline. Uploading hit a hitch due to not having an app icon — a bit of an annoyance given I was simply wanting to learn how to go from local development to a TestFlight deployment.&lt;/p>
+&lt;p>Fortunately, the GitHub workflow had some output that told me exactly what was missing.&lt;/p>
+&lt;div class="highlight error">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">The bundle does not contain an app icon for iPhone / iPod Touch of exactly &amp;#39;120x120&amp;#39; pixels...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">The bundle does not contain an app icon for iPad of exactly &amp;#39;152x152&amp;#39; pixels...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Looks like they need to be in .png format, too. Cool, this one looked pretty easy. Additionally, the errors informed me that I&amp;rsquo;d need to use the asset catalog.&lt;/p>
+&lt;div class="highlight error">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">A value for the Info.plist key &amp;#39;CFBundleIconName&amp;#39; is missing in the bundle &amp;#39;com.isaacdedini.pilot.dev&amp;#39;. Apps built with iOS 11 or later SDK must supply app icons in an asset catalog and must also provide a value for this Info.plist key.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>After spotting &lt;a class="link" href="https://developer.apple.com/documentation/xcode/configuring-your-app-icon#Specify-app-icon-variations" target="_blank" rel="noopener"
+>this line in the documentation&lt;/a> suggesting that if I provided a 1024x1024 image, it would automatically create the appropriate variations, I quickly created an icon of that size.&lt;/p>
+&lt;p>Alright! Now we&amp;rsquo;re cooking! No idea if I needed to fill all three options or not, but I didn&amp;rsquo;t want to wait until I ran the workflow to find that out.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/appicon-filled.png"
+width="937"
+height="350"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/appicon-filled_hu_43d21b3a18294a37.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/appicon-filled_hu_f8981f376eee6caf.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="267"
+data-flex-basis="642px"
+>&lt;/p>
+&lt;p>Heeding the error message that indicated I&amp;rsquo;d need to specify the &lt;code>CFBundleIconName&lt;/code> in &lt;code>Info.plist&lt;/code>, I went and added that. Confusingly, trying to add it kept changing the name of the key, until I confirmed that this was just Xcode trying to be helpful. By calling it something other than the key. Why, Apple, must you make things so confusing?&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/info-plist-appicon-1.png"
+width="525"
+height="121"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/info-plist-appicon-1_hu_b75709fc4c5dbf5b.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/info-plist-appicon-1_hu_95d90671f8fdd664.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="433"
+data-flex-basis="1041px"
+>
+&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/info-plist-appicon-2.png"
+width="525"
+height="123"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/info-plist-appicon-2_hu_e1388fa92a5e8fc8.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/info-plist-appicon-2_hu_eee0fa807969bf86.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="426"
+data-flex-basis="1024px"
+>&lt;/p>
+&lt;p>Now, not entirely sure here but a quick search indicated that I should just drop the name of the resource from the asset catalog in there as the value. Popped in &lt;code>AppIcon&lt;/code> and pushed my changes up.&lt;/p>
+&lt;h2 id="app-registration">App registration
+&lt;/h2>&lt;p>All the tutorials I found &lt;em>kind of&lt;/em> hinted at where to go, and used all the words I needed to know, but nothing really gave me a &amp;ldquo;step one&amp;rdquo;. Except for one video, where they enabled a capability via Xcode seemingly to trigger some background setting up of things, and then they removed the capability. Yeah, that wasn&amp;rsquo;t going to help me understand this at all.&lt;/p>
+&lt;p>Anyway, off I went to the Apple Developer Portal thinking I&amp;rsquo;d figure things out from there. I ended up going around in circles for a spell, so hopefully putting it all in order below will make the process less confusing. There was far more pain involved here than is expressed below.&lt;/p>
+&lt;h3 id="registering-the-app">Registering the app
+&lt;/h3>&lt;p>This one threw me at first, coming from a web background I was looking to register a single application, with the intention of having different versions available as separate environments.&lt;/p>
+&lt;p>From what I gathered in the end is that typically we might have a single app registered, and make newer version of the app available to testers via TestFlight while we have a different version released to end users.&lt;/p>
+&lt;p>This was a little different to what I was after in individual &amp;ldquo;environments&amp;rdquo; that could be installed side-by-side. I couldn&amp;rsquo;t find a better way to achieve this outside of simply registering my environments as completely distinct apps.&lt;/p>
+&lt;h4 id="identifiers">Identifiers
+&lt;/h4>&lt;div class="alert">Tip: register &lt;strong>explicit&lt;/strong> Bundle IDs for each environment that match those we&amp;rsquo;re using in Xcode.&lt;/div>
+&lt;p>We&amp;rsquo;ll want to register each of the bundle IDs we used when we were setting up our project under &lt;code>Packaging&lt;/code>.&lt;/p>
+&lt;p>Make sure to use &lt;strong>Explicit&lt;/strong> bundle IDs — the descriptions provided had me initially thinking I wanted to use wildcard bundle IDs, and I spent a long time trying to figure out why they weren&amp;rsquo;t showing up as options for my app registrations.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/register-app-id.png"
+width="2902"
+height="978"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/register-app-id_hu_64f30cbcb16395af.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/register-app-id_hu_219777c1a971053c.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="296"
+data-flex-basis="712px"
+>
+&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/register-app-id-explicit.png"
+width="2646"
+height="546"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/register-app-id-explicit_hu_31842dfc9153a60a.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/register-app-id-explicit_hu_75c5d4af4b0933ac.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="484"
+data-flex-basis="1163px"
+>&lt;/p>
+&lt;h4 id="app-store-connect">App Store Connect
+&lt;/h4>&lt;p>Here&amp;rsquo;s where we actually create the app!&lt;/p>
+&lt;p>I found myself landing here way too early the first time around, and this really cost me a lot of time. As mentioned before, this was largely due to the fact that I&amp;rsquo;d created a wildcard bundle ID, but when it didn&amp;rsquo;t work I ended up floundering around creating certificates, provisioning profiles, registering devices etc.&lt;/p>
+&lt;p>Turns out, the identifier is all we need to get to this point. The other stuff is only actually required to build and deploy our application.&lt;/p>
+&lt;p>Go to &lt;a class="link" href="https://appstoreconnect.apple.com/apps" target="_blank" rel="noopener"
+>App Store Connect &amp;gt; Apps&lt;/a>. Click on the big blue plus, and fill out the dialog. Based on the info provided for the &lt;strong>SKU&lt;/strong> field, I just popped a UUID in there. Not sure what the expectation is here, nor why a UUID wouldn&amp;rsquo;t be the default.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/add-app-sku.png"
+width="1120"
+height="994"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/add-app-sku_hu_ced9131aa1367dce.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/add-app-sku_hu_21ffd4ea8aeca1f6.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="112"
+data-flex-basis="270px"
+>
+&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/add-app-sku-info.png"
+width="1136"
+height="238"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/add-app-sku-info_hu_925b9104129cf718.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/add-app-sku-info_hu_e78cb0942005fef7.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="477"
+data-flex-basis="1145px"
+>&lt;/p>
+&lt;p>We&amp;rsquo;ll need to repeat the process for each of our environments — which still doesn&amp;rsquo;t feel right seeing three individual apps, but this is the closest I&amp;rsquo;ve come to having my three environments available.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/add-app-three.png"
+width="2814"
+height="484"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/add-app-three_hu_2f65616f7042452a.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/add-app-three_hu_ff1e6c6e01975cb9.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="581"
+data-flex-basis="1395px"
+>&lt;/p>
+&lt;h3 id="certificate">Certificate
+&lt;/h3>&lt;div class="alert">Tip: we&amp;rsquo;ll need an &lt;strong>Apple Distribution&lt;/strong> certificate for deploying to App Store Connect.&lt;/div>
+&lt;p>This is something that, from what I can gather, is something that needs only be done once. If a distribution certificate already exists, we&amp;rsquo;d just use that to create our provisioning profiles.&lt;/p>
+&lt;h4 id="certificate-signing-request">Certificate Signing Request
+&lt;/h4>&lt;p>First up, we&amp;rsquo;ll need to create the Certificate Signing Request (CSR). We&amp;rsquo;ll need to export our certificate via Keychain later as well, as this contains the private key used for the CSR.&lt;/p>
+&lt;p>It is my understanding that the signing request itself is platform-agnostic, meaning this could also be done via &lt;code>openssl&lt;/code>. Which is interesting to say the least — if I&amp;rsquo;ve understood this correctly it means we could feasibly get all of our app registration done via the browser, opening the door to potentially building and deploying an app &lt;em>without&lt;/em> explicitly needing an Apple device.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/certificate-signing-request.png"
+width="1456"
+height="654"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/certificate-signing-request_hu_8ab90160fb78bab7.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/certificate-signing-request_hu_1cec05c989b4c16e.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="222"
+data-flex-basis="534px"
+>&lt;/p>
+&lt;h4 id="creating-the-certificate">Creating the certificate
+&lt;/h4>&lt;p>After saving the signing request, navigate to &lt;a class="link" href="https://developer.apple.com/account/resources/certificates/add" target="_blank" rel="noopener"
+>Apple Developer Resources &amp;gt; Certificates &amp;gt; Add&lt;/a>.&lt;/p>
+&lt;p>Select &lt;strong>Apple Distribution&lt;/strong>, and upload the signing request.&lt;/p>
+&lt;p>While we shouldn&amp;rsquo;t need to install the certificate on our machines for local development, on a Mac the easiest way to export our certificate for use in our CI/CD pipeline later will be to export it via Keychain. Since we&amp;rsquo;re here, it won&amp;rsquo;t hurt to just download and install this now.&lt;/p>
+&lt;h3 id="provisioning-profiles">Provisioning profiles
+&lt;/h3>&lt;div class="alert">Tip: for deploying to TestFlight, an &lt;strong>App Store Connect&lt;/strong> provisioning profile is required.&lt;/div>
+&lt;p>This one probably gave me the most pain, largely due to the fact that I started here way too early. Trying to add the app to App Store Connect told me that it needed to be the same bundle ID that I&amp;rsquo;d used in Xcode, and over there the only thing I could change other than the bundle ID itself was the provisioning profile, so I thought &lt;em>that&lt;/em> must have been the issue.&lt;/p>
+&lt;p>Anyhow, between not knowing &lt;em>which&lt;/em> provisioning profile to create, not having created a certificate yet, and having created the wildcard bundle ID at this point, there was a lot of back and forth, removing provisioning profiles etc. before I got this one right.&lt;/p>
+&lt;h4 id="profile-creation">Profile creation
+&lt;/h4>&lt;p>Navigate to &lt;a class="link" href="https://developer.apple.com/account/resources/profiles/list" target="_blank" rel="noopener"
+>Apple Developer Resources &amp;gt; Profiles&lt;/a> and add a new profile.&lt;/p>
+&lt;p>The first thing that caught me out was which provisioning profile to use. A few of the descriptions felt like they could fit my use case, but long story short the correct option was &lt;strong>App Store Connect&lt;/strong>.&lt;/p>
+&lt;p>It&amp;rsquo;ll also ask for an App ID and certificate. We need provisioning profiles for each of our App IDs, but the certificate should be the same one for each — the distribution certificate we created earlier.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/provisioning-profile-which.png"
+width="2252"
+height="544"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/provisioning-profile-which_hu_f1bbc13162615480.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/provisioning-profile-which_hu_d586dd9cdcb48cb7.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="413"
+data-flex-basis="993px"
+>&lt;/p>
+&lt;h4 id="assigning-profiles">Assigning profiles
+&lt;/h4>&lt;p>Once they&amp;rsquo;re created, we can download the &lt;code>*.mobileprovision&lt;/code> files. Double-clicking these once downloaded doesn&amp;rsquo;t provide any feedback, but they should be added to one of a couple of directories — on my machine they ended up in &lt;code>~/Library/Developer/Xcode/UserData/Provisioning Profiles/&lt;/code>. As I needed to do with the number of times I got this wrong, removing them is as simple as deleting them from this directory.&lt;/p>
+&lt;p>We can then go to our &lt;strong>Signing &amp;amp; Capabilites&lt;/strong> for our target and assign the provisioning profiles to the relevant environments. Ignore the fact that they&amp;rsquo;re listed under &amp;ldquo;ineligible&amp;rdquo; — they were able to be added perfectly fine. Make sure we&amp;rsquo;ve also unchecked &lt;strong>Automatically manage signing&lt;/strong>.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/provisioning-profile-ineligible.png"
+width="2386"
+height="604"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/provisioning-profile-ineligible_hu_26e11c7f541e7677.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/provisioning-profile-ineligible_hu_6b0940d5196a3c96.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="395"
+data-flex-basis="948px"
+>&lt;/p>
+&lt;h2 id="cicd-pipeline">CI/CD pipeline
+&lt;/h2>&lt;p>Fortunately this seemed to be more well documented. I quickly stumbled across &lt;a class="link" href="https://www.andrewhoog.com/post/how-to-build-an-ios-app-with-github-actions-2023/" target="_blank" rel="noopener"
+>this blog post&lt;/a> and decided to use that as a guide.&lt;/p>
+&lt;h3 id="app-store-connect-api">App Store Connect API
+&lt;/h3>&lt;div class="alert">Tip: the &lt;strong>App Manager&lt;/strong> role is required for uploading an app in our CI/CD pipeline.&lt;/div>
+&lt;p>This once caught me out yet again a little when it came to implementing this in the pipeline. Once again information was inconsistent and left me wondering what the recommended way to deploy an app was. Initially I landed on using the App Store Connect API directly.&lt;/p>
+&lt;p>Eventually I realised that using the API directly wasn&amp;rsquo;t required, but we still needed the key we&amp;rsquo;d otherwise have created, to support using &lt;code>altool&lt;/code> for deployment.&lt;/p>
+&lt;p>Creating an API key was pretty straightforward. Navigate to &lt;a class="link" href="https://appstoreconnect.apple.com/access/integrations/api" target="_blank" rel="noopener"
+>App Store Connect &amp;gt; Users and Access &amp;gt; Integrations&lt;/a>, and click the blue plus. There are lots of links around to help out. Very shortly, I had a key created and the three requisite secrets added to GitHub — we&amp;rsquo;ll need the &lt;strong>Issuer ID&lt;/strong>, &lt;strong>Key ID&lt;/strong> and the key itself.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/gh-secrets-app-store-connect.png"
+width="1576"
+height="490"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/gh-secrets-app-store-connect_hu_ce0e9530f3f1ead9.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/gh-secrets-app-store-connect_hu_3629a98667b1aef9.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="321"
+data-flex-basis="771px"
+>&lt;/p>
+&lt;h3 id="preparing-for-export">Preparing for export
+&lt;/h3>&lt;div class="alert">Tip: Running &lt;code>xcodebuild -help&lt;/code> gives us an up-to-date list of all the available keys for our export options.&lt;/div>
+&lt;p>The file we needed to create is &lt;code>ExportOptions.plist&lt;/code>, which will tell Xcode how to export the archive. I couldn&amp;rsquo;t find anything about generating one of these without running an export locally to do&amp;hellip; things. Again, I wanted to know exactly &lt;em>what&lt;/em> it was doing, and why.&lt;/p>
+&lt;h4 id="basic-structure">Basic structure
+&lt;/h4>&lt;p>From what I had gathered, the very basic structure we&amp;rsquo;d need is as follows. Interestingly, a generated file used the deprecated &lt;code>app-store&lt;/code> for the &lt;code>method&lt;/code>, which caused an error to be displayed when I finally ran the workflow.&lt;/p>
+&lt;div class="code-hint-block">
+&lt;span class="code-hint-path">&lt;/span
+>&lt;span class="code-hint">ExportOptions.plist&lt;/span>
+&lt;/div>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="line">&lt;span class="cl">&lt;span class="cp">&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="cp">&amp;lt;!DOCTYPE plist PUBLIC &amp;#34;-//Apple//DTD PLIST 1.0//EN&amp;#34; &amp;#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&amp;#34;&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;lt;plist&lt;/span> &lt;span class="na">version=&lt;/span>&lt;span class="s">&amp;#34;1.0&amp;#34;&lt;/span>&lt;span class="nt">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;dict&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>method&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>app-store-connect&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>uploadBitcode&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;false/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>uploadSymbols&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;true/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>compileBitcode&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;false/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/dict&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;lt;/plist&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="additional-values">Additional values
+&lt;/h4>&lt;p>A few additional entries into our export options are required.&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">&amp;lt;plist version=&amp;#34;1.0&amp;#34;&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &amp;lt;dict&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;key&amp;gt;signingStyle&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;string&amp;gt;manual&amp;lt;/string&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;key&amp;gt;provisioningProfiles&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;key&amp;gt;signingCertificate&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;string&amp;gt;Apple Distribution&amp;lt;/string&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;key&amp;gt;teamID&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;string&amp;gt;CH6SJWRT2C&amp;lt;/string&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;key&amp;gt;destination&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;string&amp;gt;export&amp;lt;/string&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;key&amp;gt;provisioningProfiles&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;dict&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;key&amp;gt;com.isaacdedini.pilot.dev&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;string&amp;gt;iOS TestFlight Pilot Dev&amp;lt;/string&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;key&amp;gt;com.isaacdedini.pilot.staging&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;string&amp;gt;iOS TestFlight Pilot Staging&amp;lt;/string&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;key&amp;gt;com.isaacdedini.pilot.prod&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;string&amp;gt;iOS TestFlight Pilot Prod&amp;lt;/string&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">+ &amp;lt;/dict&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gi">&lt;/span> &amp;lt;/dict&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;lt;/plist&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>A quick explainer for each of these values is provided below. While a few of them indicate that the defaults should be fine, I decided to err towards being overly explicit.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Key&lt;/th>
+&lt;th>Value&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>signingStyle&lt;/td>
+&lt;td>Options: &lt;code>manual&lt;/code> or &lt;code>automatic&lt;/code> — this should default to whichever was used to archive the app&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>signingCertificate&lt;/td>
+&lt;td>We can provide an explicit name, or an automatic selector — in this case we&amp;rsquo;re using the &lt;strong>Apple Distribution&lt;/strong> automatic selector, which will pick the newest one&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>teamId&lt;/td>
+&lt;td>The developer team to use for this archive — should default to the team used to archive the app&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>destination&lt;/td>
+&lt;td>Options: &lt;code>export&lt;/code> or &lt;code>upload&lt;/code> — in this case we just want a local export&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>provisioningProfiles&lt;/td>
+&lt;td>This is in the form of a &lt;code>dict&lt;/code>, with our key value pairs being our bundle IDs and the name of the provisioning profiles.&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="pipeline-steps">Pipeline steps
+&lt;/h3>&lt;div class="alert">Tip: Documentation for &lt;code>altool&lt;/code> used for uploading the app can be found &lt;a class="link" href="https://help.apple.com/asc/appsaltool/" target="_blank" rel="noopener"
+>here&lt;/a>.&lt;/div>
+&lt;p>Without going into too much depth, the basic steps that needed to be achieved were as follows.&lt;/p>
+&lt;ol>
+&lt;li>Create temporary Keychain&lt;/li>
+&lt;li>Install iOS certificates&lt;/li>
+&lt;li>Install provisioning profiles&lt;/li>
+&lt;li>Setup Xcode&lt;/li>
+&lt;li>Run tests&lt;/li>
+&lt;li>Build archive&lt;/li>
+&lt;li>Export IPA&lt;/li>
+&lt;li>Copy the App Store Connect key itself to a local directory&lt;/li>
+&lt;li>Upload IPA to App Store Connect&lt;/li>
+&lt;li>Cleanup&lt;/li>
+&lt;/ol>
+&lt;p>A complete GitHub workflow can be found &lt;a class="link" href="https://github.com/vivecuervo7/ios-testflight-pilot" target="_blank" rel="noopener"
+>here&lt;/a> that includes the above steps, but below are some snippets of the critical &lt;strong>test&lt;/strong>, &lt;strong>archive&lt;/strong>, &lt;strong>export&lt;/strong> and &lt;strong>upload&lt;/strong> steps.&lt;/p>
+&lt;h4 id="run-tests">Run tests
+&lt;/h4>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yml" data-lang="yml">&lt;span class="line">&lt;span class="cl">- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Run tests&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">run&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="sd">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> cd Pilot
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> xcodebuild test \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -project Pilot.xcodeproj \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -scheme &amp;#34;Pilot Dev&amp;#34; \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -configuration &amp;#34;Debug Dev&amp;#34; \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -destination &amp;#34;platform=iOS Simulator,name=iPhone 16&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="build-archive">Build archive
+&lt;/h4>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yml" data-lang="yml">&lt;span class="line">&lt;span class="cl">- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Build archive for Dev&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">if&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">matrix.environment == &amp;#39;dev&amp;#39;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">run&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="sd">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> cd Pilot
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> mkdir -p build
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> xcodebuild archive \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -project Pilot.xcodeproj \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -scheme &amp;#34;Pilot Dev&amp;#34; \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -configuration Release \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -archivePath &amp;#34;build/Pilot-Dev.xcarchive&amp;#34; \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -destination &amp;#34;generic/platform=iOS&amp;#34; \&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="export-ipa">Export IPA
+&lt;/h4>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yml" data-lang="yml">&lt;span class="line">&lt;span class="cl">- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Export IPA for Dev&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">if&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">matrix.environment == &amp;#39;dev&amp;#39;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">run&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="sd">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> cd Pilot
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> xcodebuild -exportArchive \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -archivePath &amp;#34;build/Pilot-Dev.xcarchive&amp;#34; \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -exportPath &amp;#34;build/&amp;#34; \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -exportOptionsPlist ../ExportOptions.plist&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="upload-to-app-store-connect">Upload to App Store Connect
+&lt;/h4>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yml" data-lang="yml">&lt;span class="line">&lt;span class="cl">- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Upload to TestFlight for Dev&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">if&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">matrix.environment == &amp;#39;dev&amp;#39;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">run&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="sd">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> cd Pilot
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> xcrun altool --upload-app \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -f &amp;#34;build/Pilot.ipa&amp;#34; \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> -t ios \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> --apiKey &amp;#34;${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}&amp;#34; \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> --apiIssuer &amp;#34;${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}&amp;#34; \
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> --verbose&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="success">Success!
+&lt;/h2>&lt;p>Green lights! Once I checked one of the options to make App Store Connect stop complaining about &amp;ldquo;missing compliance&amp;rdquo; for the recently uploaded build, I &lt;em>finally&lt;/em> had a build available through TestFlight.&lt;/p>
+&lt;p>What a journey.&lt;/p>
+&lt;p>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/app-store-connect-feedback.png"
+width="874"
+height="659"
+srcset="https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/app-store-connect-feedback_hu_bd990597ed29803e.png 480w, https://vivecuervo7.github.io/dev-blog/p/deploying-ios-app-to-testflight/images/app-store-connect-feedback_hu_85dc31c0d3157e7c.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="132"
+data-flex-basis="318px"
+>&lt;/p></description></item></channel></rss>
