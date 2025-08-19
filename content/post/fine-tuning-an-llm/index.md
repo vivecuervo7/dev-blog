@@ -39,7 +39,7 @@ For context, I should probably clarify how I tend to find myself using LLMs.
 
 I did have [a bit of a play with genuine vibe coding]({{< relref "cursor-vibe-check">}}), but quickly found that it wasn't for me. I like understanding my codebase, and while certainly impressive that it could churn out functional code it a matter of minutes, I found it more often than not generated _too_ much. I found the sheer amount of code difficult to meaningfully review, and more often than not found myself blowing away all the changes even after a good half hour or so of prompting.
 
-AI has still found a home in my workflow however, but I find my use case to be mostly based around "I want this very specific thing, and I want it done roughly like this". Generally speaking, I am pretty quick to build out a rough idea of what code I want to write, so at a high level my workflow now looks more like this:
+AI has still found a home in my workflow however, but I find my use case to be mostly based around "I want this very specific thing, and I want it done roughly like this". At a high level my workflow looks more like this:
 
 - Creating a database migration
   - Manually create the file, add to context
@@ -51,7 +51,9 @@ AI has still found a home in my workflow however, but I find my use case to be m
 
 ...and so on.
 
-There's a bit of manual work to say "this is where I want you to put the code", and then letting AI run away with the code that needs to be added to that specific file. Which means, usually I want it to _specifically_ write SQL, or add a new SvelteKit endpoint, or maybe append a route to a .NET controller. I'm not really leveraging the capabilities of a model that is generally knowledgeable in all these things, all at once.
+There's a bit of manual work to say "this is where I want you to put the code", and then letting AI run away with the code that needs to be added to that specific file. Which means, usually I want it to _specifically_ write SQL, or add a new SvelteKit endpoint, or maybe append a route to a .NET controller.
+
+I'm not really leveraging the capabilities of a model that is generally knowledgeable in all these things, all at once.
 
 ### The pain point
 
@@ -111,17 +113,17 @@ Generally speaking however, one pleasant experience was that I no longer needed 
 
 I decided to push Claude a bit further here and managed to vibe code my way to a full-blown storefront for a shoe store. I was actually pretty surprised at how easily I could follow along this time &mdash; but truth be told, I have been working towards a very succinct stack which meant there was just less code to review. Styling however did get a bit messy, and there were a lot of follow-up prompts to try and get it Claude to keep that manageable.
 
-And really, that latter point is one of the main reasons why I didn't want to just stop here. If I were to just continue with this pattern, was I going to be looking up more and more documentation?
+And really, that latter point is one of the main reasons why I didn't want to just stop here. If I were to just continue with this pattern, I was going to be spending all my time fighting against Claude, trying to keep it in check.
 
-Was there even an `llms-*.txt` file out there for Tailwind? How do I provide this same information to [Open WebUI](https://openwebui.com/)?
+Additionally, was I going to just keep needing to add more and more documentation to the instructions? Was there even an `llms-*.txt` file out there for Tailwind? How do I provide this same information to [Open WebUI](https://openwebui.com/)?
 
 ## Retrieval-Augmented Generation (RAG)
 
-I'm going to be completely honest here &mdash; I'm not entirely sure how this is supposed to work in the context of GitHub Copilot, to Open WebUI, especially when we're talking about having a specialised model.
+I'm going to be completely honest here &mdash; I'm not entirely sure how this is supposed to work in the context of _both_ GitHub Copilot and Open WebUI, especially when we're talking about having a highly-specialised model.
 
 My end-goal here was to have a single, unified experience that would be consistent across both GitHub Copilot and Open WebUI. While conceptually speaking RAG isn't overly complex, the best I could really find here was to create a [knowledge base](https://docs.openwebui.com/features/workspace/knowledge/) in Open WebUI, and have it reference the knowledge base itself when generating for a prompt.
 
-Open WebUI also allows us to [create new models](https://docs.openwebui.com/tutorials/tips/rag-tutorial#create-a-custom-model-with-the-knowledge-base) that have a system prompt, as well as a constant reference to a knowledge base. This worked reasonably well, but with the consolidated Svelte documentation, it really ended up either loading the whole model or not.
+Open WebUI also allows us to [create new models](https://docs.openwebui.com/tutorials/tips/rag-tutorial#create-a-custom-model-with-the-knowledge-base) that have a system prompt, as well as a constant reference to a knowledge base.
 
 This actually worked _really_ well, honestly. I wasn't sure that this was conceptually any different to GitHub Copilot's instructions, but it certainly did a far better job of just doing the thing I wanted it to do. Maybe GitHub Copilot was just getting in the way? Anyhow, it felt like the "other side of the coin" to GitHub Copilot's instructions, albeit a little shinier, despite not being plugged into my code editor.
 
@@ -137,7 +139,7 @@ So, feeling like I'd gotten _somewhere_ with the two approaches above, I really 
 
 Enter Ollama's Modelfiles. I [touched on these briefly]({{< relref "ollama-local-agent/#modelfiles">}}) while first looking into running models locally, but essentially they provide a way for me to create a completely new model based on an _existing_ model, with some additional tweaks for things such as parameters, **system prompts** and templates. The Modelfile reference can be found [here](https://ollama.readthedocs.io/en/modelfile/).
 
-Considering the success I'd had with the two earlier approaches, I figured that what I really needed was to just have a model that always had this in context, right? That's effectively what was happening with the two separate approaches &mdash; one was being very explicit in telling GitHub Copilot to _always_ consider the instructions, and the other was giving Open WebUI access to the file and _hoping_ that it always referenced it.
+Considering the success I'd had with the two earlier approaches, I figured that what I really needed was to just have a model that always had this in context, right? That's effectively what was happening with the two separate approaches &mdash; although one was being very explicit in telling GitHub Copilot to _always_ consider the instructions, and the other was giving Open WebUI access to the file and _hoping_ that it always referenced it.
 
 So, it seemed to make sense that I could just whack the contents of `llms-small.txt` into the system prompt of a new model, and then let both GitHub Copilot and Open WebUI use it directly, with no additional context required.
 
@@ -146,7 +148,7 @@ FROM qwen3:8b
 SYSTEM {contents of llms-small.txt}
 ```
 
-Heavily truncated, of course, that's really all that was required. Specify the model, and specify the system prompt, which was just a dump of the whole text file. Running the command below then created the new model. Piece of cake!
+Specify the model, and specify the system prompt, which was just a dump of the whole text file. Running the command below then created the new model. Piece of cake!
 
 ```sh
 ollama create svelte-system-prompt -f ./Modelfile
@@ -162,15 +164,23 @@ All of my reading up until this point had gradually leaned towards this eventual
 
 I'll try to touch on the various tools etc. in order here. This isn't quite how it panned out in practice, but it should provide a good overview of what's involved.
 
-Additionally, I decided to move away from trying to train it on Svelte here. I did give it a good crack at first, with varying levels of success. Ultimately I was left unsure as to whether the dataset I had created was actually any good, or whether the models I was using were just too small. Different training methods added another variable into the mix, and on top of that, with Qwen 3 being a reasoning model, I made a bit of a mess trying to insert reasoning data into the training dataset.
+Additionally, I decided to move away from trying to train it on Svelte here. I did give it a good crack at first, with varying levels of success. Ultimately I was left unsure as to whether the dataset I had created was actually any good, or whether the models I was using were just too small. Different training methods added another variable into the mix, and on top of that, with Qwen 3 being a reasoning model I made a bit of a mess trying to insert reasoning data into the training dataset.
 
-Anyway, I decided to train it on a much more focused topic &mdash; the dimensions and markings of a rugby league field.
+Anyway, I decided to train it on a much more focused topic &mdash; **the dimensions and markings of a rugby league field**.
 
-I grabbed the PDF from [here](https://www.harrodsport.com/uploads/wysiwyg/file/rugby-league-pitch-dimensions-pdf.pdf), and used that as the basis for my training dataset.
+I grabbed a PDF from [here](https://www.harrodsport.com/uploads/wysiwyg/file/rugby-league-pitch-dimensions-pdf.pdf), and used that as the basis for my training dataset.
 
 ### Datasets
 
 Of course, the easiest way to create a dataset for training an LLM, was to use an LLM. I tried getting a couple of models to scrape the PDF, with ChatGPT being the quickest way to generate a large file.
+
+#### Meta's Synthetic Data Kit
+
+I stumbled across [Meta's Synthetic Data Kit](https://github.com/meta-llama/synthetic-data-kit) which is purpose built for creating these datasets _far_ too late in the piece, however I found that I wasn't able to get a meaningful dataset anyhow. It simply required a model that was too large to run on my machine.
+
+I won't go into details on how to run this, but it looks like an effective tool for slurping up large amounts of data and spitting out a usable dataset.
+
+It just might need either a beefy setup, or using a rented workstation from services like [Vast.ai](https://vast.ai/).
 
 #### Formats
 
@@ -269,7 +279,7 @@ mlx_lm.lora --train \
 
 We can easily switch that last argument to `lora` (or `dora`) to use the other types of training. This introduces some additional arguments we can pass, but we can leave them at their defaults for now.
 
-It is worth mentioning here that this is a resource-intensive task, and more than once I found myself running out of memory and watching the training process crash. [This page](https://github.com/ml-explore/mlx-lm/blob/e9b1649662d261e8eefea506c705a7370bb92449/mlx_lm/LORA.md#memory-issues) details a few methods to try and reduce the memory usage, but I found that the biggest impact was simply to use a smaller model &mdash; bearing in mind that this will also reduce the quality of the model.
+It is worth mentioning here that this is a resource-intensive task, and more than once I found myself running out of memory and watching the training process crash. [This page](https://github.com/ml-explore/mlx-lm/blob/e9b1649662d261e8eefea506c705a7370bb92449/mlx_lm/LORA.md#memory-issues) details a few methods to try and reduce the memory usage, but I found that the biggest impact was simply to use a smaller model &mdash; bearing in mind that this will also reduce the quality of the final model.
 
 Run the command with your desired combination of parameters, and we should end up with a folder called `adapters`. Inside, is the result of our fine-tuning in the form of a Safetensor adapter!
 
@@ -306,13 +316,13 @@ My understanding is that we want the validation loss to be close to the the trai
 
 #### Fusing
 
-Honestly, I prefer to refer to this as "baking" the adapter in. Apparently the community is dead-set on calling it "fusing". That just reminds me of a childhood where I wasn't allowed to watch Dragonball Z.
+Honestly, I prefer to refer to this as "baking" the adapter in. Apparently the community is dead-set on calling it "fusing". That just reminds me of an over-protected childhood where I wasn't allowed to watch Dragonball Z.
 
 ![](images/fusion.gif)
 
 Moving on, this step isn't necessarily required, depending on the model we've used. I haven't tried this with one of the compatible models, but Ollama's [Modelfile reference](https://ollama.readthedocs.io/en/modelfile/#safetensor-adapter) does mention the ability to simply reference a Safetensor adapter, which is what we get when we run the `mlx_lm.lora --train` command above.
 
-Since neither of the models I was using were compatible, I did need to produce a fused model. We can actually run the model we used to create the adapter with or without the adapter attached to it (add an `--adapter-path` argument to a `mlx_lm.generate` etc. command to use the adapter), but this wasn't going to give me a model that could be run by Ollama.
+Since neither of the models I was using were compatible, I did need to produce a fused model. We can actually run the model we used to create the adapter with or without the adapter attached to it (add an `--adapter-path` argument to a `mlx_lm.generate` command to use the adapter), but this wasn't going to give me a model that could be run by Ollama.
 
 To combine the model and adapter, we run the following.
 
@@ -401,7 +411,7 @@ Here are the datasets used, in the **messages** format:
 
 As for the actual parameters, I ran each with **200 iterations** and a **batch size of 1**. For **DoRA** training, I also limited it to training on **4 layers**. This was very focused around reducing the memory usage, as to date I had watched a few training processes crash due to running out of memory. Later on, I do look at the impact of changing the number of layers.
 
-The prompt used will be **_"How big is a rugby league field?"_**. For reference, the answer is **68m** wide, and **112-122m** long.
+The prompt used will be **_"How big is a rugby league field?"_**. For reference, the answer is **68m wide**, and **112-122m long**.
 
 ### Per-model results
 
@@ -464,7 +474,7 @@ In an effort to keep the table headers short, they have been abbreviated. I'll a
 
 ### Summary
 
-I was a bit surprised by the results, with the larger Qwen model not performing quite as well as the smaller one. Perhaps this has something to do with the overall lower number of parameters that model is working with, resulting in a heavier weighting towards the new values?
+I was a bit surprised by the results, with the larger Qwen model not performing quite as well as the smaller one. Perhaps this has something to do with the overall lower number of parameters that the smaller model is working with, resulting in a heavier weighting towards the new values?
 
 The LLama3.2 model was the only one to nail the response across both sizes, which tracks with the general feeling being that it punches above it's weight. I'm not sure that this will translate into writing code where the reasoning capability of Qwen is touted to give it the edge &mdash; but I'm not quite sure at which model size that benefit really kicks in.
 
@@ -488,7 +498,7 @@ I also decided to keep the **Full** result here as the benchmark response.
 
 I played around with a few of the other parameters, including all 28 layers with 500 iterations, but the results were all pretty similar to the 24-layer run &mdash; although I noticed that at this point the responses started getting much more terse, closer in length to the training data even when the prompt wasn't related to that data at all.
 
-I was fairly impressed at this point. A 3B parameter model is certainly on the smaller end, and the dataset I'd given it was likely not very good, but the responses were consistently coming back with reasonably correct dimensions. It was still tripping over a few things, such as not being able to return the correct depth of the in-goal.
+I was fairly impressed at this point. A 3B parameter model is certainly on the smaller end, and the dataset I'd given it was likely not very good, but the responses were consistently coming back with reasonably correct dimensions. It was still tripping over a few things, such as not being able to return the correct depth of the in-goal area.
 
 I decided to offer Qwen a chance at redemption, and ran the same experiment with the 4B model. I was curious to see if it would see similar consistency with a layer number of layers being trained.
 
