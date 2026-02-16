@@ -1,0 +1,11 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Hugo Server (Drafts)",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "hugo server -D"
+        }
+    ]
+}
