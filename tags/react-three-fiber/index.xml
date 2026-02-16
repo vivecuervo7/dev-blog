@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>React Three Fiber on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/react-three-fiber/</link><description>Recent content in React Three Fiber on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Tue, 08 Jul 2025 08:24:00 +1000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/react-three-fiber/index.xml" rel="self" type="application/rss+xml"/><item><title>React Three Fiber</title><link>https://vivecuervo7.github.io/dev-blog/p/react-three-fiber/</link><pubDate>Wed, 02 Jul 2025 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/react-three-fiber/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/react-three-fiber/image.png" alt="Featured image of post React Three Fiber" /&gt;&lt;p&gt;Recently I had cause to revisit the 3D web landscape. Having previously used &lt;a class="link" href="https://www.babylonjs.com/" target="_blank" rel="noopener"
+&gt;babylon.js&lt;/a&gt; for similar projects and having had a largely positive experience, I remained curious about how Three.js stacked up against it.&lt;/p&gt;
+&lt;p&gt;I knew ahead of time that I was likely to land on a React app as a wrapper for any 3D content, and it was largely the presence of a couple of libraries that promised to make this a more streamlined experience — namely &lt;a class="link" href="https://r3f.docs.pmnd.rs/" target="_blank" rel="noopener"
+&gt;react-three-fiber&lt;/a&gt; and &lt;a class="link" href="https://drei.docs.pmnd.rs/" target="_blank" rel="noopener"
+&gt;drei&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;As such, this post will be leaning heavily on those, rather than looking at holding Three.js directly.&lt;/p&gt;
+&lt;h2 id="yeah-but-why"&gt;Yeah, but why?
+&lt;/h2&gt;&lt;p&gt;While it has been a few years since I last worked with Babylon.js, my initial memory of it was that it was big. Reviewing the landing page for it promises big things in the way of lighting, shadows, a Node Render Graph to control the whole render pipeline, right through to a fully-fledged physics engine.&lt;/p&gt;
+&lt;p&gt;Bottom line, it felt like a game engine. Which makes sense, as this is closer to what they&amp;rsquo;re targeting.&lt;/p&gt;
+&lt;p&gt;Don&amp;rsquo;t get me wrong — if I was building a more game-like experience I would have jumped straight at Babylon.js. My needs were a bit lighter however, which is what got me looking at the more lightweight Three.js.&lt;/p&gt;
+&lt;p&gt;Additionally, looking at NPM trends for these two packages indicates that Three.js is wildly more popular.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/react-three-fiber/images/npm-trends.png"
+width="1288"
+height="475"
+srcset="https://vivecuervo7.github.io/dev-blog/p/react-three-fiber/images/npm-trends_hu_efd64ecb1c223f.png 480w, https://vivecuervo7.github.io/dev-blog/p/react-three-fiber/images/npm-trends_hu_15665a11d82beeed.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="271"
+data-flex-basis="650px"
+&gt;&lt;/p&gt;
+&lt;p&gt;Although, I find that chart to be a little misleading. Babylon.js certainly isn&amp;rsquo;t lacking in popularity — both libraries have plenty of stars on GitHub, and are both kept up to date.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/react-three-fiber/images/npm-trends-stats.png"
+width="1294"
+height="159"
+srcset="https://vivecuervo7.github.io/dev-blog/p/react-three-fiber/images/npm-trends-stats_hu_6101bc2bca19eed3.png 480w, https://vivecuervo7.github.io/dev-blog/p/react-three-fiber/images/npm-trends-stats_hu_393e7cb2d2030b73.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="813"
+data-flex-basis="1953px"
+&gt;&lt;/p&gt;
+&lt;p&gt;The bundle size is also worth a brief mention, although being modular this doesn&amp;rsquo;t represent the final bundle size. But to give us a more concrete idea of what I mean by Three.js being more lightweight, the minified and gzipped bundle size comes in at ~170kB, compared to Babylon.js at 1.4MB.&lt;/p&gt;
+&lt;p&gt;What really sucked me however in was looking specifically at React Three Fiber and Drei. I was less swayed by the comparisons around bundle size and performance, as each seemed to have their own merits — Three.js for smaller, lightweight cases, and Babylon.js for the big guns. My use case was likely going to straddle the two, and when I find myself torn between two options in such cases, I tend towards that which offers a better developer experience.&lt;/p&gt;
+&lt;h2 id="simpler-syntax-with-react-three-fiber"&gt;Simpler syntax with React Three Fiber
+&lt;/h2&gt;&lt;p&gt;&lt;a class="link" href="https://www.youtube.com/watch?v=DPl34H2ISsk&amp;amp;t=558s" target="_blank" rel="noopener"
+&gt;This video&lt;/a&gt; does a great job of explaining what React Three Fiber (R3F) is actually doing under the hood, if you want a deeper explanation, but essentially it allows us to use a more React-like syntax when describing a Three.js scene.&lt;/p&gt;
+&lt;div class="code-hint-block"&gt;
+&lt;span class="code-hint-path"&gt;&lt;/span
+&gt;&lt;span class="code-hint"&gt;Three.js&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;span class="lnt"&gt;6
+&lt;/span&gt;&lt;span class="lnt"&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-ts" data-lang="ts"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="kr"&gt;const&lt;/span&gt; &lt;span class="nx"&gt;scene&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;Scene&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="kr"&gt;const&lt;/span&gt; &lt;span class="nx"&gt;cube&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;Mesh&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;cube&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;geometry&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;BoxGeometry&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;cube&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;material&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;MeshStandardMaterial&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;scene&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;cube&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Three.js will require us to explicitly create our mesh, add our geometry and materials, and then add it to the scene. From memory, this isn&amp;rsquo;t far from what we&amp;rsquo;d expect in Babylon.js either.&lt;/p&gt;
+&lt;p&gt;Down the track when we start looking to componentise things we&amp;rsquo;re very likely to end up using classes, but realistically this is just plain old Javascript so we&amp;rsquo;re pretty free in terms of how we want to split our code up.&lt;/p&gt;
+&lt;div class="code-hint-block"&gt;
+&lt;span class="code-hint-path"&gt;&lt;/span
+&gt;&lt;span class="code-hint"&gt;R3F&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-tsx" data-lang="tsx"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;mesh&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;boxGeometry&lt;/span&gt; &lt;span class="p"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;meshStandardMaterial&lt;/span&gt; &lt;span class="p"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;mesh&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Yep, straight up HTML-like markup.&lt;/p&gt;
+&lt;p&gt;R3F essentially works by saying that any child element will be added to it&amp;rsquo;s parent with the &lt;code&gt;.add()&lt;/code&gt; function. This is why we don&amp;rsquo;t need to explicitly call &lt;code&gt;scene.add()&lt;/code&gt; in R3F to have the object added to the scene.&lt;/p&gt;
+&lt;p&gt;The slight difference to be aware of here is that if a child element has an &lt;code&gt;attach&lt;/code&gt; property, it will instead assign that child element to a &lt;em&gt;property&lt;/em&gt; of the parent.&lt;/p&gt;
+&lt;p&gt;There&amp;rsquo;s a little magic in the example above, where R3F will automatically add the &lt;code&gt;attach&lt;/code&gt; property to any elements that end with &amp;ldquo;Geometry&amp;rdquo; or &amp;ldquo;Material&amp;rdquo;. This makes the above element equivalent to &lt;code&gt;&amp;lt;boxGeometry attach=&amp;quot;geometry&amp;quot; /&amp;gt;&lt;/code&gt;, which assigns the &lt;code&gt;boxGeometry&lt;/code&gt; element to the &lt;code&gt;geometry&lt;/code&gt; property of &lt;code&gt;mesh&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;More importantly than the syntax changes themselves however, is that it means when we come to componentisation we can simply create standard React components.&lt;/p&gt;
+&lt;h2 id="drei"&gt;Drei
+&lt;/h2&gt;&lt;p&gt;Drei provides a bunch of useful helpers and abstractions. I couldn&amp;rsquo;t really imagine using R3F &lt;em&gt;without&lt;/em&gt; also bringing Drei to the table — although I did find it a little constraining in some cases, largely around cameras and camera controls.&lt;/p&gt;
+&lt;p&gt;That said, I don&amp;rsquo;t know if this was specifically Drei, or it was more of an underlying problem.&lt;/p&gt;
+&lt;h2 id="performance"&gt;Performance
+&lt;/h2&gt;&lt;p&gt;Interestingly, the only time I noticed any drop in performance was when some AI-generated slop (yeah, I wanted to quickly throw some decent functionality at Three.js to make sure it could do what I wanted) caused excessive React renders.&lt;/p&gt;
+&lt;p&gt;From everything I&amp;rsquo;ve read online, Three.js &lt;em&gt;should&lt;/em&gt; be capable to better performance by merit of being more lightweight and offering tooling a little closer to the metal than Babylon.js. That said, the consensus seemed to be that Babylon.js is going to provide more stable performance in larger or more complex scenes.&lt;/p&gt;
+&lt;p&gt;Babylon.js does seem to prefer ease-of-use, with documentation covering &lt;a class="link" href="https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#how-to-optimize-your-scene" target="_blank" rel="noopener"
+&gt;how to optimise a scene&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Ultimately, this wasn&amp;rsquo;t going to be a deal-breaker for me, but it was interesting to note the difference in strengths between the two.&lt;/p&gt;
+&lt;h2 id="documentation"&gt;Documentation
+&lt;/h2&gt;&lt;p&gt;Now, this one took me by surprise. Three.js has been around for a bit longer, so I naturally assumed the documentation would be a strong point. Much to my surprise, the documentation wasn&amp;rsquo;t lacking per se, but felt hard to consume. Perhaps it was due to using a few libraries, but I found myself constantly bouncing between Three.js docs, R3F docs, and Drei docs.&lt;/p&gt;
+&lt;p&gt;Babylon.js on the other hand has &lt;em&gt;fantastic&lt;/em&gt; documentation. Where hunting for answers to problems in Three.js took me down the path of forum posts and tutorials, the Babylon.js documentation was all that was needed for the most part.&lt;/p&gt;
+&lt;h2 id="inspector"&gt;Inspector
+&lt;/h2&gt;&lt;p&gt;In a major point for Babylon.js, Three.js did not appear to have anything even remotely approaching the usefulness of Babylon.js&amp;rsquo; &lt;a class="link" href="https://doc.babylonjs.com/toolsAndResources/inspector" target="_blank" rel="noopener"
+&gt;Inspector&lt;/a&gt;. I don&amp;rsquo;t recall using this extensively those few years ago, but it was useful on a couple of occasions. Certainly something I&amp;rsquo;d rather have and not need.&lt;/p&gt;
+&lt;p&gt;Three.js on the other hand did not offer anything similar. The closest I stumbled upon was a reference to some libraries that could help to display frame rates and draw calls etc. The easiest way to plug anything in was to use Drei&amp;rsquo;s &lt;a class="link" href="https://drei.docs.pmnd.rs/misc/stats" target="_blank" rel="noopener"
+&gt;&lt;code&gt;&amp;lt;Stats /&amp;gt;&lt;/code&gt;&lt;/a&gt; component.&lt;/p&gt;
+&lt;h2 id="xr-support"&gt;XR support
+&lt;/h2&gt;&lt;p&gt;This one came as no surprise, but Babylon.js won out here. This was probably the moment where I started wondering whether Babylon.js might still be my preferred option — it was just one of those things that I didn&amp;rsquo;t want to have to mess around with to get working.&lt;/p&gt;
+&lt;p&gt;That said, it wasn&amp;rsquo;t particularly difficult to get VR/AR working with Three.js, but the first thing I noticed was a lack of typical VR controls such as being able to teleport around a scene.&lt;/p&gt;
+&lt;h2 id="react-integration"&gt;React integration
+&lt;/h2&gt;&lt;p&gt;Relying quite heavily on some memories eroded by time, I have some vague recollection of integrating Babylon.js with the React wrapper to be less than ideal. Workable, but it always felt like we were trying to bridge over the two worlds.&lt;/p&gt;
+&lt;p&gt;This is really the big reason why Three.js and more specifically R3F jumped out at me. The React integration is really solid here, and makes it feel very easy to wrap React around a 3D experience. For a use case where the React-based UI would form a large part of the application, this felt like a solid argument for going with R3F.&lt;/p&gt;
+&lt;h3 id="on-demand-rendering"&gt;On-demand rendering
+&lt;/h3&gt;&lt;p&gt;Ok, this one was pretty cool.&lt;/p&gt;
+&lt;p&gt;Three.js runs as you would expect a typical game or scene to run, where there is a game loop that causes constant re-renders. This is exactly what we want if we have a scene with constantly moving parts, but as was the case with what I needed, things very much could come to rest in between interactions.&lt;/p&gt;
+&lt;p&gt;R3F offers us the option for &lt;a class="link" href="https://r3f.docs.pmnd.rs/advanced/scaling-performance#on-demand-rendering" target="_blank" rel="noopener"
+&gt;on-demand rendering&lt;/a&gt;, which allows us to set the canvas&amp;rsquo; &lt;code&gt;frameloop&lt;/code&gt; prop, which means we will render frames whenever props are changed throughout the component tree. Adding this and watching the &lt;code&gt;&amp;lt;Stats /&amp;gt;&lt;/code&gt; panel showed that the FPS counter stopped dead in it&amp;rsquo;s tracks whenever I wasn&amp;rsquo;t directly interacting with the scene, and there was no discernable impact to the expected behaviour of the app once I started using it.&lt;/p&gt;
+&lt;p&gt;Yay for battery life, I guess?&lt;/p&gt;
+&lt;h3 id="concurrency"&gt;Concurrency
+&lt;/h3&gt;&lt;p&gt;Without going into too much detail, R3F can lean on React&amp;rsquo;s &lt;code&gt;useTransition&lt;/code&gt; to defer heavy operations to maintain a stable framerate in demanding situations — something that vanilla Three.js cannot achieve.&lt;/p&gt;
+&lt;p&gt;More info &lt;a class="link" href="https://r3f.docs.pmnd.rs/advanced/scaling-performance#enable-concurrency" target="_blank" rel="noopener"
+&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id="state-management"&gt;State management
+&lt;/h3&gt;&lt;p&gt;While it was really nice being able to let state flow through into the 3D parts of the application, it did mean that we needed to be keenly aware of how the different render cycles might impact one another. React, of course, has it&amp;rsquo;s own way to manage when and where it should render things.&lt;/p&gt;
+&lt;p&gt;Where this rears it&amp;rsquo;s head is when considering how things such as materials are instantiated. With our components being managed by the React, while we get some niceties such as automatic disposing of unused materials etc., we can easily fall into the trap of repeatedly instantiating objects. For example, even for a simple box, if every render means we&amp;rsquo;re re-creating geometry and materials these will quickly add up.&lt;/p&gt;
+&lt;p&gt;Memoisation, shared materials etc., or instancing can help here. In contrast, Babylon.js felt a little more simplified here from memory due to the in-engine code feeling quite divorced from the React wrapper.&lt;/p&gt;
+&lt;p&gt;While covered in the documentation&amp;rsquo;s &lt;a class="link" href="https://r3f.docs.pmnd.rs/advanced/pitfalls" target="_blank" rel="noopener"
+&gt;performance pitfalls&lt;/a&gt; section, one that can easily be missed is that we also need to be careful about when we call &lt;code&gt;setState&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;useFrame&lt;/code&gt;, &lt;code&gt;useLoader&lt;/code&gt;, &lt;a class="link" href="https://github.com/pmndrs/gltfjsx" target="_blank" rel="noopener"
+&gt;&lt;code&gt;GLTFJSX&lt;/code&gt;&lt;/a&gt; are all things that are provided to help avoid these pitfalls, but coming from a React-heavy background these gotchas could easily be missed.&lt;/p&gt;
+&lt;h3 id="refs-refs-everywhere"&gt;Refs, refs everywhere
+&lt;/h3&gt;&lt;p&gt;I think the first thing that made me a slight sense of unease with R3F was that so many things needed to be wired up with &lt;code&gt;useRef&lt;/code&gt;. It&amp;rsquo;s certainly not uncommon nor unexpected to need to access a bunch of the underlying objects. Maybe we want to toggle a material&amp;rsquo;s visibility, or alter a mesh&amp;rsquo;s position.&lt;/p&gt;
+&lt;p&gt;It quickly started to feel like a bit of ref hell, and while it was likely exacerbated by my willingness to let Copilot run away with its ideas (this was all part of the experiment), I quickly started losing track of all the refs flying around.&lt;/p&gt;
+&lt;p&gt;Not terrible, and probably the only way to handle many of these cases, but it just felt like it was making things a little harder to hold than they really needed to be.&lt;/p&gt;
+&lt;h2 id="ai-ai"&gt;AI? AI.
+&lt;/h2&gt;&lt;p&gt;Part of the experiment was seeing how Copilot held up to prompts. Now, I&amp;rsquo;m not about to become a &lt;a class="link" href="https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/" &gt;vibe coder&lt;/a&gt;, but being realistic about the implications of AI in today&amp;rsquo;s software development landscape I was curious to see if Copilot could hold R3F in a usable way.&lt;/p&gt;
+&lt;p&gt;I found Copilot to be quite usable, and this was without providing any custom instructions. Claude was unsurprisingly better than GPT, but I quickly ran out of free requests. I can imagine that with the appropriate hand-holding by way of global instructions etc., AI could be used as a significant accelerator to this kind of work — and as someone who does not have a strong foundation in 3D math, might actually help me get around some of those trickier 3D problems.&lt;/p&gt;
+&lt;h2 id="conclusion"&gt;Conclusion
+&lt;/h2&gt;&lt;p&gt;Knowing that Babylon could absolutely tick all the boxes I needed it to, the question was largely whether Three.js could achieve the same or similar outcome, with the answer being a resounding yes.&lt;/p&gt;
+&lt;p&gt;Honestly, that said I&amp;rsquo;m still not entirely sold on Three.js. Even with the tidy React integration that R3F provides, I can&amp;rsquo;t shake the feeling that it&amp;rsquo;s really still aimed at small-to-medium sized use cases. I&amp;rsquo;m not sure what might be involved in implementing a custom camera controller, for example, but it just didn&amp;rsquo;t feel like it would be quite so straightforward.&lt;/p&gt;
+&lt;p&gt;I think at the end of the day, I would probably consider whether the 3D scene was going to be simple or complex, and how much UI needed to be wrapped around it.&lt;/p&gt;
+&lt;h2 id="update-babylonjs-answer-to-r3f"&gt;Update: Babylon.js&amp;rsquo; answer to R3F
+&lt;/h2&gt;&lt;p&gt;So, I did eventually come back around to have a look at &lt;a class="link" href="https://brianzinn.github.io/react-babylonjs/examples/index" target="_blank" rel="noopener"
+&gt;react-babylon&lt;/a&gt; — admittedly I wasn&amp;rsquo;t well aware of this option when I first decided to look into R3F. It&amp;rsquo;s probably thrown a little bit of a spanner in the works for me with regards to leaning towards Three.js &lt;em&gt;because&lt;/em&gt; it had such a nice integration with React.&lt;/p&gt;
+&lt;p&gt;There isn&amp;rsquo;t a whole lot that R3F does that react-babylon doesn&amp;rsquo;t for their respective frameworks. I did find the documentation to be reasonably good for both, although there were a couple of areas which weren&amp;rsquo;t quite as well-documented, such as the need to wrap a &lt;code&gt;&amp;lt;Model&amp;gt;&lt;/code&gt; inside of a &lt;code&gt;&amp;lt;Suspense&amp;gt;&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;I had wrongfully assumed that without the &lt;code&gt;&amp;lt;Suspense&amp;gt;&lt;/code&gt; it would have just not shown anything while the mesh loaded, but that wasn&amp;rsquo;t the case — rather it caused a weird bug where much of the already-rendered objects were duplicated. It wasn&amp;rsquo;t really obvious what caused this, and it was through trial and error that I discovered where I&amp;rsquo;d gone astray.&lt;/p&gt;
+&lt;p&gt;I did later stumble across a tiny entry in the documentation which speaks to the need for a wrapping &lt;code&gt;&amp;lt;Suspense&amp;gt;&lt;/code&gt; if using the &lt;code&gt;SceneLoader&lt;/code&gt; or &lt;code&gt;AssetManager&lt;/code&gt; hooks, and I assume these are used under the hood when using the &lt;code&gt;&amp;lt;Model&amp;gt;&lt;/code&gt; component directly.&lt;/p&gt;
+&lt;h3 id="asset-management"&gt;Asset management
+&lt;/h3&gt;&lt;p&gt;Asset management in general, or more particularly caching loaded assets, seemed less straightforward than with R3F. Where R3F offers a &lt;code&gt;useLoader&lt;/code&gt; hook that &lt;a class="link" href="https://r3f.docs.pmnd.rs/advanced/scaling-performance#caching-with-useloader" target="_blank" rel="noopener"
+&gt;automatically caches loaded assets&lt;/a&gt;, it appears that a little manual effort is required for react-babylon with the use of an &lt;a class="link" href="https://brianzinn.github.io/react-babylonjs/examples/hooks/asset-manager#useassetmanager" target="_blank" rel="noopener"
+&gt;asset manager&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This might actually be preferred in some circumstances — likely leaning back into the idea that Babylon.js is more suited to those larger projects where more careful management of asset caching is required.&lt;/p&gt;
+&lt;h3 id="the-shiny-bits"&gt;The shiny bits
+&lt;/h3&gt;&lt;p&gt;I did enjoy coming back to Babylon.js and having a few things working a bit more nicely out of the box. Shadows felt like a first-class citizen, and I could easily switch a camera between orthographic and perspective views. Additionally, I know from experience that XR controls in Babylon.js are ready out-of-the-box, where Three.js didn&amp;rsquo;t seem to come with anything bar headset tracking.&lt;/p&gt;
+&lt;p&gt;I think a major deciding factor between the two is going to be considering whether we&amp;rsquo;re happy to keep things as they are out of the box or not. Where Babylon.js offers a lot, I&amp;rsquo;m unsure as to how easy it is to modify their implementations. Three.js on the other hand looks to require either community plugins or manual work, but in doing so opens the door to a bit more flexibility.&lt;/p&gt;
+&lt;h3 id="state-management-1"&gt;State management
+&lt;/h3&gt;&lt;p&gt;As a small aside, I did find react-babylon a little easier to hold than R3F with regards to state management, but I&amp;rsquo;m willing to put this entirely down to having a second bite of the cherry, and being a little more aware of how I was handling state and how it interacted across the React and frame loop boundaries.&lt;/p&gt;
+&lt;p&gt;All of the above still applies here however. There is still some complexity in managing the additional re-rendering of components compared to simply serving a file that renders a canvas and initialises the engine.&lt;/p&gt;
+&lt;h3 id="the-escape-hatch"&gt;The escape hatch
+&lt;/h3&gt;&lt;p&gt;Something I didn&amp;rsquo;t recall seeing in R3F, or rather the specific Drei implementations I was using, was a way to easily access objects outside of using a &lt;code&gt;ref&lt;/code&gt;. React-babylon offers a very useful &lt;code&gt;onCreated&lt;/code&gt; prop on all the elements to serve as an escape hatch, allowing us to revert to Babylon.js&amp;rsquo; imperative approach.&lt;/p&gt;
+&lt;p&gt;I found this to be quite helpful in a few cases — in particular when loading a mesh and needing to traverse all the sub-meshes to apply materials. Similar results in R3F were achieved by loading the mesh and applying the materials outside of our markup, then rendering it using a &lt;code&gt;&amp;lt;primitive object={object} /&amp;gt;&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Super useful, and really helped to avoid feeling like I was being locked into a specific usage pattern.&lt;/p&gt;
+&lt;h3 id="the-inspector"&gt;The Inspector
+&lt;/h3&gt;&lt;p&gt;I know I mentioned this earlier, but Babylon.js&amp;rsquo; &lt;a class="link" href="https://doc.babylonjs.com/toolsAndResources/inspector" target="_blank" rel="noopener"
+&gt;Inspector&lt;/a&gt; is such an incredibly useful tool for debugging a scene. In particular, I had some issues with setting up a material at first, and being able to make changes on the fly and see how it impacted the scene directly made for a really quick fix.&lt;/p&gt;
+&lt;p&gt;Certainly, one of those tools you would just rather have access to.&lt;/p&gt;
+&lt;h2 id="conclusion-the-er-updated-one"&gt;Conclusion&amp;hellip; the, er, updated one
+&lt;/h2&gt;&lt;p&gt;Very tricky, honestly.&lt;/p&gt;
+&lt;p&gt;I found Three.js and it&amp;rsquo;s respective integration with React to be more intuitive, but the overall documentation lacking. The out-of-the-box features were thin, but understandably so as it is more intended as a lightweight 3D rendering engine. I did find however that when things didn&amp;rsquo;t fit the R3F / Drei mould perfectly, it could get quite messy very quickly.&lt;/p&gt;
+&lt;p&gt;Babylon.js continues to impress with what it does offer, and aside from the Inspector there are a slew of &lt;a class="link" href="https://doc.babylonjs.com/toolsAndResources/" target="_blank" rel="noopener"
+&gt;other tools&lt;/a&gt; available, including some which surprisingly didn&amp;rsquo;t seem to be linked on that page such as this &lt;a class="link" href="https://www.babylonjs.com/tools/ibl/" target="_blank" rel="noopener"
+&gt;IBL Tool&lt;/a&gt; for converting HDRI environments to Babylon.js&amp;rsquo; &lt;a class="link" href="https://doc.babylonjs.com/features/featuresDeepDive/materials/using/HDREnvironment/#what-is-a-env-tech-deep-dive" target="_blank" rel="noopener"
+&gt;preferred &lt;code&gt;.env&lt;/code&gt; format&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I still find myself landing on the idea that Three.js is great if you want to move quickly and have a known, smaller scope. I could certainly see feature creep causing some significant unforeseen manual implementations, which creates an inherent risk with using this tool.&lt;/p&gt;
+&lt;p&gt;Suffice to say, Babylon.js isn&amp;rsquo;t immune to risks such as this. Much like using a standard web UI library, there&amp;rsquo;s a trade-off between the ease of using out-of-the-box components and flexibility. There is of course a chance that what Babylon offers isn&amp;rsquo;t quite what we&amp;rsquo;re after, and we may not be able to simply tweak it to suit our use case.&lt;/p&gt;
+&lt;p&gt;All that said and done, I do find myself feeling pulled towards Babylon.js, particularly for some niceties such as shadows just working as one would expect.&lt;/p&gt;</description></item></channel></rss>

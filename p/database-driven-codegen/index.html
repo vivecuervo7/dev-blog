@@ -1,0 +1,512 @@
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Use database introspection and code generation to enhance workflows and reflect schema changes across your entire codebase"><title>Harnessing database-driven code generation</title><link rel=canonical href=https://vivecuervo7.github.io/dev-blog/p/database-driven-codegen/><link rel=stylesheet href=/dev-blog/scss/style.min.b76e6febe05082f0b22ad4c28706b2a37cac056344f4ac3f6e4d653ab9e48217.css><meta property='og:title' content="Harnessing database-driven code generation"><meta property='og:description' content="Use database introspection and code generation to enhance workflows and reflect schema changes across your entire codebase"><meta property='og:url' content='https://vivecuervo7.github.io/dev-blog/p/database-driven-codegen/'><meta property='og:site_name' content='Isaac Dedini'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Postgres'><meta property='article:tag' content='SQL'><meta property='article:tag' content='Typescript'><meta property='article:tag' content='Kysely'><meta property='article:tag' content='Codegen'><meta property='article:tag' content='Zod'><meta property='article:published_time' content='2025-03-25T00:00:00+00:00'><meta property='article:modified_time' content='2025-03-25T00:00:00+00:00'><meta property='og:image' content='https://vivecuervo7.github.io/dev-blog/p/database-driven-codegen/cover.jpg'><meta name=twitter:title content="Harnessing database-driven code generation"><meta name=twitter:description content="Use database introspection and code generation to enhance workflows and reflect schema changes across your entire codebase"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://vivecuervo7.github.io/dev-blog/p/database-driven-codegen/cover.jpg'><link rel="shortcut icon" href=/dev-blog/favicon.ico></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/dev-blog/><img src=/dev-blog/img/avatar_hu_d49d25d3a05488f7.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/dev-blog>Isaac Dedini</a></h1><h2 class=site-description></h2></div></header><ol class=menu id=main-menu><li><a href=/dev-blog/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/dev-blog/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/dev-blog/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#orms-script-builders-raw-sql>ORMs, script builders, raw SQL&mldr;</a><ol><li><a href=#or-something-else>Or something else&mldr;?</a></li></ol></li><li><a href=#the-magic-sauce>The magic sauce</a><ol><li><a href=#graphile-migrate>graphile-migrate</a></li><li><a href=#kysely-codegen>kysely-codegen</a></li><li><a href=#kysely>kysely</a></li></ol></li><li><a href=#going-even-further>Going even further</a><ol><li><a href=#generating-zod-validation-schema-with-kysely-codegen>Generating Zod validation schema with kysely-codegen</a><ol><li><a href=#scripts>Scripts</a></li><li><a href=#configuration>Configuration</a></li><li><a href=#output>Output</a></li><li><a href=#usage>Usage</a></li></ol></li></ol></li><li><a href=#conclusion>Conclusion</a></li></ol></nav></div></section></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/dev-blog/p/database-driven-codegen/><img src=/dev-blog/p/database-driven-codegen/cover_hu_9355e4a66626f1b9.jpg srcset="/dev-blog/p/database-driven-codegen/cover_hu_9355e4a66626f1b9.jpg 800w, /dev-blog/p/database-driven-codegen/cover_hu_75b6f879e0f84cc0.jpg 1600w" width=800 height=356 loading=lazy alt="Featured image of post Harnessing database-driven code generation"></a></div><div class=article-details><header class=article-category><a href=/dev-blog/categories/development/ style=background-color:#1c4269;color:#fff>Development</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/dev-blog/p/database-driven-codegen/>Harnessing database-driven code generation</a></h2><h3 class=article-subtitle>Use database introspection and code generation to enhance workflows and reflect schema changes across your entire codebase</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Mar 25, 2025</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>12 minute read</time></div></footer></div></header><section class=article-content><p>As I started to really dive into SvelteKit, I couldn&rsquo;t help but find myself drawn to this idea of writing as little code as possible. Don&rsquo;t get me wrong — I still love working with C#, and honestly it&rsquo;s still where I&rsquo;d turn to in a heartbeat if I had need to model a complex business domain.</p><p>I haven&rsquo;t been able to shake the thought though, that quite often we end up building rather small applications that might be simpler and faster to write using one of the current full-stack meta-frameworks. While SvelteKit has been my poison of choice in that regard, what is outlined here is framework-agnostic and should be applicable to any of the current offerings.</p><h2 id=orms-script-builders-raw-sql>ORMs, script builders, raw SQL&mldr;</h2><p>I have to admit to feeling a little lost when I first stepped into the idea of managing persistence without my trusty Entity Framework Core. Instinctively, I reached for an ORM and did some poking around.</p><p>I came across <a class=link href=https://sveltekit.io/blog/drizzle-sveltekit-integration target=_blank rel=noopener>this fantastic post</a> outlining the usage of <a class=link href=https://orm.drizzle.team/ target=_blank rel=noopener>Drizzle</a>. I was pretty excited, things looked nice and easy to implement. Getting started was fairly straightforward using a Postgres database, but as I looked around I started stumbling across discussions such as <a class=link href=https://github.com/thetutlage/meta/discussions/8 target=_blank rel=noopener>this one</a> outlining the shortcomings of Drizzle.</p><p>Nice as it was, I decided to keep looking.</p><ul><li><p><a class=link href=https://typeorm.io/ target=_blank rel=noopener>TypeORM</a> looked like a long term player, but seemed to be an unpopular choice.</p></li><li><p><a class=link href=https://www.prisma.io/ target=_blank rel=noopener>Prisma</a> looked a bit more positive, but I mistook their &ldquo;pricing&rdquo; page to indicate it was a paid option, which I later discovered was not the case, however the ship had sailed by this point.</p></li><li><p><a class=link href=https://mikro-orm.io/ target=_blank rel=noopener>MikroORM</a> received the most praise based on my research, but wasn&rsquo;t quite as easy to get set up as Drizzle.</p></li></ul><p>By this point I was pretty over the idea of using an ORM in TypeScript-land.</p><h3 id=or-something-else>Or something else&mldr;?</h3><p>I have to credit <a class=link href="https://www.reddit.com/r/sveltejs/comments/1brdr07/comment/kx9ymr9/?utm_source=share&amp;utm_medium=web3x&amp;utm_name=web3xcss&amp;utm_term=1&amp;utm_content=share_button" target=_blank rel=noopener>this post on Reddit</a> for pointing me in the direction I eventually found myself going in.</p><p>While the post itself goes into using GraphQL which isn&rsquo;t something I was particularly interested in, it did cause me to start looking into what a solution might look like if it were <em>truly</em> data-driven — allowing your database to be the source of truth for your application.</p><p>This resonated with me, as someone who typically preferred a data-first approach. It aligned very closely to my typical workflow in .NET where I&rsquo;d use <a class=link href=https://dbup.readthedocs.io/en/latest/ target=_blank rel=noopener>DbUp</a> to handle database migrations.</p><h2 id=the-magic-sauce>The magic sauce</h2><p>After a bit of a dig at just writing plain SQL, I decided to finally give <a class=link href=https://kysely.dev/ target=_blank rel=noopener>Kysely</a> a crack — a simple, no-nonsense query builder for TypeScript. It had consistently received high praise wherever I had seen it mentioned, and suffice to say I was <em>not</em> disappointed when I finally used it.</p><p>But first, we need some data!</p><h3 id=graphile-migrate>graphile-migrate</h3><p>The aforementioned Reddit post eventually landed me on <a class=link href=https://github.com/graphile/migrate target=_blank rel=noopener>graphile-migrate</a> — a migration tool that introduced an interesting way to manage migrations.</p><p>While I can certainly envision some scenarios that could get a little messy, the premise is that you would write your migrations to be idempotent. Writing your migrations to a <code>current.sql</code> file would allow you to use the tool&rsquo;s <code>watch</code> mode, re-running the migration every time the file is changed.</p><p>Once work on the &ldquo;current&rdquo; migration is complete it can be committed, which will move it into the committed folder as a migration ready to be run against a production database.</p><p>Despite needing some additional thought to how best to write idempotent migrations, I found that in practice it allowed for a much more iterative workflow when compared to the usual sitting down and figuring out all of the data requirements as the very first step.</p><p>We&rsquo;ll use the following migration to illustrate how the other tools are used in a basic real-world scenario.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>current.sql</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=k>drop</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=k>if</span><span class=w> </span><span class=k>exists</span><span class=w> </span><span class=n>app_user</span><span class=w> </span><span class=k>cascade</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=k>drop</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=k>if</span><span class=w> </span><span class=k>exists</span><span class=w> </span><span class=n>league</span><span class=w> </span><span class=k>cascade</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=k>drop</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=k>if</span><span class=w> </span><span class=k>exists</span><span class=w> </span><span class=n>player</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=k>drop</span><span class=w> </span><span class=k>type</span><span class=w> </span><span class=k>if</span><span class=w> </span><span class=k>exists</span><span class=w> </span><span class=n>player_role</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=k>create</span><span class=w> </span><span class=k>type</span><span class=w> </span><span class=n>player_role</span><span class=w> </span><span class=k>as</span><span class=w> </span><span class=n>enum</span><span class=w> </span><span class=p>(</span><span class=s1>&#39;batter&#39;</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;bowler&#39;</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;keeper&#39;</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;allrounder&#39;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=k>create</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>app_user</span><span class=w> </span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>id</span><span class=w> </span><span class=n>uuid</span><span class=w> </span><span class=k>primary</span><span class=w> </span><span class=k>key</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=k>create</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>league</span><span class=w> </span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>id</span><span class=w> </span><span class=n>uuid</span><span class=w> </span><span class=k>primary</span><span class=w> </span><span class=k>key</span><span class=w> </span><span class=k>default</span><span class=w> </span><span class=n>gen_random_uuid</span><span class=p>(),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>name</span><span class=w> </span><span class=nb>varchar</span><span class=p>(</span><span class=mi>30</span><span class=p>)</span><span class=w> </span><span class=k>not</span><span class=w> </span><span class=k>null</span><span class=w> </span><span class=k>unique</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>description</span><span class=w> </span><span class=nb>varchar</span><span class=p>(</span><span class=mi>200</span><span class=p>)</span><span class=w> </span><span class=k>not</span><span class=w> </span><span class=k>null</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>owner_id</span><span class=w> </span><span class=n>uuid</span><span class=w> </span><span class=k>references</span><span class=w> </span><span class=n>app_user</span><span class=w> </span><span class=k>not</span><span class=w> </span><span class=k>null</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=k>create</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>player</span><span class=w> </span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>id</span><span class=w> </span><span class=n>uuid</span><span class=w> </span><span class=k>primary</span><span class=w> </span><span class=k>key</span><span class=w> </span><span class=k>default</span><span class=w> </span><span class=n>gen_random_uuid</span><span class=p>(),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>league_id</span><span class=w> </span><span class=n>uuid</span><span class=w> </span><span class=k>references</span><span class=w> </span><span class=n>league</span><span class=w> </span><span class=k>on</span><span class=w> </span><span class=k>delete</span><span class=w> </span><span class=k>cascade</span><span class=w> </span><span class=k>not</span><span class=w> </span><span class=k>null</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>name</span><span class=w> </span><span class=nb>varchar</span><span class=p>(</span><span class=mi>30</span><span class=p>)</span><span class=w> </span><span class=k>not</span><span class=w> </span><span class=k>null</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>role</span><span class=w> </span><span class=n>player_role</span><span class=w> </span><span class=k>not</span><span class=w> </span><span class=k>null</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>image_url</span><span class=w> </span><span class=nb>varchar</span><span class=p>(</span><span class=mi>2048</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=p>);</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h3 id=kysely-codegen>kysely-codegen</h3><p>Before we can work with <a class=link href=https://kysely.dev/ target=_blank rel=noopener>Kysely</a>, we need to provide a database schema in a format that Kysely can understand. Database introspection isn&rsquo;t something I&rsquo;d done much of, and fortunately the Kysely documentation outlines a few tools that can aid with this.</p><p><a class=link href=https://github.com/RobinBlomberg/kysely-codegen target=_blank rel=noopener>kysely-codegen</a> as one of their offering purports to work with all dialects supported by Kysely itself, so that was the one that I picked off the list.</p><p>Configuration for <code>graphile-migrate</code> allows for running commands at various points, such as after all migrations, or after just the current migration. This allowed for a simple way to run <code>kysely-codegen</code> every time <code>graphile-migrate</code>&rsquo;s <code>watch</code> function caused the migrations to re-run. Nice!</p><p>Running <code>kysely-codegen</code> against the database after the migration above was applied yields the following.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>db-schema.ts</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-typescript data-lang=typescript><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * This file was generated by kysely-codegen.
+</span></span></span><span class=line><span class=cl><span class=cm> * Please do not edit it manually.
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>import</span> <span class=kr>type</span> <span class=p>{</span> <span class=nx>ColumnType</span> <span class=p>}</span> <span class=kr>from</span> <span class=s2>&#34;kysely&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>type</span> <span class=nx>Generated</span><span class=p>&lt;</span><span class=nt>T</span><span class=p>&gt;</span> <span class=o>=</span> <span class=nx>T</span> <span class=kr>extends</span> <span class=nx>ColumnType</span><span class=p>&lt;</span><span class=nt>infer</span> <span class=na>S</span><span class=p>,</span> <span class=na>infer</span> <span class=na>I</span><span class=p>,</span> <span class=na>infer</span> <span class=na>U</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=o>?</span> <span class=nx>ColumnType</span><span class=p>&lt;</span><span class=nt>S</span><span class=p>,</span> <span class=na>I</span> <span class=err>|</span> <span class=na>undefined</span><span class=p>,</span> <span class=na>U</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=o>:</span> <span class=nx>ColumnType</span><span class=p>&lt;</span><span class=nt>T</span><span class=p>,</span> <span class=na>T</span> <span class=err>|</span> <span class=na>undefined</span><span class=p>,</span> <span class=na>T</span><span class=p>&gt;;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>type</span> <span class=nx>PlayerRole</span> <span class=o>=</span> <span class=s2>&#34;allrounder&#34;</span> <span class=o>|</span> <span class=s2>&#34;batter&#34;</span> <span class=o>|</span> <span class=s2>&#34;bowler&#34;</span> <span class=o>|</span> <span class=s2>&#34;keeper&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>interface</span> <span class=nx>AppUser</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nx>id</span>: <span class=kt>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>interface</span> <span class=nx>League</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nx>description</span>: <span class=kt>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>id</span>: <span class=kt>Generated</span><span class=p>&lt;</span><span class=nt>string</span><span class=p>&gt;;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>name</span>: <span class=kt>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>owner_id</span>: <span class=kt>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>interface</span> <span class=nx>Player</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nx>id</span>: <span class=kt>Generated</span><span class=p>&lt;</span><span class=nt>string</span><span class=p>&gt;;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>image_url</span>: <span class=kt>string</span> <span class=o>|</span> <span class=kc>null</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>league_id</span>: <span class=kt>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>name</span>: <span class=kt>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>role</span>: <span class=kt>PlayerRole</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>interface</span> <span class=nx>DB</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nx>app_user</span>: <span class=kt>AppUser</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>league</span>: <span class=kt>League</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>player</span>: <span class=kt>Player</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=kysely>kysely</h3><p>I can&rsquo;t stress just how impressed I am with <a class=link href=https://kysely.dev/ target=_blank rel=noopener>Kysely</a> despite not having worked with it for long. It really does a fantastic job of not trying to do too much — it just gets out of the way and makes it feel quick and easy to work with.</p><p>Setting up the database client using Kysely was very straightforward.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>db.ts</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-typescript data-lang=typescript><span class=line><span class=cl><span class=kr>const</span> <span class=nx>pool</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>pg</span><span class=p>.</span><span class=nx>Pool</span><span class=p>({</span> <span class=nx>connectionString</span> <span class=p>});</span>
+</span></span><span class=line><span class=cl><span class=kr>const</span> <span class=nx>dialect</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>PostgresDialect</span><span class=p>({</span> <span class=nx>pool</span> <span class=p>});</span>
+</span></span><span class=line><span class=cl><span class=kr>const</span> <span class=nx>client</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>Kysely</span><span class=p>&lt;</span><span class=nt>DB</span><span class=p>&gt;({</span> <span class=nx>dialect</span><span class=p>,</span> <span class=nx>log</span><span class=o>:</span> <span class=p>[</span><span class=s2>&#34;error&#34;</span><span class=p>]</span> <span class=p>});</span>
+</span></span></code></pre></td></tr></table></div></div><p>I decided to break the tables down into repositories for ease of access, and here we can see how simple queries look using Kysely. We get full type-safety along with auto-complete while writing the entire query, and I found that the query itself mapped nicely to what I&rsquo;d expect the generated SQL to look like.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>players.ts</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-typescript data-lang=typescript><span class=line><span class=cl><span class=kr>export</span> <span class=kr>class</span> <span class=nx>PlayerRepository</span> <span class=kr>extends</span> <span class=nx>RepositoryBase</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>public</span> <span class=kr>async</span> <span class=nx>create</span><span class=p>(</span><span class=nx>player</span>: <span class=kt>Insertable</span><span class=p>&lt;</span><span class=nt>Player</span><span class=p>&gt;)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=k>await</span> <span class=k>this</span><span class=p>.</span><span class=nx>client</span>
+</span></span><span class=line><span class=cl>      <span class=p>.</span><span class=nx>insertInto</span><span class=p>(</span><span class=s2>&#34;player&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=p>.</span><span class=nx>values</span><span class=p>(</span><span class=nx>player</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=p>.</span><span class=nx>returning</span><span class=p>(</span><span class=s2>&#34;id&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=p>.</span><span class=nx>executeTakeFirstOrThrow</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kr>public</span> <span class=kr>async</span> <span class=nx>update</span><span class=p>(</span><span class=nx>id</span>: <span class=kt>string</span><span class=p>,</span> <span class=nx>values</span>: <span class=kt>Updateable</span><span class=p>&lt;</span><span class=nt>Player</span><span class=p>&gt;)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>await</span> <span class=k>this</span><span class=p>.</span><span class=nx>client</span>
+</span></span><span class=line><span class=cl>      <span class=p>.</span><span class=nx>updateTable</span><span class=p>(</span><span class=s2>&#34;player&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=p>.</span><span class=kr>set</span><span class=p>(</span><span class=nx>values</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=p>.</span><span class=nx>where</span><span class=p>(</span><span class=s2>&#34;id&#34;</span><span class=p>,</span> <span class=s2>&#34;=&#34;</span><span class=p>,</span> <span class=nx>id</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=p>.</span><span class=nx>execute</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kr>public</span> <span class=kr>async</span> <span class=k>delete</span><span class=p>(</span><span class=nx>id</span>: <span class=kt>string</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>await</span> <span class=k>this</span><span class=p>.</span><span class=nx>client</span><span class=p>.</span><span class=nx>deleteFrom</span><span class=p>(</span><span class=s2>&#34;player&#34;</span><span class=p>).</span><span class=nx>where</span><span class=p>(</span><span class=s2>&#34;id&#34;</span><span class=p>,</span> <span class=s2>&#34;=&#34;</span><span class=p>,</span> <span class=nx>id</span><span class=p>).</span><span class=nx>execute</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>Kysely provides us with <code>Selectable&lt;T></code>, <code>Insertable&lt;T></code> and <code>Updateable&lt;T></code> wrappers for each table, which should give us the correct types for each respective operation.</p><p>Additionally, you can replace <code>execute()</code> with <code>compile()</code> or <code>explain()</code> to get an idea of what&rsquo;s being generated under the hood. See the following for a truncated example based on running <code>compile()</code> against the <code>create(...)</code> command above.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=err>query:</span> <span class=err>{</span> <span class=err>...</span> <span class=p>}</span><span class=err>,</span>
+</span></span><span class=line><span class=cl>  <span class=err>sql:</span> <span class=err>&#39;insert</span> <span class=err>into</span> <span class=s2>&#34;player&#34;</span> <span class=err>(</span><span class=s2>&#34;name&#34;</span><span class=err>,</span> <span class=s2>&#34;image_url&#34;</span><span class=err>,</span> <span class=s2>&#34;role&#34;</span><span class=err>,</span> <span class=s2>&#34;league_id&#34;</span><span class=err>)</span> <span class=err>values</span> <span class=err>($</span><span class=mi>1</span><span class=err>,</span> <span class=err>$</span><span class=mi>2</span><span class=err>,</span> <span class=err>$</span><span class=mi>3</span><span class=err>,</span> <span class=err>$</span><span class=mi>4</span><span class=err>)</span> <span class=err>returning</span> <span class=s2>&#34;id&#34;</span><span class=err>&#39;,</span>
+</span></span><span class=line><span class=cl>  <span class=err>parameters:</span> <span class=p>[</span>
+</span></span><span class=line><span class=cl>    <span class=err>&#39;Isaac</span> <span class=err>Dedini&#39;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=err>&#39;&lt;image_url&gt;&#39;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=err>&#39;bowler&#39;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=err>&#39;&lt;uuid&gt;&#39;</span>
+</span></span><span class=line><span class=cl>  <span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=err>}</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=going-even-further>Going even further</h2><p>I was pretty happy with what I had landed on here, but I started wondering if we might be able to also extract some additional metadata and generate validation schema based on some of the database properties — namely wherever we&rsquo;ve used <code>varchar(n)</code>.</p><p>Yeah, as you can probably tell I&rsquo;ve run into a few cases where our application&rsquo;s validation hasn&rsquo;t been updated to reflect a change in the database schema. I wanted to try and fix that.</p><p>I started out here looking around at various options, including replacing <code>kysely-codegen</code> with <a class=link href=https://github.com/kristiandupont/kanel/tree/main/packages/kanel-kysely target=_blank rel=noopener>kanel-kysely</a> just so I could leverage <a class=link href=https://www.npmjs.com/package/kanel-zod target=_blank rel=noopener>kanel-zod</a> for this purpose. I was left underwhelmed at what was actually generated, and decided to go back to the drawing board.</p><h3 id=generating-zod-validation-schema-with-kysely-codegen>Generating Zod validation schema with kysely-codegen</h3><p>The <a class=link href=https://github.com/RobinBlomberg/kysely-codegen/releases/tag/0.18.0 target=_blank rel=noopener>0.18.0 release</a> of <code>kysely-codegen</code> introduced the ability to define custom serializers, largely related to this <a class=link href=https://github.com/RobinBlomberg/kysely-codegen/issues/86 target=_blank rel=noopener>GitHub discussion</a>. This gave me <em>most</em> of what I was after once I&rsquo;d extended the example provided in the linked release notes to include more extensive mappings.</p><p>Something that appeared to be missing yet as one of the key reasons I wanted to look into database-driven Zod schema was the ability to extract maximum character lengths for <code>varchar</code> columns. Of course, <a class=link href=https://wiki.postgresql.org/wiki/Don%27t_Do_This#Don.27t_use_varchar.28n.29_by_default target=_blank rel=noopener>there is advice floating</a> around that suggests preferring <code>text</code> instead of <code>varchar</code>, but it&rsquo;s a habit I can&rsquo;t shake.</p><p>I also wanted to refrain from mapping check constraints — I needed to draw a line here and stopping short of check constraints felt like a good balance between simplicity and functionality. So, consider that to be a caveat of this approach, although nothing is stopping you from extending the serializer to account for check constraints either.</p><h4 id=scripts>Scripts</h4><p>I eventually settled on adding the following script to allow me to grab additional metadata from the database, essentially returning a mapping between column names and their <code>character_maximum_length</code> property.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>get-column-metadata.js</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-typescript data-lang=typescript><span class=line><span class=cl><span class=kr>import</span> <span class=nx>pg</span> <span class=kr>from</span> <span class=s2>&#34;pg&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>const</span> <span class=nx>table</span> <span class=o>=</span> <span class=nx>process</span><span class=p>.</span><span class=nx>argv</span><span class=p>[</span><span class=mi>2</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>const</span> <span class=nx>client</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>pg</span><span class=p>.</span><span class=nx>Client</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>  <span class=nx>connectionString</span>: <span class=kt>process.env.DATABASE_URL</span> <span class=o>||</span> <span class=s2>&#34;&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=p>});</span>
+</span></span><span class=line><span class=cl><span class=k>await</span> <span class=nx>client</span><span class=p>.</span><span class=nx>connect</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>const</span> <span class=nx>query</span> <span class=o>=</span> <span class=sb>`
+</span></span></span><span class=line><span class=cl><span class=sb>  SELECT column_name, character_maximum_length
+</span></span></span><span class=line><span class=cl><span class=sb>  FROM information_schema.columns 
+</span></span></span><span class=line><span class=cl><span class=sb>  WHERE table_name = $1;
+</span></span></span><span class=line><span class=cl><span class=sb>`</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=kr>const</span> <span class=nx>result</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>client</span><span class=p>.</span><span class=nx>query</span><span class=p>(</span><span class=nx>query</span><span class=p>,</span> <span class=p>[</span><span class=nx>table</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>await</span> <span class=nx>client</span><span class=p>.</span><span class=nx>end</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>console</span><span class=p>.</span><span class=nx>log</span><span class=p>(</span><span class=nx>JSON</span><span class=p>.</span><span class=nx>stringify</span><span class=p>(</span><span class=nx>result</span><span class=p>.</span><span class=nx>rows</span><span class=p>));</span>
+</span></span></code></pre></td></tr></table></div></div><h4 id=configuration>Configuration</h4><p>I&rsquo;ve truncated the <code>mapDataTypeToZodString(...)</code> function below for brevity, but it retains all the mappings required for the tables defined so far.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>.kysely-zod-codegenrc.ts</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span><span class=lnt>81
+</span><span class=lnt>82
+</span><span class=lnt>83
+</span><span class=lnt>84
+</span><span class=lnt>85
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-typescript data-lang=typescript><span class=line><span class=cl><span class=kr>import</span> <span class=s2>&#34;dotenv/config&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=kr>import</span> <span class=p>{</span> <span class=nx>toKyselyCamelCase</span> <span class=p>}</span> <span class=kr>from</span> <span class=s2>&#34;kysely-codegen&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=kr>import</span> <span class=p>{</span> <span class=nx>join</span> <span class=p>}</span> <span class=kr>from</span> <span class=s2>&#34;path&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=kr>import</span> <span class=p>{</span> <span class=nx>execSync</span> <span class=p>}</span> <span class=kr>from</span> <span class=s2>&#34;child_process&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=k>default</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nx>url</span>: <span class=kt>process.env.DATABASE_URL</span> <span class=o>||</span> <span class=s2>&#34;&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>outFile</span>: <span class=kt>join</span><span class=p>(</span><span class=nx>process</span><span class=p>.</span><span class=nx>cwd</span><span class=p>(),</span> <span class=s2>&#34;src&#34;</span><span class=p>,</span> <span class=s2>&#34;lib&#34;</span><span class=p>,</span> <span class=s2>&#34;generated&#34;</span><span class=p>,</span> <span class=s2>&#34;db-schema-zod.ts&#34;</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>excludePattern</span><span class=o>:</span> <span class=s2>&#34;graphile_migrate.*&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>serializer</span><span class=o>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>serializeFile</span><span class=o>:</span> <span class=p>(</span><span class=nx>metadata</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=kd>let</span> <span class=nx>output</span> <span class=o>=</span> <span class=s1>&#39;import { z } from &#34;zod&#34;;\n\n&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=k>for</span> <span class=p>(</span><span class=kr>const</span> <span class=nx>table</span> <span class=k>of</span> <span class=nx>metadata</span><span class=p>.</span><span class=nx>tables</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>output</span> <span class=o>+=</span> <span class=s2>&#34;export const &#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>output</span> <span class=o>+=</span> <span class=nx>toKyselyCamelCase</span><span class=p>(</span><span class=nx>table</span><span class=p>.</span><span class=nx>name</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nx>output</span> <span class=o>+=</span> <span class=s2>&#34;Schema = z.object({\n&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kr>const</span> <span class=nx>additionalColumnMetadata</span> <span class=o>=</span> <span class=nx>getAdditionalColumnMetadata</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>          <span class=nx>table</span><span class=p>.</span><span class=nx>name</span>
+</span></span><span class=line><span class=cl>        <span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=kr>const</span> <span class=nx>column</span> <span class=k>of</span> <span class=nx>table</span><span class=p>.</span><span class=nx>columns</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>          <span class=nx>output</span> <span class=o>+=</span> <span class=s2>&#34;  &#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>          <span class=nx>output</span> <span class=o>+=</span> <span class=nx>column</span><span class=p>.</span><span class=nx>name</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>          <span class=nx>output</span> <span class=o>+=</span> <span class=s2>&#34;: &#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>          <span class=nx>output</span> <span class=o>+=</span> <span class=nx>mapDataTypeToZodString</span><span class=p>(</span><span class=nx>column</span><span class=p>.</span><span class=nx>dataType</span><span class=p>,</span> <span class=nx>column</span><span class=p>.</span><span class=nx>enumValues</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>          <span class=k>if</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=o>!</span><span class=nx>column</span><span class=p>.</span><span class=nx>isNullable</span> <span class=o>&amp;&amp;</span>
+</span></span><span class=line><span class=cl>            <span class=p>(</span><span class=nx>column</span><span class=p>.</span><span class=nx>dataType</span> <span class=o>===</span> <span class=s2>&#34;text&#34;</span> <span class=o>||</span>
+</span></span><span class=line><span class=cl>              <span class=nx>column</span><span class=p>.</span><span class=nx>dataType</span> <span class=o>===</span> <span class=s2>&#34;character varying&#34;</span> <span class=o>||</span>
+</span></span><span class=line><span class=cl>              <span class=nx>column</span><span class=p>.</span><span class=nx>dataType</span> <span class=o>===</span> <span class=s2>&#34;varchar&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>          <span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>output</span> <span class=o>+=</span> <span class=s2>&#34;.min(1)&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>          <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>          <span class=kr>const</span> <span class=nx>maxLength</span> <span class=o>=</span> <span class=nx>additionalColumnMetadata</span><span class=p>.</span><span class=nx>find</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=p>(</span><span class=nx>c</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=nx>c</span><span class=p>.</span><span class=nx>column_name</span> <span class=o>===</span> <span class=nx>column</span><span class=p>.</span><span class=nx>name</span>
+</span></span><span class=line><span class=cl>          <span class=p>)</span><span class=o>?</span><span class=p>.</span><span class=nx>character_maximum_length</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>          <span class=k>if</span> <span class=p>(</span><span class=nx>maxLength</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>output</span> <span class=o>+=</span> <span class=sb>`.max(</span><span class=si>${</span><span class=nx>maxLength</span><span class=si>}</span><span class=sb>)`</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>          <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>          <span class=k>if</span> <span class=p>(</span><span class=nx>column</span><span class=p>.</span><span class=nx>isNullable</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>output</span> <span class=o>+=</span> <span class=s2>&#34;.optional()&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>          <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>          <span class=nx>output</span> <span class=o>+=</span> <span class=s2>&#34;,\n&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>output</span> <span class=o>+=</span> <span class=s2>&#34;});\n\n&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=nx>output</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>},</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>function</span> <span class=nx>getAdditionalColumnMetadata</span><span class=p>(</span><span class=nx>tableName</span>: <span class=kt>string</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>const</span> <span class=nx>result</span> <span class=o>=</span> <span class=nx>execSync</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=sb>`node scripts/get-column-metadata.js &#34;</span><span class=si>${</span><span class=nx>tableName</span><span class=si>}</span><span class=sb>&#34;`</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span> <span class=nx>encoding</span><span class=o>:</span> <span class=s2>&#34;utf-8&#34;</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=nx>JSON</span><span class=p>.</span><span class=nx>parse</span><span class=p>(</span><span class=nx>result</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>function</span> <span class=nx>mapDataTypeToZodString</span><span class=p>(</span><span class=nx>dataType</span><span class=p>,</span> <span class=nx>enumValues</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>switch</span> <span class=p>(</span><span class=nx>dataType</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=s2>&#34;integer&#34;</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=s2>&#34;z.number()&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=s2>&#34;varchar&#34;</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=s2>&#34;z.string()&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=s2>&#34;uuid&#34;</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=s2>&#34;z.string().uuid()&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>default</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=nx>enumValues</span> <span class=o>&amp;&amp;</span> <span class=nx>enumValues</span><span class=p>.</span><span class=nx>length</span> <span class=o>&gt;</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>        <span class=o>?</span> <span class=sb>`z.enum([</span><span class=si>${</span><span class=nx>enumValues</span><span class=p>.</span><span class=nx>map</span><span class=p>((</span><span class=nx>value</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=sb>`&#39;</span><span class=si>${</span><span class=nx>value</span><span class=si>}</span><span class=sb>&#39;`</span><span class=p>).</span><span class=nx>join</span><span class=p>(</span><span class=s2>&#34;, &#34;</span><span class=p>)</span><span class=si>}</span><span class=sb>])`</span>
+</span></span><span class=line><span class=cl>        <span class=o>:</span> <span class=s2>&#34;z.unknown()&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><h4 id=output>Output</h4><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>db-schema-zod.ts</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-typescript data-lang=typescript><span class=line><span class=cl><span class=kr>import</span> <span class=p>{</span> <span class=nx>z</span> <span class=p>}</span> <span class=kr>from</span> <span class=s2>&#34;zod&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>const</span> <span class=nx>appUserSchema</span> <span class=o>=</span> <span class=nx>z</span><span class=p>.</span><span class=kt>object</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>  <span class=nx>id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl><span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>const</span> <span class=nx>appUserLeagueSchema</span> <span class=o>=</span> <span class=nx>z</span><span class=p>.</span><span class=kt>object</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>  <span class=nx>user_id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>league_id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl><span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>const</span> <span class=nx>leagueSchema</span> <span class=o>=</span> <span class=nx>z</span><span class=p>.</span><span class=kt>object</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>  <span class=nx>id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>name</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>min</span><span class=p>(</span><span class=mi>1</span><span class=p>).</span><span class=nx>max</span><span class=p>(</span><span class=mi>30</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>description</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>min</span><span class=p>(</span><span class=mi>1</span><span class=p>).</span><span class=nx>max</span><span class=p>(</span><span class=mi>200</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>owner_id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl><span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>const</span> <span class=nx>memberSchema</span> <span class=o>=</span> <span class=nx>z</span><span class=p>.</span><span class=kt>object</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>  <span class=nx>id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>league_id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>name</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>min</span><span class=p>(</span><span class=mi>1</span><span class=p>).</span><span class=nx>max</span><span class=p>(</span><span class=mi>30</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>role</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>min</span><span class=p>(</span><span class=mi>1</span><span class=p>).</span><span class=nx>max</span><span class=p>(</span><span class=mi>30</span><span class=p>),</span>
+</span></span><span class=line><span class=cl><span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>const</span> <span class=nx>playerSchema</span> <span class=o>=</span> <span class=nx>z</span><span class=p>.</span><span class=kt>object</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>  <span class=nx>id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>league_id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>name</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>min</span><span class=p>(</span><span class=mi>1</span><span class=p>).</span><span class=nx>max</span><span class=p>(</span><span class=mi>30</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>role</span>: <span class=kt>z.enum</span><span class=p>([</span><span class=s2>&#34;allrounder&#34;</span><span class=p>,</span> <span class=s2>&#34;batter&#34;</span><span class=p>,</span> <span class=s2>&#34;bowler&#34;</span><span class=p>,</span> <span class=s2>&#34;keeper&#34;</span><span class=p>]),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>image_url</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>max</span><span class=p>(</span><span class=mi>2048</span><span class=p>).</span><span class=nx>optional</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl><span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>const</span> <span class=nx>roundSchema</span> <span class=o>=</span> <span class=nx>z</span><span class=p>.</span><span class=kt>object</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>  <span class=nx>id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>  <span class=nx>league_id</span>: <span class=kt>z.string</span><span class=p>().</span><span class=nx>uuid</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl><span class=p>});</span>
+</span></span></code></pre></td></tr></table></div></div><h4 id=usage>Usage</h4><p>Now that we have our Zod validation schemas, we can use them for form validation. In the case of a create player form we only ask the user to supply three of the properties, so we just restrict the schema accordingly.</p><p>Once that&rsquo;s done we can extend the schema to <em>add</em> rules to an individual property. This allows us to layer business rules on top of our database-driven validation.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>db-schema-zod.ts</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-typescript data-lang=typescript><span class=line><span class=cl><span class=kr>import</span> <span class=p>{</span> <span class=nx>playerSchema</span> <span class=p>}</span> <span class=kr>from</span> <span class=s2>&#34;$lib/generated/db-schema-zod&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=kr>import</span> <span class=p>{</span> <span class=nx>z</span> <span class=p>}</span> <span class=kr>from</span> <span class=s2>&#34;zod&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>const</span> <span class=nx>formSchema</span> <span class=o>=</span> <span class=nx>playerSchema</span>
+</span></span><span class=line><span class=cl>  <span class=p>.</span><span class=nx>pick</span><span class=p>({</span> <span class=nx>name</span>: <span class=kt>true</span><span class=p>,</span> <span class=nx>image_url</span>: <span class=kt>true</span><span class=p>,</span> <span class=nx>role</span>: <span class=kt>true</span> <span class=p>})</span>
+</span></span><span class=line><span class=cl>  <span class=p>.</span><span class=nx>extend</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>    <span class=nx>image_url</span>: <span class=kt>playerSchema.shape.image_url.unwrap</span><span class=p>().</span><span class=nx>url</span><span class=p>().</span><span class=nx>or</span><span class=p>(</span><span class=nx>z</span><span class=p>.</span><span class=nx>literal</span><span class=p>(</span><span class=s2>&#34;&#34;</span><span class=p>)),</span>
+</span></span><span class=line><span class=cl>  <span class=p>});</span>
+</span></span></code></pre></td></tr></table></div></div><p>In this case, changing <code>player.image_url</code> from <code>varchar(2048)</code> to <code>varchar(20)</code> would cause the form&rsquo;s validation to instantly reflect that change without needing us to go and modify a separate schema.</p><h2 id=conclusion>Conclusion</h2><p>After digging through a swathe of options when it comes to managing persistence in a full-stack meta-framework, eventually stumbling upon the above felt like a revelation.</p><p>While no doubt there will be hitches along the way, this presents a way to move forward quickly and iteratively with data changes, allowing them to propagate throughout your codebase via the generated types.</p><p>Essentially, this boils down to a very straightforward workflow — add a migration, let it spin for a second or two, and start using the generated types.</p></section><footer class=article-footer><section class=article-tags><a href=/dev-blog/tags/postgres/>Postgres</a>
+<a href=/dev-blog/tags/sql/>SQL</a>
+<a href=/dev-blog/tags/typescript/>Typescript</a>
+<a href=/dev-blog/tags/kysely/>Kysely</a>
+<a href=/dev-blog/tags/codegen/>Codegen</a>
+<a href=/dev-blog/tags/zod/>Zod</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section></footer></article><div class="article-list--compact links"><article><a href=https://github.com/graphile/migrate target=_blank rel=noopener><div class=article-details><h2 class=article-title>graphile-migrate</h2><footer class=article-time>Opinionated SQL-powered productive roll-forward migration tool for PostgreSQL</footer></div></a></article><article><a href=https://kysely.dev/ target=_blank rel=noopener><div class=article-details><h2 class=article-title>Kysely</h2><footer class=article-time>The type-safe SQL query builder for TypeScript</footer></div></a></article><article><a href=https://github.com/RobinBlomberg/kysely-codegen target=_blank rel=noopener><div class=article-details><h2 class=article-title>kysely-codegen</h2><footer class=article-time>Generates Kysely type definitions from your database</footer></div></a></article><article><a href=https://zod.dev/ target=_blank rel=noopener><div class=article-details><h2 class=article-title>Zod</h2><footer class=article-time>TypeScript-first schema validation with static type inference</footer></div></a></article></div><aside class=related-content--wrapper><h2 class=section-title>Related content</h2><div class=related-content><div class="flex article-list--tile"><article class=has-image><a href=/dev-blog/p/journalling-with-claude/><div class=article-image><img src=/dev-blog/p/journalling-with-claude/cover.24a7ed978e5081fa75c5c0b71b8577bc_hu_982c6a388bcaf40d.jpg width=250 height=150 loading=lazy alt="Featured image of post Automated journalling for AI-assisted development" data-key=journalling-with-claude data-hash="md5-JKftl45Qgfp1xcC3G4V3vA=="></div><div class=article-details><h2 class=article-title>Automated journalling for AI-assisted development</h2></div></a></article><article class=has-image><a href=/dev-blog/p/fine-tuning-an-llm/><div class=article-image><img src=/dev-blog/p/fine-tuning-an-llm/image.3cb94e5459cd6e59d8b5290a1e3ca537_hu_c5f582216c3f460d.png width=250 height=150 loading=lazy alt="Featured image of post RAG to fine-tuning an LLM" data-key=fine-tuning-an-llm data-hash="md5-PLlOVFnNblnYtSkKHjylNw=="></div><div class=article-details><h2 class=article-title>RAG to fine-tuning an LLM</h2></div></a></article><article class=has-image><a href=/dev-blog/p/ollama-local-agent/><div class=article-image><img src=/dev-blog/p/ollama-local-agent/image.60e6144c99615cd0fba35f45855ab0a9_hu_9b8441ba7f7db365.png width=250 height=150 loading=lazy alt="Featured image of post Running AI models locally with Ollama" data-key=ollama-local-agent data-hash="md5-YOYUTJlhXND7o19FhVqwqQ=="></div><div class=article-details><h2 class=article-title>Running AI models locally with Ollama</h2></div></a></article><article class=has-image><a href=/dev-blog/p/deploying-ios-app-to-testflight/><div class=article-image><img src=/dev-blog/p/deploying-ios-app-to-testflight/image.73182ce8e3f7a3580c79b0541c9d3a97_hu_3c36db2f485fa9b4.jpg width=250 height=150 loading=lazy alt="Featured image of post Deploying an iOS app to TestFlight" data-key=deploying-ios-app-to-testflight data-hash="md5-cxgs6OP3o1gMebBUHJ06lw=="></div><div class=article-details><h2 class=article-title>Deploying an iOS app to TestFlight</h2></div></a></article><article class=has-image><a href=/dev-blog/p/react-three-fiber/><div class=article-image><img src=/dev-blog/p/react-three-fiber/image.e467405cfad2c92a64d3a8a9ae313a03_hu_abe90eff5fcb7501.png width=250 height=150 loading=lazy alt="Featured image of post React Three Fiber" data-key=react-three-fiber data-hash="md5-5GdAXPrSySpk06iprjE6Aw=="></div><div class=article-details><h2 class=article-title>React Three Fiber</h2></div></a></article></div></div></aside><footer class=site-footer><section class=copyright>&copy;
+2024 -
+2026 Isaac Dedini</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.27.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/dev-blog/ts/main.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

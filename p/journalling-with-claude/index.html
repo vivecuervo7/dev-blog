@@ -1,0 +1,242 @@
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Letting Claude track what I'm building, surface blog post topics, and capture reusable patterns"><title>Automated journalling for AI-assisted development</title><link rel=canonical href=https://vivecuervo7.github.io/dev-blog/p/journalling-with-claude/><link rel=stylesheet href=/dev-blog/scss/style.min.b76e6febe05082f0b22ad4c28706b2a37cac056344f4ac3f6e4d653ab9e48217.css><meta property='og:title' content="Automated journalling for AI-assisted development"><meta property='og:description' content="Letting Claude track what I'm building, surface blog post topics, and capture reusable patterns"><meta property='og:url' content='https://vivecuervo7.github.io/dev-blog/p/journalling-with-claude/'><meta property='og:site_name' content='Isaac Dedini'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='LLM'><meta property='article:tag' content='Claude'><meta property='article:tag' content='Skills'><meta property='article:tag' content='Automation'><meta property='article:tag' content='Productivity'><meta property='article:published_time' content='2026-02-17T00:00:00+10:00'><meta property='article:modified_time' content='2026-02-17T00:00:00+10:00'><meta property='og:image' content='https://vivecuervo7.github.io/dev-blog/p/journalling-with-claude/cover.jpg'><meta name=twitter:title content="Automated journalling for AI-assisted development"><meta name=twitter:description content="Letting Claude track what I'm building, surface blog post topics, and capture reusable patterns"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://vivecuervo7.github.io/dev-blog/p/journalling-with-claude/cover.jpg'><link rel="shortcut icon" href=/dev-blog/favicon.ico></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/dev-blog/><img src=/dev-blog/img/avatar_hu_d49d25d3a05488f7.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/dev-blog>Isaac Dedini</a></h1><h2 class=site-description></h2></div></header><ol class=menu id=main-menu><li><a href=/dev-blog/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/dev-blog/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/dev-blog/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#what-was-that-interesting-thing-i-did-last-week>What was that interesting thing I did last week?</a></li><li><a href=#skill-journal>Skill: /journal</a><ol><li><a href=#what-does-it-do>What does it do?</a></li><li><a href=#a-gentle-nudge>A gentle nudge</a></li><li><a href=#project-mapping>Project mapping</a></li><li><a href=#skill-definition>Skill definition</a></li></ol></li><li><a href=#what-the-output-looks-like>What the output looks like</a><ol><li><a href=#journal-entries>Journal entries</a></li><li><a href=#details--context>Details / context</a></li></ol></li><li><a href=#skill-standup>Skill: /standup</a><ol><li><a href=#skill-definition-1>Skill definition</a></li><li><a href=#output>Output</a></li></ol></li><li><a href=#next-steps>Next steps</a></li></ol></nav></div></section></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/dev-blog/p/journalling-with-claude/><img src=/dev-blog/p/journalling-with-claude/cover_hu_1c96ad8c564f83ab.jpg srcset="/dev-blog/p/journalling-with-claude/cover_hu_1c96ad8c564f83ab.jpg 800w, /dev-blog/p/journalling-with-claude/cover_hu_b1612467a422826.jpg 1600w" width=800 height=420 loading=lazy alt="Featured image of post Automated journalling for AI-assisted development"></a></div><div class=article-details><header class=article-category><a href=/dev-blog/categories/development/ style=background-color:#1c4269;color:#fff>Development
+</a><a href=/dev-blog/categories/ai/ style=background-color:#5181b1;color:#fff>AI</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/dev-blog/p/journalling-with-claude/>Automated journalling for AI-assisted development</a></h2><h3 class=article-subtitle>Letting Claude track what I'm building, surface blog post topics, and capture reusable patterns</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Feb 17, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>13 minute read</time></div></footer></div></header><section class=article-content><h2 id=what-was-that-interesting-thing-i-did-last-week>What was that interesting thing I did last week?</h2><p>I&rsquo;ve always leaned towards the idea of writing blog content when it comes to sharing knowledge. It&rsquo;s low-friction, and I can get a lot of info onto a page.</p><p>At least, I like the <em>idea</em> of writing blog content.</p><p>Looking back over my career to date, there&rsquo;s been a consistent trend with the way I try to write about my work. I can <em>never</em> come up with a good, blog-worthy topic!</p><p>The same story keeps repeating itself. I&rsquo;ll do a thing, run into problems, solve them, and come out the other side with some learnings and just&mldr; pick up the next task.</p><p>And then, weeks later, I&rsquo;ll mention it to someone and they&rsquo;ll respond with something along the lines of &ldquo;that&rsquo;s interesting, I&rsquo;d love to hear more about <em>that thing that you&rsquo;ve half-forgotten about</em>&rdquo;.</p><p>As my work has become increasingly funnelled through Claude, the notion struck me that Claude could probably keep track of the things I was doing better than I could–potentially even flagging work that I&rsquo;d done that might be interesting to others, or picking up on potentially reusable techniques or patterns.</p><h2 id=skill-journal>Skill: /journal</h2><p>I landed on the creation of a <code>/journal</code> skill that Claude could invoke (or could be triggered manually) to add an entry to a journal file. There were a few considerations to take into account:</p><ul><li><strong>Append-only</strong> — entries are only added to a single markdown file, to avoid losing previous entries</li><li><strong>Structured but flexible</strong> — each entry has a timestamp and a project, but Claude has latitude in what it includes</li><li><strong>Context is retained</strong> — all the relevant context required for a blog-worthy topic would be captured</li><li><strong>Non-blocking</strong> — the journal runs as a background task so it doesn&rsquo;t interrupt the flow of work</li></ul><h3 id=what-does-it-do>What does it do?</h3><p>The skill prompts Claude to reflect on the recent work and produce an entry covering:</p><ul><li><strong>What was done</strong> — a concise summary of the work completed</li><li><strong>Decisions made</strong> — any non-obvious choices and the reasoning behind them</li><li><strong>Notable observations</strong> — things that surprised me, patterns worth remembering, or potential blog topics</li><li><strong>Reusable patterns</strong> — techniques or approaches that could be extracted into skills, hooks, libraries etc.</li></ul><p>I did also get it to pop in some Obsidian-style <a class=link href=https://help.obsidian.md/tags target=_blank rel=noopener>tags</a>, just to try and make it easier to quickly collate journal entries or blog-worthy topics.</p><h3 id=a-gentle-nudge>A gentle nudge</h3><p>To make this work passively, I added an instruction to my project&rsquo;s <code>CLAUDE.md</code>:</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>~/.claude/CLAUDE.md</span></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl>When you complete a significant piece of work, make a notable decision, solve an interesting problem, or
+</span></span><span class=line><span class=cl>identify something blog-worthy or reusable, use <span class=sb>`/journal`</span> as a background task to record it. Don&#39;t
+</span></span><span class=line><span class=cl>interrupt flow — spawn it in the background and continue working.
+</span></span></code></pre></div><p>This means Claude will proactively journal without me having to remember to ask.</p><p>I didn&rsquo;t actually see much success in it actually spawning it as a background task, but it ran quickly enough and I started to get used to the frequent &ldquo;hey, I want to pop this in the journal&rdquo;. It was nice to know it was working, and it served as a reminder that I could go back and check the journal if I needed to.</p><h3 id=project-mapping>Project mapping</h3><p>To allow for mapping entries to projects, I needed to maintain this mapping somewhere. Fortunately I already had something in place due to some work that I was also doing to help drive some cross-project <a class=link href=https://chunkhound.github.io/ target=_blank rel=noopener>ChunkHound</a> search capabilities.</p><p>While the ChunkHound work I&rsquo;d done was populating this file on my behalf whenever a new project was indexed, even manually creating the file below would allow for journal entries to be mapped to specific projects rather than all be tagged under <code>#general</code>.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>~/.claude/skills/projects.json</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;project1&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;path&#34;</span><span class=p>:</span> <span class=s2>&#34;path/to/project1&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;project2&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;path&#34;</span><span class=p>:</span> <span class=s2>&#34;path/to/project2&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=skill-definition>Skill definition</h3><p>And of course, the meaty part–the skill definition itself!</p><p>One gotcha that I ran into that still has some caveats is when running a session that spans multiple days. Initially it was just taking the session start date, but adding a proper date lookup means that <em>if</em> it&rsquo;s running autonomously, the entries should end up under the right day.</p><p>Running the skill manually after multiple days&rsquo; work would lump them all into the day it was run, meaning the entries more accurately reflects the time a journal entry was written rather than when the work actually happened.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>~/.claude/skills/journal/SKILL.md</span></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>name: journal
+</span></span><span class=line><span class=cl>description: Append a journal entry summarising recent work, decisions, and notable observations
+</span></span><span class=line><span class=cl>argument-hint: &#34;[optional focus or note]&#34;
+</span></span><span class=line><span class=cl>allowed-tools: Bash, Read, Write, Glob
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gh># Journal
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Append a structured journal entry to today&#39;s daily file. This should be fast — do not read existing journal files or attempt to deduplicate.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Step 1: Determine the date and file
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gs>**IMPORTANT:**</span> Do not rely on your own sense of the current date — it may be stale in long-running sessions. Always run <span class=sb>`date +%Y-%m-%d`</span> and <span class=sb>`date
+</span></span></span><span class=line><span class=cl><span class=sb>  +%H:%M`</span> via Bash to get the actual current date and time.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The journal lives in <span class=sb>`~/.claude/journal/`</span>, one file per day, named <span class=sb>`YYYY-MM-DD.md`</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>If today&#39;s file doesn&#39;t exist, create it with a heading:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=s>```markdown
+</span></span></span><span class=line><span class=cl><span class=gh># YYYY-MM-DD
+</span></span></span><span class=line><span class=cl><span class=s>```</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Step 2: Resolve project context
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Determine the current project by matching the working directory against <span class=sb>`~/.claude/skills/projects.json`</span>. If not inside a registered project, use
+</span></span><span class=line><span class=cl>&#34;general&#34; as the project name.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Step 3: Write the entry
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Append an entry to the daily file. Each entry should follow this structure:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=s>```markdown
+</span></span></span><span class=line><span class=cl><span class=gu>## HH:MM — {project name} #{project name}
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{Summary of what was done — keep it concise but capture the key points}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gs>**Decisions:**</span> {any notable decisions made and why, or &#34;None&#34;}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gs>**Topics:**</span> {flag anything blog-worthy, reusable, or worth revisiting — or &#34;None&#34;}
+</span></span><span class=line><span class=cl><span class=s>```</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Tag the project name in the heading (e.g., <span class=sb>`#project1`</span>, <span class=sb>`#general`</span>). When flagging topics, prefix with <span class=sb>`#blog-worthy`</span>, <span class=sb>`#reusable`</span>, or
+</span></span><span class=line><span class=cl><span class=sb>`#demo-worthy`</span>:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Guidelines:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> Summarise what was accomplished, not every step taken
+</span></span><span class=line><span class=cl><span class=k>-</span> Capture the &#34;why&#34; behind decisions — this is what you&#39;ll forget
+</span></span><span class=line><span class=cl><span class=k>-</span> Flag blog-worthy topics with a brief note on why it&#39;s interesting
+</span></span><span class=line><span class=cl><span class=k>-</span> Flag reusable patterns, utilities, or approaches worth extracting
+</span></span><span class=line><span class=cl><span class=k>-</span> Flag demo-worthy work — things that would make a good presentation, show-and-tell, or live walkthrough
+</span></span><span class=line><span class=cl><span class=k>-</span> If the user provided <span class=sb>`$ARGUMENTS`</span>, use it to focus or annotate the entry
+</span></span><span class=line><span class=cl><span class=k>-</span> Keep entries concise — a few lines per section, not paragraphs
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Step 4: Write detail files (when topics are flagged)
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>When a topic is flagged as blog-worthy or reusable, create a supporting detail file that captures the context needed to act on it later. Without
+</span></span><span class=line><span class=cl>this, the journal flags opportunities but loses the detail needed to follow through.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Detail files live in <span class=sb>`~/.claude/journal/details/`</span> and are named <span class=sb>`YYYY-MM-DD-{slug}.md`</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Link them from the journal entry:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=s>```markdown
+</span></span></span><span class=line><span class=cl>**Topics:**
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#blog</span>-worthy Teaching Claude to reflect — [<span class=nt>detail</span>](<span class=na>details/2026-02-13-reflect-workflow.md</span>)
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#reusable</span> The skill/hook pattern — [<span class=nt>detail</span>](<span class=na>details/2026-02-13-starter-kit.md</span>)
+</span></span><span class=line><span class=cl><span class=s>```</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Each detail file should include whichever of the following are relevant:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> **Context** — what problem was being solved and why
+</span></span><span class=line><span class=cl><span class=k>-</span> **Approach** — what was tried, including dead ends and alternatives considered
+</span></span><span class=line><span class=cl><span class=k>-</span> **Key code** — relevant snippets, patterns, or configurations that were created
+</span></span><span class=line><span class=cl><span class=k>-</span> **Outcome** — what worked, what didn&#39;t, and why
+</span></span><span class=line><span class=cl><span class=k>-</span> **Blog angle** — if blog-worthy, what makes it interesting to write about
+</span></span><span class=line><span class=cl><span class=k>-</span> **Extraction notes** — if reusable, what could be extracted and how it might be generalised
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>These files are meant to preserve enough context that someone (including a future Claude session) could flesh out a blog post or extract reusable
+</span></span><span class=line><span class=cl>code without the original conversation.
+</span></span></code></pre></div><h2 id=what-the-output-looks-like>What the output looks like</h2><p>The resulting entries were split over two aspects. The first was a file-per-day journal structure filled with simple entries, grouped under timestamps and project headings. The other was the tracking of detail pages, where context needed to be retained.</p><h3 id=journal-entries>Journal entries</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl><span class=gh># 2026-02-14
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## 09:59 — general #general
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Built a comprehensive Claude Code customisation layer: global skills and CLAUDE.md instructions.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> Created <span class=sb>`/journal`</span> and <span class=sb>`/standup`</span> skills for daily work journalling and standup summaries
+</span></span><span class=line><span class=cl><span class=k>-</span> Added continuous improvement and autonomous journalling instructions to CLAUDE.md
+</span></span><span class=line><span class=cl><span class=k>-</span> Added two-tier journalling (entries + detail files) with Obsidian-friendly <span class=sb>`#tags`</span>
+</span></span><span class=line><span class=cl><span class=k>-</span> Fixed date staleness in long sessions by shelling out to <span class=sb>`date`</span> command
+</span></span><span class=line><span class=cl><span class=k>-</span> Added <span class=sb>`#demo-worthy`</span> as a topic tag alongside <span class=sb>`#blog-worthy`</span> and <span class=sb>`#reusable`</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gs>**Decisions:**</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> Two-tier journal (entries + detail files) — entries stay scannable, detail preserves context
+</span></span><span class=line><span class=cl><span class=k>-</span> Obsidian-style <span class=sb>`#tags`</span> for filtering — zero lock-in, just text elsewhere
+</span></span><span class=line><span class=cl><span class=k>-</span> Journal skill shells out to <span class=sb>`date`</span> — prevents stale dates in long-running sessions
+</span></span><span class=line><span class=cl><span class=k>-</span> Autonomous journalling wording made explicit with concrete examples and &#34;err on the side of journalling too much&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gs>**Topics:**</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#blog</span>-worthy The self-improving assistant loop — skills, hooks, /reflect, journalling as a meta-workflow — [<span class=nt>detail</span>](<span class=na>details/2026-02-14-self-improving-assistant.md</span>)
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#reusable</span> The skill/hook/CLAUDE.md pattern as a transferable Claude Code starter kit — [<span class=nt>detail</span>](<span class=na>details/2026-02-14-claude-code-starter-kit.md</span>)
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#demo</span>-worthy The full workflow end-to-end: <span class=sb>`/search`</span> → work → <span class=sb>`/journal`</span> → <span class=sb>`/standup`</span> → <span class=sb>`/reflect`</span> cycle
+</span></span></code></pre></div><p>Each entry ends up as a timestamped section in a markdown file. After a few days of use, the journal becomes a rich log of activity.</p><p>The only downside of course is that it only tracks what happened via Claude, requiring the mental mapping to any manual work done on the codebase. I expect that as my maturity with the tooling grows, I&rsquo;ll see a growing amount of my work processed through Claude, and these logs should naturally become richer over time.</p><h3 id=details--context>Details / context</h3><p>Under that <strong>Topics</strong> section, each entry has a link. Those links are to co-located details pages, where the relevant context is captured from the conversation history. This surprised me as to how well it worked, honestly, and it&rsquo;s where I went from curious to excited about the potential for this to truly enrich my workflow.</p><p>A little too verbose to paste one of the larger examples, the contents were well-structured and covered all the bases I&rsquo;d have expected them to. The details for potential blog posts even went as far as providing an angle for the blog post.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl><span class=gh># Semantic code search with Claude Code and ChunkHound
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Context
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Claude Code defaults to grep/glob for code search — pattern-based, requiring you to know what you&#39;re looking for. Goal: wire in ChunkHound semantic search so Claude finds code by intent using natural language.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Approach
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gs>**Architecture:**</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> Embeddings: local LM Studio (<span class=sb>`text-embedding-bge-base-en-v1.5`</span>) — free, fast, private
+</span></span><span class=line><span class=cl><span class=k>-</span> Search: ChunkHound CLI <span class=sb>`--semantic`</span> against per-project DuckDB indexes
+</span></span><span class=line><span class=cl><span class=k>-</span> Research synthesis: <span class=sb>`claude-code-cli`</span> provider — routes LLM through Claude
+</span></span><span class=line><span class=cl><span class=k>-</span> Index freshness: <span class=sb>`Stop`</span> hook runs background reindex after every response
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Initially tried local model for research synthesis too, but it ran out of context. Hybrid approach (local embeddings + Claude for LLM) was the fix.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gs>**Skills:**</span> <span class=sb>`/search`</span>, <span class=sb>`/research`</span>, <span class=sb>`/reindex`</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gs>**Configuration:**</span> Two JSON files in <span class=sb>`~/.claude/skills/`</span> — <span class=sb>`chunkhound-config.json`</span> and <span class=sb>`projects.json`</span>. Skills read at invocation. Adding a project = editing one file.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gs>**Auto-reindex:**</span> <span class=sb>`Stop`</span> hook → shell script → background <span class=sb>`chunkhound index`</span>. Chose <span class=sb>`Stop`</span> over <span class=sb>`PostToolUse`</span> (once per turn vs per-file) and <span class=sb>`SessionEnd`</span> (stale during session).
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Outcome
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Claude defaults to semantic search via CLAUDE.md instruction. Zero-maintenance via auto-reindex.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Blog angle
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Local-first — embeddings on your hardware, no API costs, code stays on your network. Draft post at <span class=sb>`dev-blog/content/post/semantic-code-search/index.md`</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Extraction notes
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> Config pattern (external JSON read at invocation) cleaner than hardcoding
+</span></span><span class=line><span class=cl><span class=k>-</span> Project registry + cwd resolution reused across multiple skills and the hook
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=sb>`Stop`</span> hook for background maintenance is generic
+</span></span></code></pre></div><p>While I haven&rsquo;t yet tried to do anything with the <code>#reusable</code> or <code>#demo-worthy</code> content, the <code>#blog-worthy</code> details make it a very short jump to go from journal entries to draft blog posts.</p><h2 id=skill-standup>Skill: /standup</h2><p>With the journal entries populating nicely, I didn&rsquo;t really have a way to prove any tangible benefit to tracking them without writing a blog post or using them in some way.</p><p>I decided it might be worth the addition of another skill which could make use of them–in this case, a skill that would synthesise a brief summary for a span of days.</p><h3 id=skill-definition-1>Skill definition</h3><p>Once again I put Claude to work and it spat out something even more robust than I had expected, deciding to include a project filter.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>~/.claude/skills/standup/SKILL.md</span></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>name: standup
+</span></span><span class=line><span class=cl>description: Summarise recent journal entries as a standup update
+</span></span><span class=line><span class=cl>argument-hint: &#34;[days back, default 1] [project name]&#34;
+</span></span><span class=line><span class=cl>allowed-tools: Bash, Read, Glob
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gh># Standup
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Summarise recent journal entries.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Steps
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>### Step 1: Determine the range
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Parse <span class=sb>`$ARGUMENTS`</span> for:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> A number (days to look back, default 1)
+</span></span><span class=line><span class=cl><span class=k>-</span> A project name (filter to that project only, default all)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Examples:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=sb>`/standup`</span> — yesterday&#39;s entries, all projects
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=sb>`/standup 3`</span> — last 3 days, all projects
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=sb>`/standup project1`</span> — yesterday&#39;s entries for project1
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=sb>`/standup 7 project2`</span> — last 7 days for project2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>### Step 2: Read journal files
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Read the daily files from <span class=sb>`~/.claude/journal/`</span> for the date range. Files are named <span class=sb>`YYYY-MM-DD.md`</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>### Step 3: Present the summary
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Summarise the entries concisely, grouped by day and project. Highlight:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> What was accomplished
+</span></span><span class=line><span class=cl><span class=k>-</span> Key decisions made
+</span></span><span class=line><span class=cl><span class=k>-</span> Any flagged blog topics or reusable IP
+</span></span><span class=line><span class=cl><span class=k>-</span> Anything left in progress
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Keep it brief — this is a standup, not a report.
+</span></span></code></pre></div><h3 id=output>Output</h3><p>Here&rsquo;s the output for <code>/standup last 2 days</code>.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl>Feb 15 — project1
+</span></span><span class=line><span class=cl><span class=k>-</span> Ported the Unity client to Godot 4.x (device-ID auth, main menu)
+</span></span><span class=line><span class=cl><span class=k>-</span> Built a background glow pulse shader, iterated with debug heatmaps to tune luminance thresholds
+</span></span><span class=line><span class=cl><span class=k>-</span> Built a step-based test harness with Playwright-style traces, CLI composition, and a /godot-test skill (9 files). Smoke tests passing.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Feb 14 — general
+</span></span><span class=line><span class=cl><span class=k>-</span> Built out the Claude Code customisation layer: /search, /research, /commit, /reflect, /journal, /standup skills
+</span></span><span class=line><span class=cl><span class=k>-</span> Added Stop hook for ChunkHound reindexing, switched research LLM to claude-code-cli
+</span></span><span class=line><span class=cl><span class=k>-</span> Drafted blog posts on semantic code search and teaching Claude to reflect
+</span></span><span class=line><span class=cl><span class=k>-</span> Added two-tier journalling (entries + detail files) with Obsidian-friendly tags
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Flagged topics:
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#blog</span>-worthy Shader debug heatmaps workflow
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#blog</span>-worthy Self-improving assistant loop
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#blog</span>-worthy Local-first semantic code search
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#demo</span>-worthy Unity-to-Godot port side-by-side
+</span></span><span class=line><span class=cl><span class=k>-</span> <span class=ni>#reusable</span> Godot step-based test runner, device-ID auth pattern, global skill + project opt-in pattern, Claude Code starter kit
+</span></span></code></pre></div><p>The ordering could leave a little to be desired–another run displayed the dates in reverse. Overall though, a very handy way to capture the work that was done, and to recap on any blog-worthy content or reusable IP!</p><h2 id=next-steps>Next steps</h2><p>I was pleasantly surprised at how well this worked, even in the short span of time I&rsquo;ve been playing with it. Considering it was the first time I really started to look at skills it was a testament to how easy they are to set up.</p><p>The pattern extraction is still speculative at this point, but capturing the context and the fact that there was even a thing potentially worth extracting is such a huge leap from my current &ldquo;do the thing and forget about it&rdquo;. I&rsquo;m looking forward to trying to progress this onto the next step of actually using that information to build the reusable assets etc.</p><p>The most notable thing I&rsquo;ve found myself lacking is the absence of screenshots. In one case, I went through an iterative process of visually debugging some changes I had Claude making to a shader in Godot, using a temporary heatmap drawn over the image I was applying the shader to, which drastically helped me work with Claude to get the result I was after. By the time it was solved, I&rsquo;d lost any opportunity to take in-progress screenshots that would have been incredibly valuable for a blog post.</p><p>Now to go full circle and find a way to get Claude to start prompting <em>me</em> to proactively capture media if the current work feels like it might reach a <code>#blog-worthy</code> level!</p></section><footer class=article-footer><section class=article-tags><a href=/dev-blog/tags/llm/>LLM</a>
+<a href=/dev-blog/tags/claude/>Claude</a>
+<a href=/dev-blog/tags/skills/>Skills</a>
+<a href=/dev-blog/tags/automation/>Automation</a>
+<a href=/dev-blog/tags/productivity/>Productivity</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section></footer></article><div class="article-list--compact links"><article><a href=https://docs.anthropic.com/en/docs/claude-code target=_blank rel=noopener><div class=article-details><h2 class=article-title>Claude Code</h2><footer class=article-time>Anthropic's CLI for Claude</footer></div></a></article></div><aside class=related-content--wrapper><h2 class=section-title>Related content</h2><div class=related-content><div class="flex article-list--tile"><article class=has-image><a href=/dev-blog/p/fine-tuning-an-llm/><div class=article-image><img src=/dev-blog/p/fine-tuning-an-llm/image.3cb94e5459cd6e59d8b5290a1e3ca537_hu_c5f582216c3f460d.png width=250 height=150 loading=lazy alt="Featured image of post RAG to fine-tuning an LLM" data-key=fine-tuning-an-llm data-hash="md5-PLlOVFnNblnYtSkKHjylNw=="></div><div class=article-details><h2 class=article-title>RAG to fine-tuning an LLM</h2></div></a></article><article class=has-image><a href=/dev-blog/p/ollama-local-agent/><div class=article-image><img src=/dev-blog/p/ollama-local-agent/image.60e6144c99615cd0fba35f45855ab0a9_hu_9b8441ba7f7db365.png width=250 height=150 loading=lazy alt="Featured image of post Running AI models locally with Ollama" data-key=ollama-local-agent data-hash="md5-YOYUTJlhXND7o19FhVqwqQ=="></div><div class=article-details><h2 class=article-title>Running AI models locally with Ollama</h2></div></a></article><article class=has-image><a href=/dev-blog/p/cursor-vibe-check/><div class=article-image><img src=/dev-blog/p/cursor-vibe-check/cover.f7cf2a26036d53501b99af2133950a5f_hu_8017c4abd29339bb.jpg width=250 height=150 loading=lazy alt="Featured image of post Cursor: Are the vibes really worth it?" data-key=cursor-vibe-check data-hash="md5-988qJgNtU1Abma8hM5UKXw=="></div><div class=article-details><h2 class=article-title>Cursor: Are the vibes really worth it?</h2></div></a></article><article class=has-image><a href=/dev-blog/p/deploying-ios-app-to-testflight/><div class=article-image><img src=/dev-blog/p/deploying-ios-app-to-testflight/image.73182ce8e3f7a3580c79b0541c9d3a97_hu_3c36db2f485fa9b4.jpg width=250 height=150 loading=lazy alt="Featured image of post Deploying an iOS app to TestFlight" data-key=deploying-ios-app-to-testflight data-hash="md5-cxgs6OP3o1gMebBUHJ06lw=="></div><div class=article-details><h2 class=article-title>Deploying an iOS app to TestFlight</h2></div></a></article><article class=has-image><a href=/dev-blog/p/react-three-fiber/><div class=article-image><img src=/dev-blog/p/react-three-fiber/image.e467405cfad2c92a64d3a8a9ae313a03_hu_abe90eff5fcb7501.png width=250 height=150 loading=lazy alt="Featured image of post React Three Fiber" data-key=react-three-fiber data-hash="md5-5GdAXPrSySpk06iprjE6Aw=="></div><div class=article-details><h2 class=article-title>React Three Fiber</h2></div></a></article></div></div></aside><footer class=site-footer><section class=copyright>&copy;
+2024 -
+2026 Isaac Dedini</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.27.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/dev-blog/ts/main.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

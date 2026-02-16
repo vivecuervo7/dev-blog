@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Project Management on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/categories/project-management/</link><description>Recent content in Project Management on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 14 Oct 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/categories/project-management/index.xml" rel="self" type="application/rss+xml"/><item><title>Re-mapping our estimations</title><link>https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/</link><pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/cover.jpg" alt="Featured image of post Re-mapping our estimations" /&gt;&lt;h2 id="whats-the-issue"&gt;What&amp;rsquo;s the issue?
+&lt;/h2&gt;&lt;p&gt;After working on a number of software projects, I have grown increasingly disenchanted with the amount of time spent &lt;del&gt;arguing&lt;/del&gt; politely discussing the intricacies of a 3-point story compared to a 5-point story.&lt;/p&gt;
+&lt;p&gt;What&amp;rsquo;s the difference between a 2-point story and a 3-point story? &lt;em&gt;Why&lt;/em&gt; is it different? Does such a trivial difference really matter?&lt;/p&gt;
+&lt;p&gt;I wanted to explore what a simplified model of estimations might look like, which more clearly conveys whether a thing is a typical piece of work, or whether it&amp;rsquo;s bigger or smaller.&lt;/p&gt;
+&lt;h3 id="counting-stories"&gt;Counting stories
+&lt;/h3&gt;&lt;p&gt;While certainly not the norm, I&amp;rsquo;ve worked on &lt;em&gt;a&lt;/em&gt; project in the past where we simply treated every story as a single point.&lt;/p&gt;
+&lt;p&gt;Granted, it was a short, sharp project with a small team of two, and we didn&amp;rsquo;t really have the time to get into debate over what each story point meant. This led to a pleasantly simple world, in which we just added stories and worried about finishing them.&lt;/p&gt;
+&lt;p&gt;Even with the short time frame, by the end of the project we were left with the reflection that there were a couple of stories that might have been better communicated as a larger task than the others, but overall the process worked for us.&lt;/p&gt;
+&lt;h3 id="fibonacci"&gt;Fibonacci
+&lt;/h3&gt;&lt;p&gt;The majority of projects I&amp;rsquo;ve been involved with to date have all used the Fibonacci sequence as our story point scale. I have never found this disagreeable, as it gives us a good idea of the relative complexity of our work items.&lt;/p&gt;
+&lt;p&gt;Typically, without poring through the entire backlog ahead of time we would aim to estimate the higher priority or more well-known work items, deferring estimation of the remainder until we got closer to them or the story was more fleshed out. As far as burn-up charts are concerned, all of the not-yet-estimated work items would simply reflect an average of the estimated backlog&amp;rsquo;s points.&lt;/p&gt;
+&lt;p&gt;This works, and tends to work well.&lt;/p&gt;
+&lt;p&gt;It also takes time. Even on a smaller team, varying levels of experience with a technology will likely mean that one person&amp;rsquo;s 3 might be another person&amp;rsquo;s 5. On the lower end, if I&amp;rsquo;ve had a good week and I&amp;rsquo;m on a roll, those 3&amp;rsquo;s start looking an awful lot like 2&amp;rsquo;s.&lt;/p&gt;
+&lt;p&gt;Then there&amp;rsquo;s a whole round of discussion required, digging through &lt;em&gt;why&lt;/em&gt; we&amp;rsquo;re estimating the way we are, how it&amp;rsquo;s justified based on last week&amp;rsquo;s estimations, and then possibly another round of estimations. Granted, these discussions are often useful for uncovering some potential technical complexities, so they&amp;rsquo;re not a total loss.&lt;/p&gt;
+&lt;h2 id="is-there-a-middle-ground"&gt;Is there a middle ground?
+&lt;/h2&gt;&lt;p&gt;After experiencing the two approaches outlined above, it wasn&amp;rsquo;t hard to realise that much of the angst should be levelled at the &lt;strong&gt;scale&lt;/strong&gt; we&amp;rsquo;re using to estimate stories, rather than the estimation process as a whole. After all, we still need &lt;em&gt;something&lt;/em&gt; to communicate our progress to stakeholders, and we needed a way to assign those points.&lt;/p&gt;
+&lt;p&gt;And so, much of my thoughts started leaning into the idea that we could simplify things down to a typical user story, and using a smaller set of numbers to indicate whether the thing was bigger or smaller.&lt;/p&gt;
+&lt;p&gt;1, 2 and 3.&lt;/p&gt;
+&lt;h3 id="how-would-this-work"&gt;How would this work?
+&lt;/h3&gt;&lt;p&gt;Where the single-point approach was dead simple and just required adding a point for each story, the broader scale of the Fibonacci sequence meant that quite often we go into estimation without much of an idea of that story&amp;rsquo;s complexity as far as points are concerned. We would run through the acceptance criteria and individually vote for where we think the story points should land, taking the majority number or discussing and re-estimating.&lt;/p&gt;
+&lt;p&gt;How I would envision a simpler scale to work would be that every story is by default a 2 at the moment estimation for that story begins. Thus, the question becomes &amp;ldquo;does anybody think this work item is significantly more or less complex than a typical work item?&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;Based on the answer and ensuing discussion, it would either be changed to a 1 to represent a smaller or easier piece of work, and a 3 where the work was determined to be more complex.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/smaller-default-larger.png"
+width="800"
+height="304"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/smaller-default-larger_hu_2fea46c8b2fd4252.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/smaller-default-larger_hu_de93cad1b471b6b8.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="263"
+data-flex-basis="631px"
+&gt;&lt;/p&gt;
+&lt;p&gt;While not yet used in practice, this feels like a &lt;em&gt;much&lt;/em&gt; easier question to answer. And sure, there might still be disagreements — but it narrows down any discussion to only the stories which somebody has called out as easier or harder.&lt;/p&gt;
+&lt;h3 id="a-real-world-analysis"&gt;A real-world analysis
+&lt;/h3&gt;&lt;p&gt;After briefly talking over this idea with a couple of people, I decided it would be worth looking at some real-world data and seeing what a burn-up chart would look like if it were re-mapped to the simplified scale.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Counts&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;To do this, I essentially counted all of the completed work items and grouped them by their story points. Further consolidating them into groups of &amp;rsquo;less than 3&amp;rsquo;, &amp;lsquo;between 3 and 8&amp;rsquo;, and &amp;lsquo;more than 8&amp;rsquo; gave me the most accurate simplified grouping.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/count-original.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/count-original_hu_89dbd183e87af81.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/count-original_hu_5ce09aea845e28b5.png 1024w"
+loading="lazy"
+alt="Number of stories grouped by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+&gt; &lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/count-consolidated.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/count-consolidated_hu_3c798b9d2bf14c05.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/count-consolidated_hu_ae49eb1e31e8d027.png 1024w"
+loading="lazy"
+alt="Consolidated number of stories by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Values&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Satisfied with the overlap between the original and simplified counts, I multiplied the counts by their respective story points and graphed those similarly — including what the numbers look like when re-mapped to the proposed 1-2-3 scale.&lt;/p&gt;
+&lt;p&gt;The resulting curve was fairly standard and further reinforced that the &amp;ldquo;typical&amp;rdquo; story worth the proposed 2 points would fairly cleanly overlap with what we would otherwise have estimated at between 3 and 8 points. The lack of resolution made it difficult to say whether or not this would pan out in practice, but things still lined up well enough to keep digging.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/values-original.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/values-original_hu_dbe87a8eadd43335.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/values-original_hu_fa9b63d972cf5f61.png 1024w"
+loading="lazy"
+alt="Value of stories grouped by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+&gt; &lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/values-consolidated.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/values-consolidated_hu_c1abed27d66f30db.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/values-consolidated_hu_5b1c45341827f2f0.png 1024w"
+loading="lazy"
+alt="Consolidated value of stories by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+&gt; &lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/values-remapped.png"
+width="358"
+height="215"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/values-remapped_hu_522b0de33ff97bcd.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/values-remapped_hu_6940ad36e9bb1f8b.png 1024w"
+loading="lazy"
+alt="Re-mapped value of stories by points"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="399px"
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Burn-up chart&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Looking to provide some more useful evidence, I also wanted to include the big thing that we use to communicate progress to our stakeholders — the burn-up chart.&lt;/p&gt;
+&lt;p&gt;A relatively simple experiment to set up, I took the previous mappings and filled in our usual burn-up data with the original values, and then compared them to what the curve would look like for the re-mapped values.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-original.png"
+width="517"
+height="373"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-original_hu_da43fbb63e088bce.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-original_hu_192455d329bd693a.png 1024w"
+loading="lazy"
+alt="Burn-up chart with original values"
+class="gallery-image"
+data-flex-grow="138"
+data-flex-basis="332px"
+&gt; &lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-remapped.png"
+width="517"
+height="373"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-remapped_hu_95d174ee0af791cb.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-remapped_hu_1fe0f32245a8400d.png 1024w"
+loading="lazy"
+alt="Burn-up chart with re-mapped values"
+class="gallery-image"
+data-flex-grow="138"
+data-flex-basis="332px"
+&gt;&lt;/p&gt;
+&lt;p&gt;At a glance these look pretty similar, with the differences only really noticeable when overlaid on top of each other.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-overlay.png"
+width="485"
+height="365"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-overlay_hu_3574ef20b88d72a1.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-overlay_hu_5e5da54a2650575f.png 1024w"
+loading="lazy"
+alt="Burn-up chart overlay"
+class="gallery-image"
+data-flex-grow="132"
+data-flex-basis="318px"
+&gt;&lt;/p&gt;
+&lt;p&gt;Where I &lt;em&gt;did&lt;/em&gt; notice a significant discrepancy was when looking at projections based on the preceding 5-week period. While the dotted projection line observed a like-for-like movement, the lower numbers in general led to a more dire forecast. I&amp;rsquo;ve included a projection based on the single-point method, and the re-mapped values are clearly a better middle ground.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-original-projection.png"
+width="504"
+height="341"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-original-projection_hu_d407c9c24915666b.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-original-projection_hu_a8adc70a7355da22.png 1024w"
+loading="lazy"
+alt="Project 1: Original values"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+&gt; &lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-remapped-projection.png"
+width="504"
+height="341"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-remapped-projection_hu_b3e8f4f422ef6122.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-remapped-projection_hu_4d06ef8cadbafd75.png 1024w"
+loading="lazy"
+alt="Project 1: Re-mapped values"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+&gt; &lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-single-point-projection.png"
+width="506"
+height="343"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-single-point-projection_hu_2864c3c929786b0a.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/burnup-single-point-projection_hu_ca348357a78e6ea4.png 1024w"
+loading="lazy"
+alt="Project 1: Single-point method"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Can the projection be fixed?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Kind of. I did fiddle with the numbers a bit, and was able to find a model that mapped pretty well for &lt;em&gt;this&lt;/em&gt; project. The following changes gave me a significantly more accurate projection &lt;em&gt;and&lt;/em&gt; curve, but they came at the cost of simplicity.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Changed the grouping to &amp;rsquo;less than 3&amp;rsquo;, &amp;lsquo;between 3 and 5&amp;rsquo;, and &amp;lsquo;more than 5&amp;rsquo;&lt;/li&gt;
+&lt;li&gt;Made the &amp;ldquo;bigger&amp;rdquo; value worth 5 points instead of 3&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Most concerning was the required change to grouping. The change in complexity to move something either side of &amp;ldquo;typical&amp;rdquo; no longer felt balanced, and what would have likely been estimated as an 8 might still be left as a 2 under the proposed model, where for the more accurate projection it would need to have been moved to a 3.&lt;/p&gt;
+&lt;p&gt;Given the additional complexity and the original ideal of a process which alleviated much of the friction while maintaining better accuracy than the single-point method, I don&amp;rsquo;t think it&amp;rsquo;s worth trying to fiddle with the numbers here.&lt;/p&gt;
+&lt;h2 id="conclusion"&gt;Conclusion
+&lt;/h2&gt;&lt;p&gt;There&amp;rsquo;s a pretty big question sitting front and centre — would I use it?&lt;/p&gt;
+&lt;p&gt;I &lt;em&gt;think&lt;/em&gt; so. I&amp;rsquo;d like to compare burn-up charts for a couple of other projects — specifically the projections around the 30-40% mark. The other real-world backlog I had at my disposal was &lt;a class="link" href="#projections-for-other-projects" &gt;similarly mapped&lt;/a&gt; and shows a better outlook for simplified approaches to estimation.&lt;/p&gt;
+&lt;p&gt;That said, I did also map the burn-up chart using the single-point-per-story method, and the projection discrepancy was even more pronounced — and I have seen this method used successfully, although the shorter engagement it was used for may have obscured any problems that might have arisen over a longer period.&lt;/p&gt;
+&lt;h3 id="projections-for-other-projects"&gt;Projections for other projects
+&lt;/h3&gt;&lt;p&gt;Another real-world project with their projections compared, with much more accurate projections than the first project. That said, the mapping for the single-point method looked pretty much on the money as well.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/alt-burnup-original-projection.png"
+width="506"
+height="343"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/alt-burnup-original-projection_hu_c4f70688703600e1.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/alt-burnup-original-projection_hu_50ad680057bc8d35.png 1024w"
+loading="lazy"
+alt="Project 2: Original values"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+&gt; &lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/alt-burnup-remapped-projection.png"
+width="506"
+height="343"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/alt-burnup-remapped-projection_hu_52f178bac7ef029b.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/alt-burnup-remapped-projection_hu_df437b17fb42e8b1.png 1024w"
+loading="lazy"
+alt="Project 2: Re-mapped values"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+&gt; &lt;img src="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/image.png"
+width="506"
+height="343"
+srcset="https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/image_hu_4e8e419bba99fe25.png 480w, https://vivecuervo7.github.io/dev-blog/p/remapping-our-estimations/images/image_hu_f9631d0867379ae8.png 1024w"
+loading="lazy"
+alt="Project 2: Single-point method"
+class="gallery-image"
+data-flex-grow="147"
+data-flex-basis="354px"
+&gt;&lt;/p&gt;</description></item></channel></rss>
