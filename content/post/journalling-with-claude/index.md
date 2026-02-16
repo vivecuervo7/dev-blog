@@ -329,7 +329,7 @@ Keep it brief — this is a standup, not a report.
 
 Here's the output for `/standup last 2 days`.
 
-```
+```markdown  {linenos=false}
 Feb 15 — project1
 - Ported the Unity client to Godot 4.x (device-ID auth, main menu)
 - Built a background glow pulse shader, iterated with debug heatmaps to tune luminance thresholds
