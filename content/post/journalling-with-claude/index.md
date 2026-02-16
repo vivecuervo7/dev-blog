@@ -26,9 +26,9 @@ I've always leaned towards the idea of writing blog content when it comes to sha
 
 At least, I like the _idea_ of writing blog content.
 
-Looking back over my career to date and there's been a consistent trend with the way I try to write about my work. I can _never_ come up with a good, blog-worthy topic!
+Looking back over my career to date, there's been a consistent trend with the way I try to write about my work. I can _never_ come up with a good, blog-worthy topic!
 
-The same story keeps repeating itself. I'll do a thing, run onto problems, solve them, and come out the other side with some learnings and just... pick up the next task.
+The same story keeps repeating itself. I'll do a thing, run into problems, solve them, and come out the other side with some learnings and just... pick up the next task.
 
 And then, weeks later, I'll mention it to someone and they'll respond with something along the lines of "that's interesting, I'd love to hear more about _that thing that you've half-forgotten about_".
 
@@ -45,8 +45,6 @@ I landed on the creation of a `/journal` skill that Claude could invoke (or coul
 
 ### What does it do?
 
-<!-- TODO: include the actual skill definition -->
-
 The skill prompts Claude to reflect on the recent work and produce an entry covering:
 
 - **What was done** &mdash; a concise summary of the work completed
@@ -54,7 +52,7 @@ The skill prompts Claude to reflect on the recent work and produce an entry cove
 - **Notable observations** &mdash; things that surprised me, patterns worth remembering, or potential blog topics
 - **Reusable patterns** &mdash; techniques or approaches that could be extracted into skills, hooks, libraries etc.
 
-I did also get it pop in some Obsidian-style [tags](https://help.obsidian.md/tags), just to try and make it easier to quickly collate journal entries or blog-worthy topics.
+I did also get it to pop in some Obsidian-style [tags](https://help.obsidian.md/tags), just to try and make it easier to quickly collate journal entries or blog-worthy topics.
 
 ### A gentle nudge
 
@@ -97,7 +95,7 @@ And of course, the meaty part–the skill definition itself!
 
 One gotcha that I ran into that still has some caveats is when running a session that spans multiple days. Initially it was just taking the session start date, but adding a proper date lookup means that _if_ it's running autonomously, the entries should end up under the right day.
 
-Running the skill manually after multiple days work would lump them all into the day it was run, meaning this more accurately reflects the time a journal entry was written rather than when the work actually happened.
+Running the skill manually after multiple days' work would lump them all into the day it was run, meaning the entries more accurately reflects the time a journal entry was written rather than when the work actually happened.
 
 {{< code-hint "~/.claude/skills/journal/SKILL.md" >}}
 
@@ -222,7 +220,7 @@ Built a comprehensive Claude Code customisation layer: global skills and CLAUDE.
 
 Each entry ends up as a timestamped section in a markdown file. After a few days of use, the journal becomes a rich log of activity.
 
-The only downside of course is that it only tracks what happened via Claude, requiring the mental mapping to any manual work done on the codebase. I expect that as my maturty with the tooling grows, I'll see a growing amount of my work processed through Claude, and these logs should naturally become richer over time.
+The only downside of course is that it only tracks what happened via Claude, requiring the mental mapping to any manual work done on the codebase. I expect that as my maturity with the tooling grows, I'll see a growing amount of my work processed through Claude, and these logs should naturally become richer over time.
 
 ### Details / context
 
@@ -351,13 +349,13 @@ Flagged topics:
 - #reusable Godot step-based test runner, device-ID auth pattern, global skill + project opt-in pattern, Claude Code starter kit
 ```
 
-The ordering could leave a little to be desired - another run displayed the dates in reverse. Overall though, a very handy way to capture the work that was done, and to recap on any blog-worthy content or reusable IP!
+The ordering could leave a little to be desired–another run displayed the dates in reverse. Overall though, a very handy way to capture the work that was done, and to recap on any blog-worthy content or reusable IP!
 
 ## Next steps
 
 I was pleasantly surprised at how well this worked, even in the short span of time I've been playing with it. Considering it was the first time I really started to look at skills it was a testament to how easy they are to set up.
 
-The pattern extraction is still speculative at this point, but capturing the context and the fact that there was even a thing potentially worth extractng is such a huge leap from my current "do the thing and forget about it". I'm looking forward to trying to progress this onto the next step of actually using that information to build the reusable assets etc.
+The pattern extraction is still speculative at this point, but capturing the context and the fact that there was even a thing potentially worth extracting is such a huge leap from my current "do the thing and forget about it". I'm looking forward to trying to progress this onto the next step of actually using that information to build the reusable assets etc.
 
 The most notable thing I've found myself lacking is the absence of screenshots. In one case, I went through an iterative process of visually debugging some changes I had Claude making to a shader in Godot, using a temporary heatmap drawn over the image I was applying the shader to, which drastically helped me work with Claude to get the result I was after. By the time it was solved, I'd lost any opportunity to take in-progress screenshots that would have been incredibly valuable for a blog post.
 
