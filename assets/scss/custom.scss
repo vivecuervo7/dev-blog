@@ -90,6 +90,24 @@
   }
 }
 
+.container.extended {
+  @media (min-width: 1024px) {
+    max-width: 1440px;
+  }
+  @media (min-width: 1280px) {
+    max-width: 1780px;
+  }
+}
+
+.container.compact {
+  @media (min-width: 1024px) {
+    max-width: 1200px;
+  }
+  @media (min-width: 1280px) {
+    max-width: 1440px;
+  }
+}
+
 .alert {
   padding: 1rem 2rem;
   border: solid 1px var(--alert-border);
