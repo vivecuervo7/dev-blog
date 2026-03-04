@@ -52,8 +52,6 @@ text = "Start Game"
 
 GDScript is the same story. Clean, Python-like, easy to pick up. Nothing about the toolchain demands a GUI to work with it.
 
-<!-- TODO: side-by-side of a .tscn file in a text editor vs the rendered scene in Godot -->
-
 ## The test runner
 
 Being able to edit scenes as text is only half the story. The other half is knowing whether your changes _actually work_. Godot's runtime errors only surface when you navigate to the affected scene, so a broken crafting screen won't tell you anything until you click through to it.
