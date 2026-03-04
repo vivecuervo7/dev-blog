@@ -36,11 +36,9 @@ Godot offered a simpler, more AI-friendly alternative. Text-based scene files, a
 
 It helps that the game is server-authoritative, so the client is purely a presentation layer. There's no sensitive logic or secrets to worry about on the UI side, which makes it easy to give Claude a long leash.
 
-<!-- TODO: screenshot of the game running (deck screen or battle screen) -->
-
 ## Why Godot is AI-friendly
 
-Godot is CLI-friendly, and that's what makes it AI-friendly. The engine runs the game directly from the command line. A single `godot --path <project> --main-scene <scene>` launches the game windowed, ready to interact with. No editor process running in the background, no waiting for it to load. In Unity, you _can't_ run the game without loading the editor first. When your workflow is entirely terminal-based, that made things... not nice.
+Godot is [CLI-friendly](https://docs.godotengine.org/en/latest/tutorials/editor/command_line_tutorial.html), and that's what makes it AI-friendly. The engine runs the game directly from the command line. A single `godot --path <project> --main-scene <scene>` launches the game windowed, ready to interact with. No editor process running in the background, no waiting for it to load. In Unity, you _can't_ run the game without loading the editor first. When your workflow is entirely terminal-based, that made things... not nice.
 
 The file formats help too. `.tscn` scene files are text-based and surprisingly readable. Even having never seen one before, I could follow what was going on:
 
@@ -93,9 +91,26 @@ Not every test needs to drive the real UI. Setting up a full deck through drag-a
 
 The manifest descriptions and macro naming make the intent clear enough that Claude tends to pick the right variant from context. If I ask it to verify a UI flow, it reaches for `ui_fill_deck`. If the deck is just setup for testing something else, it uses `fast_fill_deck`. The macros reflect this too: `setup:deck` uses API shortcuts, `test:battle_e2e` drives the full UI.
 
+### Output
+
 Output goes to both JSONL (for Claude to parse) and Markdown (for human review), with timestamped screenshots at each step. Importantly, Claude _reads_ the trace output and examines those screenshots to diagnose failures. It's not just running the tests, it's analysing the results.
 
-<!-- TODO: terminal output of a test run (step names, pass/fail, trace path) -->
+```text {linenos=false}
+[1/4] wait_for_auth
+  PASS (3402ms)  📸 000_wait_for_auth.png
+[2/4] navigate_to
+  PASS (160ms)   📸 001_navigate_to.png
+[3/4] select_card
+  PASS (4ms)     📸 002_select_card.png
+[4/4] assert_label
+  PASS (0ms)     📸 003_assert_label.png
+
+═══════════════════════════════════════
+ 4 PASSED, 0 FAILED (7s)
+ Traces: .test-traces/2026-03-04_15-52-16/
+ Screenshots: .test-traces/2026-03-04_15-52-16/screenshots/
+═══════════════════════════════════════
+```
 
 ## A grid overlay&mdash;talking about pixels
 
@@ -113,7 +128,7 @@ When the grid is active, it becomes a measurement tool:
 
 The grid consumes all mouse input when visible. Intentionally so&mdash;it's a measurement mode, not a passive overlay.
 
-<!-- TODO: screenshot of the game with grid overlay active -->
+![The dev grid overlay in MEDIUM mode, showing cell coordinates on hover](images/grid-overlay.png)
 
 ### Spatial communication
 
@@ -124,8 +139,6 @@ Instead of vague descriptions, I can now tell Claude exactly what I want:
 Claude knows precisely what region of the screen I'm talking about, and can translate that grid reference into the right anchor and margin values in the `.tscn` file. No guessing, no "a bit more to the left" back-and-forth.
 
 Honestly, this turned out to be the piece that made CLI-driven layout work _genuinely_ viable. Without a shared spatial language, I'd have been constantly fighting imprecise descriptions. With the grid, positioning conversations became as concrete as code reviews.
-
-<!-- TODO: Claude Code conversation snippet showing a grid coordinate being used in a prompt -->
 
 ## The edit-test-verify loop
 
@@ -143,15 +156,13 @@ A single `/client` skill handles both launching and testing. `/client arena` lau
 
 Because the skill maps natural language to step chains, I can also just describe what I want in plain English:
 
-> Launch the game as a new user. Redeem the code "MATERIALS". Navigate to the crafting screen and craft one copy of each card. Then go to the deck editor, switch the formation to Mage. Fill the deck and then go to the arena and battle one of the opponents.
+> Launch the game as a new user. Redeem the code "MATERIALS". Craft one copy each of a few different cards. Navigate to the deck editor, and fill the deck up with those cards, then go to the arena and battle one of the opponents.
 
-<!-- TODO: GIF of a complex natural language chain executing in the running game -->
+![Sped up x3. Claude controlling the game to execute the above prompt, and losing the fight. How embarassing.](images/step-chain.gif)
 
 Claude reads the manifest, maps that description to the available steps, and composes the chain. In practice, a chain this long doesn't always execute cleanly end-to-end, but portions of it do, and those are what end up getting used in verification loops. Being able to just _describe_ what I want rather than spelling out step names takes a lot of friction out of the process.
 
 Once Claude is satisfied that the changes are working, it'll often relaunch the client with `--stay-open` so I can have a look myself. It handles the automated loop, then hands it back to me for a final check.
-
-<!-- TODO: screenshot sequence showing before/after of a UI change caught by the test runner -->
 
 ## Live reload
 
@@ -180,9 +191,7 @@ When the `/client` skill detects a running session, it writes directly to `.cmd-
 4. Results (with screenshots and trace paths) get written to `.cmd-result`
 5. Claude reads the result and deletes the file
 
-Why file-based instead of sockets or HTTP? Simplicity, mostly. No port management, no networking code, no dependencies. Godot's `FileAccess` makes it trivial from GDScript, and debugging is just `cat .cmd-result`.
-
-<!-- TODO: diagram or terminal showing the file-based IPC flow -->
+I went with files over sockets or HTTP because there's just less to think about. No ports, no networking code. Godot's `FileAccess` handles the read/write, and if something goes wrong I can just `cat .cmd-result` to see what happened.
 
 ## Case study: Formation unlocks and upgrades
 
@@ -204,7 +213,7 @@ That last one was interesting. Verifying with a fresh player is the kind of thin
 
 None of these skills were designed as a pipeline. They were built independently, for different purposes, at different times. But they composed naturally because each one is self-contained and they communicate through system state. `/migrate` writes to the database, `/server` picks up new code, `/client` hits the running API.
 
-<!-- TODO: screenshot of the battle reward screen showing the three reward sections -->
+![Battle reward screen showing materials, fragments, and formation XP sections](images/battle-rewards.png)
 
 ## Wrapping up
 
