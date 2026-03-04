@@ -134,7 +134,9 @@ The grid consumes all mouse input when visible. Intentionally so&mdash;it's a me
 
 Instead of vague descriptions, I can now tell Claude exactly what I want:
 
-> Reposition the board area to MEDIUM (2,7):(79,35)
+{{< prompt >}}
+Reposition the board area to MEDIUM (2,7):(79,35)
+{{< /prompt >}}
 
 Claude knows precisely what region of the screen I'm talking about, and can translate that grid reference into the right anchor and margin values in the `.tscn` file. No guessing, no "a bit more to the left" back-and-forth.
 
@@ -156,7 +158,9 @@ A single `/client` skill handles both launching and testing. `/client arena` lau
 
 Because the skill maps natural language to step chains, I can also just describe what I want in plain English:
 
-> Launch the game as a new user. Redeem the code "MATERIALS". Craft one copy each of a few different cards. Navigate to the deck editor, and fill the deck up with those cards, then go to the arena and battle one of the opponents.
+{{< prompt >}}
+Launch the game as a new user. Redeem the code "MATERIALS". Craft one copy each of a few different cards. Navigate to the deck editor, and fill the deck up with those cards, then go to the arena and battle one of the opponents.
+{{< /prompt >}}
 
 ![Sped up x3. Claude controlling the game to execute the above prompt, and losing the fight. How embarassing.](images/step-chain.gif)
 
