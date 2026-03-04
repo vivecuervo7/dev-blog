@@ -10,6 +10,14 @@
   --code-border-error: #f79e9e;
 
   &[data-scheme="dark"] {
+    --body-background: #1a1a1a;
+    --card-background: #282828;
+    --card-background-selected: rgba(255, 255, 255, 0.1);
+    --blockquote-background-color: #333333;
+    --tr-even-background-color: #333333;
+    --table-border-color: #4a4a4a;
+    --scrollbar-thumb: hsl(0, 0%, 30%);
+
     --alert-background: #423b35;
     --alert-border: #b6610d;
     --code-background: #343736;
@@ -18,6 +26,27 @@
     --code-title: #8cbea9;
     --code-background-error: #373434;
     --code-border-error: #8d6969;
+  }
+}
+
+.article-content {
+  h2 + * ~ h2 {
+    margin-top: 2em;
+  }
+
+  h2 {
+    border-top: 1px solid var(--card-separator-color);
+    margin-inline-end: calc((var(--card-padding)) * -1);
+    width: calc(100% + var(--card-padding) * 2);
+    padding-top: 1em;
+    padding-bottom: 0.6em;
+    background: linear-gradient(
+      to bottom,
+      rgba(128, 128, 128, 0.08) 0%,
+      transparent 100%
+    );
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
   }
 }
 
