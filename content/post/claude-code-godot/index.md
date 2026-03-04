@@ -36,6 +36,8 @@ Godot offered a simpler, more AI-friendly alternative. Text-based scene files, a
 
 It helps that the game is server-authoritative, so the client is purely a presentation layer. There's no sensitive logic or secrets to worry about on the UI side, which makes it easy to give Claude a long leash.
 
+![Why indeed?](images/godot_mock.png)
+
 ## Why Godot is AI-friendly
 
 Godot is [CLI-friendly](https://docs.godotengine.org/en/latest/tutorials/editor/command_line_tutorial.html), and that's what makes it AI-friendly. The engine runs the game directly from the command line. A single `godot --path <project> --main-scene <scene>` launches the game windowed, ready to interact with. No editor process running in the background, no waiting for it to load. In Unity, you _can't_ run the game without loading the editor first. When your workflow is entirely terminal-based, that made things... not nice.
