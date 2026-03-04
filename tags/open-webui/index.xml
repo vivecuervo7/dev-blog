@@ -1,0 +1,935 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Open WebUI on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/open-webui/</link><description>Recent content in Open WebUI on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 20 Aug 2025 08:11:00 +1000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/open-webui/index.xml" rel="self" type="application/rss+xml"/><item><title>RAG to fine-tuning an LLM</title><link>https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/</link><pubDate>Thu, 31 Jul 2025 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/image.png" alt="Featured image of post RAG to fine-tuning an LLM" /&gt;&lt;p&gt;A little over a week ago, I started toying with &lt;a class="link" href="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/" &gt;running Large Language Models (LLMs) locally using Ollama&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Apparently, all that did was to get my head spinning with a few ideas. Largely, I was finding myself incredibly curious about the potential of running some of those smaller LLMs locally, and having each of them specialised in a specific domain.&lt;/p&gt;
+&lt;p&gt;For context, I should probably clarify how I tend to find myself using LLMs.&lt;/p&gt;
+&lt;h2 id="the-use-case"&gt;The use case
+&lt;/h2&gt;&lt;p&gt;I did have &lt;a class="link" href="https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/" &gt;a bit of a play with genuine vibe coding&lt;/a&gt;, but quickly found that it wasn&amp;rsquo;t for me. I like understanding my codebase, and while certainly impressive that it could churn out functional code it a matter of minutes, I found it more often than not generated &lt;em&gt;too&lt;/em&gt; much. I found the sheer amount of code difficult to meaningfully review, and more often than not found myself blowing away all the changes even after a good half hour or so of prompting.&lt;/p&gt;
+&lt;p&gt;AI has still found a home in my workflow however, but I find my use case to be mostly based around &amp;ldquo;I want this very specific thing, and I want it done roughly like this&amp;rdquo;. At a high level my workflow looks more like this:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Creating a database migration
+&lt;ul&gt;
+&lt;li&gt;Manually create the file, add to context&lt;/li&gt;
+&lt;li&gt;Prompt: &lt;em&gt;Add a migration that adds a &lt;code&gt;users&lt;/code&gt; table with &lt;code&gt;id&lt;/code&gt;, &lt;code&gt;name&lt;/code&gt;, and &lt;code&gt;email&lt;/code&gt; columns&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Creating the model / entity file
+&lt;ul&gt;
+&lt;li&gt;Manually create the file, add to context&lt;/li&gt;
+&lt;li&gt;Add the migration file we created earlier to context&lt;/li&gt;
+&lt;li&gt;Prompt: &lt;em&gt;Create an entity that reflects this newly created table&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&amp;hellip;and so on.&lt;/p&gt;
+&lt;p&gt;There&amp;rsquo;s a bit of manual work to say &amp;ldquo;this is where I want you to put the code&amp;rdquo;, and then letting AI run away with the code that needs to be added to that specific file. Which means, usually I want it to &lt;em&gt;specifically&lt;/em&gt; write SQL, or add a new SvelteKit endpoint, or maybe append a route to a .NET controller.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;m not really leveraging the capabilities of a model that is generally knowledgeable in all these things, all at once.&lt;/p&gt;
+&lt;h3 id="the-pain-point"&gt;The pain point
+&lt;/h3&gt;&lt;p&gt;Honestly, this approach has been working for me. It very quickly gives me a chunk of code that is small enough to either quickly tick off or tweak to my liking, and then I can move on and not need to think about that file again.&lt;/p&gt;
+&lt;p&gt;The problem I have consistently run into however, is that the training for most (all?) of these LLMs was done prior to the release of Svelte 5. And Svelte 5 brought significant changes to the syntax. As one can imagine, this amounted to a &lt;em&gt;lot&lt;/em&gt; of generated code that was just&amp;hellip; wrong.&lt;/p&gt;
+&lt;h3 id="the-litmus-test"&gt;The litmus test
+&lt;/h3&gt;&lt;p&gt;Given that very clear and resounding pain point, I settled on one specific thing I wanted to achieve — something that the models I was using were just completely incapable of in their current state.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Could I teach a model how to write in Svelte 5&amp;rsquo;s syntax?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;With my thoughts already occupied with this idea of having a handful of specialised, smaller LLMs, I figured this would be the perfect test.&lt;/p&gt;
+&lt;h3 id="the-potential-solutions"&gt;The potential solutions
+&lt;/h3&gt;&lt;p&gt;There were a few different ways I could go about trying to solve this problem. To date, I hadn&amp;rsquo;t really leaned too heavily on GitHub Copilot&amp;rsquo;s instructions files, but I figured it would be the first stop.&lt;/p&gt;
+&lt;p&gt;While that seemed a sane approach, I was very conscious of the fact that using smaller LLMs, I probably needed to be careful with context lengths. While this was likely less of a concern given my short-lived interactions with the LLM, it still felt like a sub-par solution.&lt;/p&gt;
+&lt;p&gt;Enter a couple of terms that I had seen bandied about, but really at this point hadn&amp;rsquo;t understood. Namely, &lt;strong&gt;system prompts&lt;/strong&gt;, &lt;strong&gt;Retrieval-Augmented Generation (RAG)&lt;/strong&gt; and &lt;strong&gt;fine-tuning&lt;/strong&gt;.&lt;/p&gt;
+&lt;h3 id="the-reference-material"&gt;The reference material
+&lt;/h3&gt;&lt;p&gt;After spending half a day trying to get an LLM to scrape some meaningful data off the Svelte documentation website, I discovered that the Svelte website actually has a page &lt;a class="link" href="https://svelte.dev/docs/llms" target="_blank" rel="noopener"
+&gt;specific to LLMs&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/homer-doh.gif"
+width="480"
+height="366"
+srcset="https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/homer-doh_hu_60082b7e6811f324.gif 480w, https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/homer-doh_hu_66b249c1b3afcd6.gif 1024w"
+loading="lazy"
+alt="Not the last time I found myself saying that."
+class="gallery-image"
+data-flex-grow="131"
+data-flex-basis="314px"
+&gt;&lt;/p&gt;
+&lt;p&gt;I also discovered that this &lt;code&gt;llms.txt&lt;/code&gt; file is a &lt;a class="link" href="https://llmstxt.org/" target="_blank" rel="noopener"
+&gt;proposed standard&lt;/a&gt;, and there&amp;rsquo;s a &lt;a class="link" href="https://directory.llmstxt.cloud/" target="_blank" rel="noopener"
+&gt;handy directory of products and companies&lt;/a&gt; that have adopted it.&lt;/p&gt;
+&lt;p&gt;Awesome! What really got me interested, however, was the presence of some text files that had the complete documentation, including compressed versions for smaller LLMs.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a class="link" href="https://svelte.dev/llms.txt" target="_blank" rel="noopener"
+&gt;/llms.txt&lt;/a&gt; — a listing of the available files&lt;/li&gt;
+&lt;li&gt;&lt;a class="link" href="https://svelte.dev/llms-full.txt" target="_blank" rel="noopener"
+&gt;/llms-full.txt&lt;/a&gt; (~1 MB) — complete documentation for Svelte, SvelteKit and the CLI&lt;/li&gt;
+&lt;li&gt;&lt;a class="link" href="https://svelte.dev/llms-medium.txt" target="_blank" rel="noopener"
+&gt;/llms-medium.txt&lt;/a&gt; (~0.5 MB) — compressed documentation for use with medium context windows&lt;/li&gt;
+&lt;li&gt;&lt;a class="link" href="https://svelte.dev/llms-small.txt" target="_blank" rel="noopener"
+&gt;/llms-small.txt&lt;/a&gt; (45 KB) — highly compressed documentation for use with smaller context windows&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="github-copilot-instructions"&gt;GitHub Copilot instructions
+&lt;/h2&gt;&lt;p&gt;I won&amp;rsquo;t go too deep on this one. The short version is that, &lt;a class="link" href="https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions" target="_blank" rel="noopener"
+&gt;following the documentation&lt;/a&gt;, I was able to essentially paste the contents of the &lt;code&gt;llms-*.txt&lt;/code&gt; file into &lt;code&gt;copilot-instructions.md&lt;/code&gt;. I actually got some really positive results with this approach. Certainly, once plugged into a fully-scaffolded project, it was able to generate some fairly accurate code.&lt;/p&gt;
+&lt;p&gt;Surprisingly however, I got far better results with the &lt;em&gt;smaller&lt;/em&gt; &lt;code&gt;llms-small.txt&lt;/code&gt; file, which was only 45 KB in size. I figure that this was likely due to the limited context window of the smaller models, although truthfully I didn&amp;rsquo;t really know what to expect if I exceeded that — assuming this was even the case.&lt;/p&gt;
+&lt;p&gt;I definitely considered this to be a huge win, and honestly I could have likely stopped here.&lt;/p&gt;
+&lt;p&gt;In the spirit of full disclosure, I did run this with GPT and Claude as well, as the local models don&amp;rsquo;t seem to be capable of actually generating files etc. Claude was unsurprisingly by far the standout here, but not without its problems. I&amp;rsquo;ll summarise the experience with each of them below.&lt;/p&gt;
+&lt;p&gt;Generally speaking however, one pleasant experience was that I no longer needed to specify which framework the component needed to be written for. I used a very simple prompt of &lt;em&gt;&amp;ldquo;Create a counter component&amp;rdquo;&lt;/em&gt;. These were all run via GitHub Copilot, with the scaffolded project loaded into VS Code.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Model&lt;/th&gt;
+&lt;th&gt;Notes&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Llama3.2 3B&lt;/td&gt;
+&lt;td&gt;This one pretty much flopped. The code it spat out didn&amp;rsquo;t use Svelte 5 syntax, and didn&amp;rsquo;t appear to even use &lt;a class="link" href="https://svelte.dev/docs/svelte/legacy-reactive-assignments" target="_blank" rel="noopener"
+&gt;legacy reactive statements&lt;/a&gt;. I&amp;rsquo;m not being too critical of it at this point however, as it&amp;rsquo;s easily the smallest model used.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Qwen 3 8B&lt;/td&gt;
+&lt;td&gt;I&amp;rsquo;ve honestly found Qwen to be a little hit and miss in GitHub Copilot specifically, often getting caught up in it&amp;rsquo;s reasoning, getting halfway through a &lt;code&gt;&amp;lt;think&amp;gt;&lt;/code&gt; block and just&amp;hellip; stopping. That said, the one time it actually generated the code I wanted, it was spot on and told me to put in in the correct place.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GPT-4.1&lt;/td&gt;
+&lt;td&gt;Created a &lt;em&gt;very&lt;/em&gt; simple counter component, but put it in the wrong place. Additionally, it was initially created with botched &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; tags, and when it finished trying to fix them they were just gone — resulting in code that wouldn&amp;rsquo;t even compile.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Claude Sonnet 4&lt;/td&gt;
+&lt;td&gt;I guess someone had to show off, and that someone was Claude. By a &lt;em&gt;long&lt;/em&gt; way — but not necessarily in a &lt;em&gt;good&lt;/em&gt; way. Claude checked the project structure, then created the component at the right location. All the correct syntax was used, even cross-referencing other components to confirm. But, in typical Claude fashion, the component was a big 240-line block of code complete with styling and all of the functionality that I &lt;em&gt;didn&amp;rsquo;t&lt;/em&gt; want.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;I decided to push Claude a bit further here and managed to vibe code my way to a full-blown storefront for a shoe store. I was actually pretty surprised at how easily I could follow along this time — but truth be told, I have been working towards a very succinct stack which meant there was just less code to review. Styling however did get a bit messy, and there were a lot of follow-up prompts to try and get it Claude to keep that manageable.&lt;/p&gt;
+&lt;p&gt;And really, that latter point is one of the main reasons why I didn&amp;rsquo;t want to just stop here. If I were to just continue with this pattern, I was going to be spending all my time fighting against Claude, trying to keep it in check.&lt;/p&gt;
+&lt;p&gt;Additionally, was I going to just keep needing to add more and more documentation to the instructions? Was there even an &lt;code&gt;llms-*.txt&lt;/code&gt; file out there for Tailwind? How do I provide this same information to &lt;a class="link" href="https://openwebui.com/" target="_blank" rel="noopener"
+&gt;Open WebUI&lt;/a&gt;?&lt;/p&gt;
+&lt;h2 id="retrieval-augmented-generation-rag"&gt;Retrieval-Augmented Generation (RAG)
+&lt;/h2&gt;&lt;p&gt;I&amp;rsquo;m going to be completely honest here — I&amp;rsquo;m not entirely sure how this is supposed to work in the context of &lt;em&gt;both&lt;/em&gt; GitHub Copilot and Open WebUI, especially when we&amp;rsquo;re talking about having a highly-specialised model.&lt;/p&gt;
+&lt;p&gt;My end-goal here was to have a single, unified experience that would be consistent across both GitHub Copilot and Open WebUI. While conceptually speaking RAG isn&amp;rsquo;t overly complex, the best I could really find here was to create a &lt;a class="link" href="https://docs.openwebui.com/features/workspace/knowledge/" target="_blank" rel="noopener"
+&gt;knowledge base&lt;/a&gt; in Open WebUI, and have it reference the knowledge base itself when generating for a prompt.&lt;/p&gt;
+&lt;p&gt;Open WebUI also allows us to &lt;a class="link" href="https://docs.openwebui.com/tutorials/tips/rag-tutorial#create-a-custom-model-with-the-knowledge-base" target="_blank" rel="noopener"
+&gt;create new models&lt;/a&gt; that have a system prompt, as well as a constant reference to a knowledge base.&lt;/p&gt;
+&lt;p&gt;This actually worked &lt;em&gt;really&lt;/em&gt; well, honestly. I wasn&amp;rsquo;t sure that this was conceptually any different to GitHub Copilot&amp;rsquo;s instructions, but it certainly did a far better job of just doing the thing I wanted it to do. Maybe GitHub Copilot was just getting in the way? Anyhow, it felt like the &amp;ldquo;other side of the coin&amp;rdquo; to GitHub Copilot&amp;rsquo;s instructions, albeit a little shinier, despite not being plugged into my code editor.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/open-webui-svelte.png"
+width="927"
+height="377"
+srcset="https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/open-webui-svelte_hu_8bd6029dc63aaa87.png 480w, https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/open-webui-svelte_hu_384f695df27752e7.png 1024w"
+loading="lazy"
+alt="qwen3:8b referencing the Svelte documentation’s llms-small.txt file"
+class="gallery-image"
+data-flex-grow="245"
+data-flex-basis="590px"
+&gt;&lt;/p&gt;
+&lt;p&gt;I should also note that when I tried to split up this file and provide it with a larger number of smaller files, it often struggled to find the &lt;em&gt;right&lt;/em&gt; files and would start returning plainly incorrect responses. As with GitHub Copilot instructions, this just didn&amp;rsquo;t offer a portable, consistent experience across different interfaces.&lt;/p&gt;
+&lt;p&gt;In the context of GitHub Copilot specifically, I had to keep telling it to look up the documentation, and even then it often just decided to do things it&amp;rsquo;s own way.&lt;/p&gt;
+&lt;h2 id="system-prompt"&gt;System prompt
+&lt;/h2&gt;&lt;p&gt;So, feeling like I&amp;rsquo;d gotten &lt;em&gt;somewhere&lt;/em&gt; with the two approaches above, I really wanted to try and consolidate this into a single, consistent model that both GitHub Copilot and Open WebUI could use.&lt;/p&gt;
+&lt;p&gt;Enter Ollama&amp;rsquo;s Modelfiles. I &lt;a class="link" href="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/#modelfiles" &gt;touched on these briefly&lt;/a&gt; while first looking into running models locally, but essentially they provide a way for me to create a completely new model based on an &lt;em&gt;existing&lt;/em&gt; model, with some additional tweaks for things such as parameters, &lt;strong&gt;system prompts&lt;/strong&gt; and templates. The Modelfile reference can be found &lt;a class="link" href="https://ollama.readthedocs.io/en/modelfile/" target="_blank" rel="noopener"
+&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Considering the success I&amp;rsquo;d had with the two earlier approaches, I figured that what I really needed was to just have a model that always had this in context, right? That&amp;rsquo;s effectively what was happening with the two separate approaches — although one was being very explicit in telling GitHub Copilot to &lt;em&gt;always&lt;/em&gt; consider the instructions, and the other was giving Open WebUI access to the file and &lt;em&gt;hoping&lt;/em&gt; that it always referenced it.&lt;/p&gt;
+&lt;p&gt;So, it seemed to make sense that I could just whack the contents of &lt;code&gt;llms-small.txt&lt;/code&gt; into the system prompt of a new model, and then let both GitHub Copilot and Open WebUI use it directly, with no additional context required.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;FROM qwen3:8b
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;SYSTEM {contents of llms-small.txt}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Specify the model, and specify the system prompt, which was just a dump of the whole text file. Running the command below then created the new model. Piece of cake!&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ollama create svelte-system-prompt -f ./Modelfile
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Surprisingly, this just didn&amp;rsquo;t quite work as well as I&amp;rsquo;d hoped. Not knowing too much about how GitHub Copilot&amp;rsquo;s instructions or Open WebUI&amp;rsquo;s RAG worked in terms of how much weight was given to the additional context, I figured that this might just have been applied a little differently.&lt;/p&gt;
+&lt;p&gt;In any case, this was a bit of a flop altogether.&lt;/p&gt;
+&lt;h2 id="fine-tuning"&gt;Fine-tuning
+&lt;/h2&gt;&lt;p&gt;All of my reading up until this point had gradually leaned towards this eventuality. With my previous endeavours failing — or least not quite hitting the mark — I decided to look into what was actually required to fine-tune a model.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ll try to touch on the various tools etc. in order here. This isn&amp;rsquo;t quite how it panned out in practice, but it should provide a good overview of what&amp;rsquo;s involved.&lt;/p&gt;
+&lt;p&gt;Additionally, I decided to move away from trying to train it on Svelte here. I did give it a good crack at first, with varying levels of success. Ultimately I was left unsure as to whether the dataset I had created was actually any good, or whether the models I was using were just too small. Different training methods added another variable into the mix, and on top of that, with Qwen 3 being a reasoning model I made a bit of a mess trying to insert reasoning data into the training dataset.&lt;/p&gt;
+&lt;p&gt;Anyway, I decided to train it on a much more focused topic — &lt;strong&gt;the dimensions and markings of a rugby league field&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;I grabbed a PDF from &lt;a class="link" href="https://www.harrodsport.com/uploads/wysiwyg/file/rugby-league-pitch-dimensions-pdf.pdf" target="_blank" rel="noopener"
+&gt;here&lt;/a&gt;, and used that as the basis for my training dataset.&lt;/p&gt;
+&lt;h3 id="datasets"&gt;Datasets
+&lt;/h3&gt;&lt;p&gt;Of course, the easiest way to create a dataset for training an LLM, was to use an LLM. I tried getting a couple of models to scrape the PDF, with ChatGPT being the quickest way to generate a large file.&lt;/p&gt;
+&lt;h4 id="metas-synthetic-data-kit"&gt;Meta&amp;rsquo;s Synthetic Data Kit
+&lt;/h4&gt;&lt;p&gt;I stumbled across &lt;a class="link" href="https://github.com/meta-llama/synthetic-data-kit" target="_blank" rel="noopener"
+&gt;Meta&amp;rsquo;s Synthetic Data Kit&lt;/a&gt; which is purpose built for creating these datasets &lt;em&gt;far&lt;/em&gt; too late in the piece, however I found that I wasn&amp;rsquo;t able to get a meaningful dataset anyhow. It simply required a model that was too large to run on my machine.&lt;/p&gt;
+&lt;p&gt;I won&amp;rsquo;t go into details on how to run this, but it looks like an effective tool for slurping up large amounts of data and spitting out a usable dataset.&lt;/p&gt;
+&lt;p&gt;It just might need either a beefy setup, or using a rented workstation from services like &lt;a class="link" href="https://vast.ai/" target="_blank" rel="noopener"
+&gt;Vast.ai&lt;/a&gt;.&lt;/p&gt;
+&lt;h4 id="formats"&gt;Formats
+&lt;/h4&gt;&lt;p&gt;The file itself needs to be a &lt;code&gt;jsonl&lt;/code&gt; file, which is essentially a file with a JSON object per line. The file I ended up with used the &lt;strong&gt;messages&lt;/strong&gt; format, and looked like this (multiplied by many, many rows):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt; 1
+&lt;/span&gt;&lt;span class="lnt"&gt; 2
+&lt;/span&gt;&lt;span class="lnt"&gt; 3
+&lt;/span&gt;&lt;span class="lnt"&gt; 4
+&lt;/span&gt;&lt;span class="lnt"&gt; 5
+&lt;/span&gt;&lt;span class="lnt"&gt; 6
+&lt;/span&gt;&lt;span class="lnt"&gt; 7
+&lt;/span&gt;&lt;span class="lnt"&gt; 8
+&lt;/span&gt;&lt;span class="lnt"&gt; 9
+&lt;/span&gt;&lt;span class="lnt"&gt;10
+&lt;/span&gt;&lt;span class="lnt"&gt;11
+&lt;/span&gt;&lt;span class="lnt"&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-json" data-lang="json"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;messages&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;role&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;user&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;content&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;Summarize the dimensions of a rugby league field.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;},&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;role&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;assistant&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;content&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;A rugby league field is 68 metres wide, and 112-122 metres long.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Now, a couple of things to note here.&lt;/p&gt;
+&lt;p&gt;There are actually a few ways to format the dataset. Primarily though, and as might be evident simply by looking at that example, the dataset is essentially a collection of objects that describe a conversation.&lt;/p&gt;
+&lt;p&gt;The other types are a little simpler, but I initially opted for the more conversational &lt;strong&gt;messages&lt;/strong&gt; format. It is however worth noting that this format requires specific models — or rather, the particular models need to be tuned appropriately. The base llama models for example did not work out of the box, and required me to use the &lt;code&gt;instruct&lt;/code&gt; tuned versions.&lt;/p&gt;
+&lt;p&gt;In addition to the &lt;strong&gt;messages&lt;/strong&gt; format above, there is also the &lt;strong&gt;completions&lt;/strong&gt; format:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-json" data-lang="json"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;prompt&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;Summarize the dimensions of a rugby league field.&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;completion&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;A rugby league field is 68 metres wide, and 112-122 metres long.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;And the &lt;strong&gt;text&lt;/strong&gt; format:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-json" data-lang="json"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;text&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;A rugby league field is 68 metres wide, and 112-122 metres long.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h4 id="files-required"&gt;Files required
+&lt;/h4&gt;&lt;p&gt;Now, training data on its own is all well and good, but we also need verification data. Since we&amp;rsquo;re using &lt;code&gt;mlx-lm&lt;/code&gt; for this (sorry, Windows folks — this one is Apple only, but there are options that should work just as well on Windows), we&amp;rsquo;ll need the following files.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;train.jsonl&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;valid.jsonl&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;code&gt;valid&lt;/code&gt; data should be smaller than the training data itself — I&amp;rsquo;ve seen a few recommendations, but I just opted for around 10-20% of the training data size. A &lt;code&gt;test.jsonl&lt;/code&gt; file is also recommended, which can be used to evaluate the model after training.&lt;/p&gt;
+&lt;h3 id="mlx-lm"&gt;mlx-lm
+&lt;/h3&gt;&lt;p&gt;Using &lt;code&gt;mlx-lm&lt;/code&gt; was actually one of the easier parts to get right. The setup did require using Python, which is always fun considering how infrequently I use it, but once I jogged the memory on how to set up a virtual environment, we had the ball rolling.&lt;/p&gt;
+&lt;p&gt;Before we get into the individual commands used, it&amp;rsquo;s worth mentioning that &lt;code&gt;mlx-lm&lt;/code&gt; can pull models directly from &lt;a class="link" href="https://huggingface.co/" target="_blank" rel="noopener"
+&gt;Hugging Face&lt;/a&gt;, meaning we don&amp;rsquo;t need to download models, or figure out where they might be stored. It &lt;em&gt;does&lt;/em&gt; however mean that the names might looks a little different to what we&amp;rsquo;re used to seeing with Ollama, but rest assured they&amp;rsquo;re all talking about the same models.&lt;/p&gt;
+&lt;h4 id="installation"&gt;Installation
+&lt;/h4&gt;&lt;p&gt;Running &lt;code&gt;pip install mlx-lm&lt;/code&gt; gets us the basic package, and we can actually start playing with models right off the bat with &lt;code&gt;mlx_lm.generate --prompt &amp;quot;Hello&amp;quot;&lt;/code&gt;. Starting a continuous chat can be kicked off with &lt;code&gt;mlx_lm.chat&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;m not really sure which model gets used when you don&amp;rsquo;t supply the argument, but providing a &lt;code&gt;--model&lt;/code&gt; argument will use the specified model. As mentioned, these should can be repositories on Hugging Face, so to grab the Qwen3 1.7B model as an example, we simply need to run &lt;code&gt;mlx_lm.generate --model qwen/qwen3-1.7b --prompt &amp;quot;Hello&amp;quot;&lt;/code&gt;.&lt;/p&gt;
+&lt;h4 id="training"&gt;Training
+&lt;/h4&gt;&lt;p&gt;Now that we&amp;rsquo;re done playing with our toys, it&amp;rsquo;s time to do our best Sid from Toy Story impersonation and start messing with the guts of our models.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/sid-workshop.gif"
+width="498"
+height="373"
+srcset="https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/sid-workshop_hu_fbbb6a160b973de0.gif 480w, https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/sid-workshop_hu_81e9558a8a798d9.gif 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="133"
+data-flex-basis="320px"
+&gt;&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s probably a good time to talk about what &lt;em&gt;type&lt;/em&gt; of training this is. Or, types. And full disclaimer, this is where I started to get a little lost — suffice to say that I&amp;rsquo;m still not entirely sure how much of a difference there is between the different types of training that &lt;code&gt;mlx-lm&lt;/code&gt; offers beyond a very rough idea.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Full&lt;/td&gt;
+&lt;td&gt;Updates all of the model weights (or parameters) of the pre-trained model. &lt;em&gt;Very&lt;/em&gt; resource intensive, and risks &amp;ldquo;over-fitting&amp;rdquo;, causing a model to &amp;ldquo;forget&amp;rdquo; some of its original data.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;LoRA&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Low-Rank Adaptation&lt;/strong&gt;. We track the &lt;em&gt;changes&lt;/em&gt; we want to make to the weights. We can also freeze some of the layers to reduce the number of parameters we&amp;rsquo;re adjusting. Far more efficient while fine-tuning.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;DoRA&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Weight-Decomposed Low-Rank Adaptation&lt;/strong&gt;. Too complicated for me to understand the differences, but the consensus seems to be that it it provides more accurate results than LoRA with similar efficiency gains. More information &lt;a class="link" href="https://developer.nvidia.com/blog/introducing-dora-a-high-performing-alternative-to-lora-for-fine-tuning/" target="_blank" rel="noopener"
+&gt;here&lt;/a&gt;.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;QLoRA is also available, which is simply LoRA that works on quantized models. &lt;code&gt;mlx-lm&lt;/code&gt; will automatically use this if our &lt;code&gt;--model&lt;/code&gt; argument points to a quantized model.&lt;/p&gt;
+&lt;p&gt;Now, this video does a great job of explaining a bunch of things that are well and truly over my head — it&amp;rsquo;s definitely worth a watch if you&amp;rsquo;re interested in the details.&lt;/p&gt;
+&lt;div class="video-wrapper"&gt;
+&lt;iframe loading="lazy"
+src="https://www.youtube.com/embed/t1caDsMzWBk"
+allowfullscreen
+title="YouTube Video"
+&gt;
+&lt;/iframe&gt;
+&lt;/div&gt;
+&lt;p&gt;I tried both full and LoRA training to figure out which was best for my use case. Considering that I wanted a highly specialized model, I wasn&amp;rsquo;t sure if over-fitting would necessarily be the biggest concern.&lt;/p&gt;
+&lt;p&gt;In any case, the command to run &lt;strong&gt;full&lt;/strong&gt; fine-tuning is as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;mlx_lm.lora --train &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; --model qwen/qwen3-1.7b &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; --data data &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; --iters &lt;span class="m"&gt;200&lt;/span&gt; &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; --fine-tune-type full
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;We can easily switch that last argument to &lt;code&gt;lora&lt;/code&gt; (or &lt;code&gt;dora&lt;/code&gt;) to use the other types of training. This introduces some additional arguments we can pass, but we can leave them at their defaults for now.&lt;/p&gt;
+&lt;p&gt;It is worth mentioning here that this is a resource-intensive task, and more than once I found myself running out of memory and watching the training process crash. &lt;a class="link" href="https://github.com/ml-explore/mlx-lm/blob/e9b1649662d261e8eefea506c705a7370bb92449/mlx_lm/LORA.md#memory-issues" target="_blank" rel="noopener"
+&gt;This page&lt;/a&gt; details a few methods to try and reduce the memory usage, but I found that the biggest impact was simply to use a smaller model — bearing in mind that this will also reduce the quality of the final model.&lt;/p&gt;
+&lt;p&gt;Run the command with your desired combination of parameters, and we should end up with a folder called &lt;code&gt;adapters&lt;/code&gt;. Inside, is the result of our fine-tuning in the form of a Safetensor adapter!&lt;/p&gt;
+&lt;p&gt;The console output should also look something like the below.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt; 1
+&lt;/span&gt;&lt;span class="lnt"&gt; 2
+&lt;/span&gt;&lt;span class="lnt"&gt; 3
+&lt;/span&gt;&lt;span class="lnt"&gt; 4
+&lt;/span&gt;&lt;span class="lnt"&gt; 5
+&lt;/span&gt;&lt;span class="lnt"&gt; 6
+&lt;/span&gt;&lt;span class="lnt"&gt; 7
+&lt;/span&gt;&lt;span class="lnt"&gt; 8
+&lt;/span&gt;&lt;span class="lnt"&gt; 9
+&lt;/span&gt;&lt;span class="lnt"&gt;10
+&lt;/span&gt;&lt;span class="lnt"&gt;11
+&lt;/span&gt;&lt;span class="lnt"&gt;12
+&lt;/span&gt;&lt;span class="lnt"&gt;13
+&lt;/span&gt;&lt;span class="lnt"&gt;14
+&lt;/span&gt;&lt;span class="lnt"&gt;15
+&lt;/span&gt;&lt;span class="lnt"&gt;16
+&lt;/span&gt;&lt;span class="lnt"&gt;17
+&lt;/span&gt;&lt;span class="lnt"&gt;18
+&lt;/span&gt;&lt;span class="lnt"&gt;19
+&lt;/span&gt;&lt;span class="lnt"&gt;20
+&lt;/span&gt;&lt;span class="lnt"&gt;21
+&lt;/span&gt;&lt;span class="lnt"&gt;22
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Loading pretrained model
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Fetching &lt;span class="m"&gt;9&lt;/span&gt; files: 100%&lt;span class="p"&gt;|&lt;/span&gt;██████████████████████████████████████████████████████████████████████████████████████████████████████&lt;span class="p"&gt;|&lt;/span&gt; 9/9 &lt;span class="o"&gt;[&lt;/span&gt;00:00&amp;lt;00:00, 13217.34it/s&lt;span class="o"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Loading datasets
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Training
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Trainable parameters: 0.056% &lt;span class="o"&gt;(&lt;/span&gt;0.967M/1720.575M&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Starting training..., iters: &lt;span class="m"&gt;100&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Calculating loss...: 100%&lt;span class="p"&gt;|&lt;/span&gt;██████████████████████████████████████████████████████████████████████████████████████████████████████&lt;span class="p"&gt;|&lt;/span&gt; 25/25 &lt;span class="o"&gt;[&lt;/span&gt;00:11&amp;lt;00:00, 2.22it/s&lt;span class="o"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 1: Val loss 5.646, Val took 11.289s
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 10: Train loss 4.538, Learning Rate 1.000e-05, It/sec 1.376, Tokens/sec 317.131, Trained Tokens 2304, Peak mem 4.695 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 20: Train loss 2.579, Learning Rate 1.000e-05, It/sec 1.281, Tokens/sec 303.100, Trained Tokens 4671, Peak mem 5.034 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 30: Train loss 1.801, Learning Rate 1.000e-05, It/sec 1.545, Tokens/sec 314.796, Trained Tokens 6708, Peak mem 5.034 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 40: Train loss 1.522, Learning Rate 1.000e-05, It/sec 1.508, Tokens/sec 336.666, Trained Tokens 8941, Peak mem 5.034 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 50: Train loss 1.425, Learning Rate 1.000e-05, It/sec 1.514, Tokens/sec 313.347, Trained Tokens 11010, Peak mem 5.034 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 60: Train loss 1.261, Learning Rate 1.000e-05, It/sec 1.577, Tokens/sec 341.066, Trained Tokens 13173, Peak mem 5.034 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 70: Train loss 1.162, Learning Rate 1.000e-05, It/sec 1.348, Tokens/sec 318.090, Trained Tokens 15532, Peak mem 5.034 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 80: Train loss 1.168, Learning Rate 1.000e-05, It/sec 1.243, Tokens/sec 324.718, Trained Tokens 18144, Peak mem 5.429 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 90: Train loss 1.077, Learning Rate 1.000e-05, It/sec 1.415, Tokens/sec 318.347, Trained Tokens 20394, Peak mem 5.429 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Calculating loss...: 100%&lt;span class="p"&gt;|&lt;/span&gt;██████████████████████████████████████████████████████████████████████████████████████████████████████&lt;span class="p"&gt;|&lt;/span&gt; 25/25 &lt;span class="o"&gt;[&lt;/span&gt;00:11&amp;lt;00:00, 2.18it/s&lt;span class="o"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 100: Val loss 1.241, Val took 11.401s
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 100: Train loss 0.746, Learning Rate 1.000e-05, It/sec 1.623, Tokens/sec 339.464, Trained Tokens 22486, Peak mem 5.429 GB
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Iter 100: Saved adapter weights to adapters/adapters.safetensors and adapters/0000100_adapters.safetensors.
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Saved final weights to adapters/adapters.safetensors.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Lots of useful information, but critically we want to keep an eye on the &lt;strong&gt;Train / Val loss&lt;/strong&gt; values (training and validation loss, respectively). Typically, the lower the better, these essentially indicate how well the model is learning.&lt;/p&gt;
+&lt;p&gt;My understanding is that we want the validation loss to be close to the the training loss. If the validation loss is significantly lower than the training loss, it indicates under-fitting (lower accuracy relative to the training data), while a significantly higher validation loss indicates over-fitting (higher accuracy relative to the training data, at the cost of existing knowledge).&lt;/p&gt;
+&lt;h4 id="fusing"&gt;Fusing
+&lt;/h4&gt;&lt;p&gt;Honestly, I prefer to refer to this as &amp;ldquo;baking&amp;rdquo; the adapter in. Apparently the community is dead-set on calling it &amp;ldquo;fusing&amp;rdquo;. That just reminds me of an over-protected childhood where I wasn&amp;rsquo;t allowed to watch Dragonball Z.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/fusion.gif"
+width="480"
+height="360"
+srcset="https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/fusion_hu_fcfe4c4f45eaeec2.gif 480w, https://vivecuervo7.github.io/dev-blog/p/fine-tuning-an-llm/images/fusion_hu_5b22d83767fc69d1.gif 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="133"
+data-flex-basis="320px"
+&gt;&lt;/p&gt;
+&lt;p&gt;Moving on, this step isn&amp;rsquo;t necessarily required, depending on the model we&amp;rsquo;ve used. I haven&amp;rsquo;t tried this with one of the compatible models, but Ollama&amp;rsquo;s &lt;a class="link" href="https://ollama.readthedocs.io/en/modelfile/#safetensor-adapter" target="_blank" rel="noopener"
+&gt;Modelfile reference&lt;/a&gt; does mention the ability to simply reference a Safetensor adapter, which is what we get when we run the &lt;code&gt;mlx_lm.lora --train&lt;/code&gt; command above.&lt;/p&gt;
+&lt;p&gt;Since neither of the models I was using were compatible, I did need to produce a fused model. We can actually run the model we used to create the adapter with or without the adapter attached to it (add an &lt;code&gt;--adapter-path&lt;/code&gt; argument to a &lt;code&gt;mlx_lm.generate&lt;/code&gt; command to use the adapter), but this wasn&amp;rsquo;t going to give me a model that could be run by Ollama.&lt;/p&gt;
+&lt;p&gt;To combine the model and adapter, we run the following.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;mlx_lm.fuse --model qwen/qwen3-1.7b &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; --adapter-path adapters &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; --save-path ./model
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;And, once again we&amp;rsquo;ll get a folder called &lt;code&gt;model&lt;/code&gt;, which contains a &lt;em&gt;bunch&lt;/em&gt; of files. This is your model!&lt;/p&gt;
+&lt;p&gt;If we&amp;rsquo;re itching to see how it works, we can pass &lt;code&gt;--model ./model&lt;/code&gt; to &lt;code&gt;mlx_lm.generate&lt;/code&gt; or &lt;code&gt;mlx_lm.chat&lt;/code&gt;, and it will use the newly created model. Good for a quick turnaround for testing.&lt;/p&gt;
+&lt;h3 id="llamacpp"&gt;llama.cpp
+&lt;/h3&gt;&lt;p&gt;Once again, this may be unnecessary based on your model. The &lt;a class="link" href="https://ollama.readthedocs.io/en/modelfile/#build-from-a-safetensors-model" target="_blank" rel="noopener"
+&gt;Modelfile reference&lt;/a&gt; also mentions being able to build from a Safetensors model directly. You&amp;rsquo;d think at this point I would have just made sure to pick one from this list, right?&lt;/p&gt;
+&lt;p&gt;Of course, only one of my models was supported. If it&amp;rsquo;s not supported, you&amp;rsquo;ll see something like below when you try to run &lt;code&gt;ollama create&lt;/code&gt;. If it is supported, it will simply perform the &lt;strong&gt;conversion&lt;/strong&gt; itself, and you&amp;rsquo;ll end up with a model that is listed and runnable by Ollama.&lt;/p&gt;
+&lt;div class="highlight error"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Error: unsupported architecture &amp;#34;Qwen3ForCausalLM&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;And, that&amp;rsquo;s the key word right there. &lt;strong&gt;Conversion&lt;/strong&gt;. To what, exactly? A &lt;code&gt;.gguf&lt;/code&gt; file! Which stands for the mouthful of syllables that is &amp;ldquo;GPT-Generated Unified Format&amp;rdquo;. Bottom line is, it&amp;rsquo;s what Ollama wants.&lt;/p&gt;
+&lt;h4 id="installation-1"&gt;Installation
+&lt;/h4&gt;&lt;p&gt;There are a few options for installation, as mentioned on the &lt;a class="link" href="https://github.com/ggml-org/llama.cpp?tab=readme-ov-file#quick-start" target="_blank" rel="noopener"
+&gt;&lt;code&gt;llama.cpp&lt;/code&gt; repository&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I didn&amp;rsquo;t have much luck getting the homebrew version to work, so I ended up cloning the repository and building it myself (they have &lt;a class="link" href="https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md" target="_blank" rel="noopener"
+&gt;instructions for that&lt;/a&gt;, too).&lt;/p&gt;
+&lt;h4 id="converting-to-gguf"&gt;Converting to .gguf
+&lt;/h4&gt;&lt;p&gt;The bit we really care about is being able to convert the Safetensor model into a &lt;code&gt;.gguf&lt;/code&gt; file. The script that achieves that is called &lt;code&gt;convert_hf_to_gguf.py&lt;/code&gt;. I found it easiest to just run this from the directory that had our model in it.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;python ../llama.cpp/convert_hf_to_gguf.py model --outfile model.gguf
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;A keen eye might also notice a script called &lt;code&gt;convert_lora_to_gguf.py&lt;/code&gt; sitting next to &lt;code&gt;convert_hf_to_gguf.py&lt;/code&gt;. I had no success in trying to use this, but the suggestion is that we could actually convert the &lt;em&gt;adapter&lt;/em&gt; itself to a &lt;code&gt;.gguf&lt;/code&gt; and pass that to Ollama via a Modelfile&amp;rsquo;s &lt;code&gt;ADAPTER&lt;/code&gt; instruction, saving us the need to fuse the adapter into the model.&lt;/p&gt;
+&lt;p&gt;Anyway, once we have our &lt;code&gt;model.gguf&lt;/code&gt; file, we can now create a model in Ollama that uses it.&lt;/p&gt;
+&lt;h3 id="ollama-create"&gt;ollama create
+&lt;/h3&gt;&lt;p&gt;We&amp;rsquo;ve already seen how to create a model for Ollama, but now we can use the &lt;code&gt;.gguf&lt;/code&gt; file we created above. We do this by creating a &lt;code&gt;Modelfile&lt;/code&gt; in the same directory as the &lt;code&gt;.gguf&lt;/code&gt; file, and referencing our brand spanking new &lt;code&gt;model.gguf&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;FROM ./model.gguf
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The command to create our model doesn&amp;rsquo;t change, so we run that. With a more appropriate name.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ollama create eight-in-a-row -f ./Modelfile
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;code&gt;ollama list&lt;/code&gt; should now show us our model, and we can use it as we would any other model we&amp;rsquo;ve pulled down from Ollama&amp;rsquo;s library, showing up in both GitHub Copilot and Open WebUI.&lt;/p&gt;
+&lt;h4 id="chat-template"&gt;Chat template
+&lt;/h4&gt;&lt;p&gt;The first big problem I noticed came when I tried to run this. And frustratingly, it &lt;em&gt;only&lt;/em&gt; happened when I tried to run it via Ollama.&lt;/p&gt;
+&lt;p&gt;I was getting some really fun output, where a simple prompt of &amp;ldquo;Hello&amp;rdquo; would return a response along the lines of &amp;ldquo;, I&amp;rsquo;m going to&amp;hellip;&amp;rdquo; and on and on. Noticing the little comma sneaking in there at the start of the response, it took some pain and searching around before I learned all about stop sequences.&lt;/p&gt;
+&lt;p&gt;It was only after I spotted someone else showing the output of their model (via &lt;code&gt;ollama show&lt;/code&gt;) that I noticed a difference between theirs and mine. Theirs had the &lt;code&gt;TEMPLATE&lt;/code&gt; instruction filled in for their Modelfile. I don&amp;rsquo;t know why it hadn&amp;rsquo;t dawned on me earlier, but the example &lt;code&gt;TEMPLATE&lt;/code&gt; instruction in the &lt;a class="link" href="https://ollama.readthedocs.io/en/modelfile/#template" target="_blank" rel="noopener"
+&gt;Modelfile reference&lt;/a&gt; looked a &lt;em&gt;lot&lt;/em&gt; like the &lt;code&gt;template&lt;/code&gt; file &lt;a class="link" href="https://ollama.com/library/qwen3:1.7b/blobs/ae370d884f10" target="_blank" rel="noopener"
+&gt;in the Ollama library&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Pasting the contents of that file directly into the &lt;code&gt;TEMPLATE&lt;/code&gt; instruction of my Modelfile, I was able to get the model to respond as expected. After much pain and suffering, I finally had it working!&lt;/p&gt;
+&lt;h4 id="parameters"&gt;Parameters
+&lt;/h4&gt;&lt;p&gt;While I&amp;rsquo;m not entirely sure how much of a difference it makes, I did also note that running &lt;code&gt;ollama show&lt;/code&gt; against the original model had a few parameters set. I&amp;rsquo;m not entirely sure if they were completely necessary, nor what impact they each have — I largely noticed them when I was looking to try and explicitly set my stop sequences via &lt;code&gt;PARAMETER stop &amp;lt;|im_end|&amp;gt;&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Anyhow, I copied the parameter values from the original model&amp;rsquo;s &lt;a class="link" href="https://ollama.com/library/qwen3:1.7b/blobs/cff3f395ef37" target="_blank" rel="noopener"
+&gt;Ollama library page&lt;/a&gt;. Omitting the &lt;code&gt;stop&lt;/code&gt; parameters didn&amp;rsquo;t seem to have any impact, but I figured that starting with the remaining values set to those of the original model probably wouldn&amp;rsquo;t be the worst idea.&lt;/p&gt;
+&lt;h2 id="results"&gt;Results
+&lt;/h2&gt;&lt;p&gt;To give everyone a level playing field, I decided to scrap all the models I&amp;rsquo;d been playing with, and really compare these properly. I settled on a consistent set of parameters, and ran the same prompt against each of the models, with the same datasets. I was seeing enough similarity between &lt;strong&gt;LoRA&lt;/strong&gt; and &lt;strong&gt;DoRA&lt;/strong&gt; training that I didn&amp;rsquo;t feel the need to run both of them against each model, so I decided to just run &lt;strong&gt;Full&lt;/strong&gt; and &lt;strong&gt;DoRA&lt;/strong&gt; training for each model.&lt;/p&gt;
+&lt;p&gt;Each of the models would receive the same prompt, with the response pasted in, giving each model up to three attempts and picking the best response. I&amp;rsquo;ll indicate if this was the case in the results below.&lt;/p&gt;
+&lt;p&gt;Here are the datasets used, in the &lt;strong&gt;messages&lt;/strong&gt; format:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a class="link" href="files/train.jsonl" &gt;train.jsonl&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="link" href="files/valid.jsonl" &gt;valid.jsonl&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;As for the actual parameters, I ran each with &lt;strong&gt;200 iterations&lt;/strong&gt; and a &lt;strong&gt;batch size of 1&lt;/strong&gt;. For &lt;strong&gt;DoRA&lt;/strong&gt; training, I also limited it to training on &lt;strong&gt;4 layers&lt;/strong&gt;. This was very focused around reducing the memory usage, as to date I had watched a few training processes crash due to running out of memory. Later on, I do look at the impact of changing the number of layers.&lt;/p&gt;
+&lt;h3 id="the-prompt"&gt;The prompt
+&lt;/h3&gt;&lt;p&gt;The prompt used will be &lt;strong&gt;&lt;em&gt;&amp;ldquo;How big is a rugby league field?&amp;rdquo;&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;For reference, the answer is &lt;strong&gt;68m wide&lt;/strong&gt;, and &lt;strong&gt;112-122m long&lt;/strong&gt;.&lt;/p&gt;
+&lt;h3 id="per-model-results"&gt;Per-model results
+&lt;/h3&gt;&lt;p&gt;In an effort to keep the table headers short, they have been abbreviated. I&amp;rsquo;ll also omit any reasoning returned from the Qwen 3 models, as it was generally quite long and honestly what we &lt;em&gt;really&lt;/em&gt; care about is the end result.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Type&lt;/strong&gt;: The type of training used, as described above&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Format&lt;/strong&gt;: The format of the dataset used for training&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;P%&lt;/strong&gt;: The percentage of total model parameters trained&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;TLoss&lt;/strong&gt;: Training loss reported by MLX&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;VLoss&lt;/strong&gt;: Validation loss reported by MLX&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Mem&lt;/strong&gt;: Peak memory used while training the model&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="qwen-3--17b"&gt;Qwen 3 — 1.7B
+&lt;/h4&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;P%&lt;/th&gt;
+&lt;th&gt;TLoss&lt;/th&gt;
+&lt;th&gt;VLoss&lt;/th&gt;
+&lt;th&gt;Mem&lt;/th&gt;
+&lt;th&gt;Response&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Base&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;&lt;em&gt;[Truncated]&lt;/em&gt; A rugby league field is a rectangular area measuring 90 meters (300 feet) in length and 50 meters (164 feet) in width. The field is divided into two halves by a 22-meter (72-foot) line running parallel to the goal line, which separates the two halves. &lt;em&gt;[&amp;hellip;]&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Full&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;47%&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.109&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.315&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;9.2GB&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;The width of a rugby league field is 68 meters.&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;DoRA&lt;/td&gt;
+&lt;td&gt;0.014%&lt;/td&gt;
+&lt;td&gt;1.448&lt;/td&gt;
+&lt;td&gt;1.487&lt;/td&gt;
+&lt;td&gt;3.8GB&lt;/td&gt;
+&lt;td&gt;The pitch of a rugby league field is approximately 100 meters long.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h4 id="qwen-3--4b"&gt;Qwen 3 — 4B
+&lt;/h4&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;P%&lt;/th&gt;
+&lt;th&gt;TLoss&lt;/th&gt;
+&lt;th&gt;VLoss&lt;/th&gt;
+&lt;th&gt;Mem (GB)&lt;/th&gt;
+&lt;th&gt;Response&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Base&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;&lt;em&gt;[Truncated]&lt;/em&gt; A rugby league field is a rectangular playing area with the following standard dimensions: Length: 100 meters (approximately 109.36 yards); &lt;strong&gt;Width: 68 meters&lt;/strong&gt; (approximately 74.37 yards) &lt;em&gt;[&amp;hellip;]&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Full*&lt;/td&gt;
+&lt;td&gt;40.147%&lt;/td&gt;
+&lt;td&gt;0.158&lt;/td&gt;
+&lt;td&gt;0.289&lt;/td&gt;
+&lt;td&gt;16.5GB&lt;/td&gt;
+&lt;td&gt;The dimensions of a rugby league field are between 122 and 182 meters.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;DoRA&lt;/td&gt;
+&lt;td&gt;0.009%&lt;/td&gt;
+&lt;td&gt;1.055&lt;/td&gt;
+&lt;td&gt;1.108&lt;/td&gt;
+&lt;td&gt;8.5GB&lt;/td&gt;
+&lt;td&gt;A rugby league field is 100 meters long and 60 meters wide. The pitch is 100 meters long, and the width is 60 meters. The goal posts are 10 meters apart, and the crossbar is 4 meters wide.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;* I had to limit iterations to 100 for the 3B model, as it was running out of memory&lt;/p&gt;
+&lt;h4 id="qwen-3--8b"&gt;Qwen 3 — 8B
+&lt;/h4&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;P%&lt;/th&gt;
+&lt;th&gt;TLoss&lt;/th&gt;
+&lt;th&gt;VLoss&lt;/th&gt;
+&lt;th&gt;Mem (GB)&lt;/th&gt;
+&lt;th&gt;Response&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Base&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;&lt;em&gt;[Truncated]&lt;/em&gt; A rugby league field has specific dimensions that are standardized for competition. Here&amp;rsquo;s a concise breakdown: Standard Dimensions: Length: 100 meters (328 feet); Width: 53 meters (174 feet) &lt;em&gt;[&amp;hellip;]&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Full*&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;DoRA**&lt;/td&gt;
+&lt;td&gt;0.005%&lt;/td&gt;
+&lt;td&gt;1.185&lt;/td&gt;
+&lt;td&gt;1.212&lt;/td&gt;
+&lt;td&gt;17GB&lt;/td&gt;
+&lt;td&gt;&lt;em&gt;[Truncated]&lt;/em&gt; The pitch dimensions for rugby league are standardized. Here&amp;rsquo;s the breakdown: &lt;strong&gt;Width: 68 meters&lt;/strong&gt;; Length: 126 meters &lt;em&gt;[&amp;hellip;]&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;* Unsurprisingly, this one was never going to fit into the meager 24GB of memory I have on this machine&lt;/p&gt;
+&lt;p&gt;** While I just managed to get the full fine-tuning in, I had to quantize the model to be able to run it on my machine&lt;/p&gt;
+&lt;h4 id="llama-32--1b"&gt;Llama 3.2 — 1B
+&lt;/h4&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;P%&lt;/th&gt;
+&lt;th&gt;TLoss&lt;/th&gt;
+&lt;th&gt;VLoss&lt;/th&gt;
+&lt;th&gt;Mem&lt;/th&gt;
+&lt;th&gt;Response&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Base&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;&lt;em&gt;[Truncated]&lt;/em&gt; Rugby League fields are typically smaller than American football or Australian Rules football fields. &lt;em&gt;[&amp;hellip;]&lt;/em&gt; Keep in mind that different countries or regions might have slightly varying field sizes, but 100m x 70m is the standard for rugby league fields worldwide.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Full&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;78.745%&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.0077&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.178&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;9.7GB&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;The total length of a rugby league field is between 112 and 122 meters.&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;DoRA&lt;/td&gt;
+&lt;td&gt;0.018%&lt;/td&gt;
+&lt;td&gt;0.871&lt;/td&gt;
+&lt;td&gt;0.942&lt;/td&gt;
+&lt;td&gt;2.8GB&lt;/td&gt;
+&lt;td&gt;The size of a rugby league field is typically 130-150 yards (120-137 meters) long. The width can vary, but the most common width is around 55-65 yards (50-59 meters).&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h4 id="llama-32--3b"&gt;Llama 3.2 — 3B
+&lt;/h4&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;P%&lt;/th&gt;
+&lt;th&gt;TLoss&lt;/th&gt;
+&lt;th&gt;VLoss&lt;/th&gt;
+&lt;th&gt;Mem (GB)&lt;/th&gt;
+&lt;th&gt;Response&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Base&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;A rugby league field, also known as a rugby pitch or oval, measures 100 meters (328 feet) long and 70 meters (230 feet) wide. The field is oval in shape, with the goalposts at each end of the field, and the try lines marking the boundaries of the playing area.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Full*&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;50.135%&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.096&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.193&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;15GB&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;The size of a rugby league field is between 112 and 122 meters.&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;DoRA&lt;/td&gt;
+&lt;td&gt;0.011%&lt;/td&gt;
+&lt;td&gt;0.836&lt;/td&gt;
+&lt;td&gt;0.911&lt;/td&gt;
+&lt;td&gt;7GB&lt;/td&gt;
+&lt;td&gt;A rugby league field is 102 meters long and 68 meters wide. The goalposts stand at each end, 9 meters tall.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;* I had to limit iterations to 100 for the 3B model, as it was running out of memory&lt;/p&gt;
+&lt;h3 id="summary"&gt;Summary
+&lt;/h3&gt;&lt;p&gt;I was a bit surprised by the results, with the larger Qwen model not performing quite as well as the smaller one. Perhaps this has something to do with the overall lower number of parameters that the smaller model is working with, resulting in a heavier weighting towards the new values?&lt;/p&gt;
+&lt;p&gt;The LLama3.2 model was the only one to nail the response across both sizes, which tracks with the general feeling being that it punches above it&amp;rsquo;s weight. I&amp;rsquo;m not sure that this will translate into writing code where the reasoning capability of Qwen is touted to give it the edge — but I&amp;rsquo;m not quite sure at which model size that benefit really kicks in.&lt;/p&gt;
+&lt;p&gt;The larger of the two Llama3.2 models was clearly the winner in terms of balancing the cost of training with the quality of the results. While it had the wrong length for the DoRA-trained model, it got the width right, and both sizes regurgitated the correct dimensions when undergoing full training.&lt;/p&gt;
+&lt;p&gt;All this while I was considering whether I had just given the models a garbage dataset, but I decided to forge ahead with some investigation into the number of layers the DoRA training was impacting. Perhaps I could get the balance right between partial and full fine-tuning?&lt;/p&gt;
+&lt;h3 id="number-of-layers"&gt;Number of layers
+&lt;/h3&gt;&lt;p&gt;With Llama3.2&amp;rsquo;s 3B parameter model impressing, I decided to run the experiment with that model (also because it doesn&amp;rsquo;t require the additional conversion step that Qwen does). We can reference the existing results for the four-layer run, and I decided to creep up the layers incrementally.&lt;/p&gt;
+&lt;p&gt;I also decided to keep the &lt;strong&gt;Full&lt;/strong&gt; result here as the benchmark response.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Layers&lt;/th&gt;
+&lt;th&gt;P%&lt;/th&gt;
+&lt;th&gt;TLoss&lt;/th&gt;
+&lt;th&gt;VLoss&lt;/th&gt;
+&lt;th&gt;Mem (GB)&lt;/th&gt;
+&lt;th&gt;Response&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Full*&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;50.135%&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.096&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.193&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;15GB&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;The size of a rugby league field is between 112 and 122 meters.&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;0.011%&lt;/td&gt;
+&lt;td&gt;0.836&lt;/td&gt;
+&lt;td&gt;0.911&lt;/td&gt;
+&lt;td&gt;7GB&lt;/td&gt;
+&lt;td&gt;A rugby league field is 102 meters long and 68 meters wide. The goalposts stand at each end, 9 meters tall.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;0.021%&lt;/td&gt;
+&lt;td&gt;0.506&lt;/td&gt;
+&lt;td&gt;0.571&lt;/td&gt;
+&lt;td&gt;7GB&lt;/td&gt;
+&lt;td&gt;The size of a rugby league field is 112 meters long and 68 meters wide.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;16&lt;/td&gt;
+&lt;td&gt;0.043%&lt;/td&gt;
+&lt;td&gt;0.318&lt;/td&gt;
+&lt;td&gt;0.421&lt;/td&gt;
+&lt;td&gt;7GB&lt;/td&gt;
+&lt;td&gt;A rugby league field is between 112 and 122 meters long.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;0.064%&lt;/td&gt;
+&lt;td&gt;0.295&lt;/td&gt;
+&lt;td&gt;0.394&lt;/td&gt;
+&lt;td&gt;7GB&lt;/td&gt;
+&lt;td&gt;The length of a rugby league field is between 112 and 122 meters, while the width is between 68 and 72 meters.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;I played around with a few of the other parameters, including all 28 layers with 500 iterations, but the results were all pretty similar to the 24-layer run — although I noticed that at this point the responses started getting much more terse, closer in length to the training data even when the prompt wasn&amp;rsquo;t related to that data at all.&lt;/p&gt;
+&lt;p&gt;I was fairly impressed at this point. A 3B parameter model is certainly on the smaller end, and the dataset I&amp;rsquo;d given it was likely not very good, but the responses were consistently coming back with reasonably correct dimensions. It was still tripping over a few things, such as not being able to return the correct depth of the in-goal area.&lt;/p&gt;
+&lt;p&gt;I decided to offer Qwen a chance at redemption, and ran the same experiment with the 4B model. I was curious to see if it would see similar consistency with a layer number of layers being trained.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Layers&lt;/th&gt;
+&lt;th&gt;P%&lt;/th&gt;
+&lt;th&gt;TLoss&lt;/th&gt;
+&lt;th&gt;VLoss&lt;/th&gt;
+&lt;th&gt;Mem (GB)&lt;/th&gt;
+&lt;th&gt;Response&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;0.009%&lt;/td&gt;
+&lt;td&gt;1.055&lt;/td&gt;
+&lt;td&gt;1.108&lt;/td&gt;
+&lt;td&gt;8.5GB&lt;/td&gt;
+&lt;td&gt;A rugby league field is 100 meters long and 60 meters wide. The pitch is 100 meters long, and the width is 60 meters. The goal posts are 10 meters apart, and the crossbar is 4 meters wide.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;0.052%&lt;/td&gt;
+&lt;td&gt;0.401&lt;/td&gt;
+&lt;td&gt;0.594&lt;/td&gt;
+&lt;td&gt;9GB&lt;/td&gt;
+&lt;td&gt;The pitch is 100 meters long and 68 meters wide.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Hmm, still a bit off. It was spitting out a bunch of relevant info in the thinking output that was clearly from the dataset, but it even with follow-up prompts it couldn&amp;rsquo;t figure out the depth of the in-goal area, nor would it factor that into the total length.&lt;/p&gt;
+&lt;h2 id="conclusion"&gt;Conclusion
+&lt;/h2&gt;&lt;p&gt;Evidently, I underestimated just how much importance is placed on the dataset itself. I did try throwing some tweaked datasets at the problem, but ran into similar issues. This feels very much like a skill that needs to be honed before I&amp;rsquo;ll truly unlock the potential of fine-tuning.&lt;/p&gt;
+&lt;p&gt;In any case, I was pleased to see some success with the smaller models, and I think that the results are promising enough to keep banging away at the problem. I can definitely see the potential for this be used to create a bunch of smaller models that can answer questions about specific domains, so long as the datasets are of reasonable enough quality.&lt;/p&gt;
+&lt;p&gt;I was far more impressed by the results of the Llama 3.2 model, although while I was first toying with fine-tuning, I did note that Qwen 3 was consistently better when it came to writing code.&lt;/p&gt;
+&lt;p&gt;Based purely on the results posted in here however, it&amp;rsquo;s clear that the &lt;strong&gt;Llama 3.2&lt;/strong&gt; model is a great first stop when looking to do any fine-tuning, specifically when fine-tuning &lt;strong&gt;8-16 layers&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id="next-steps"&gt;Next steps
+&lt;/h2&gt;&lt;p&gt;The next steps for me are following on from a seed that was planted in one of the earliest videos I watched on this topic.&lt;/p&gt;
+&lt;p&gt;In the video, the creator formats his responses as &lt;code&gt;&amp;lt;calculator&amp;gt;...&amp;lt;/calculator&amp;gt;&lt;/code&gt;. The suggestion was, unless I&amp;rsquo;m hallucinating after spending so long buried in AI, that this model could effectively be trained to recognise a maths question and return a response that can hand off the calculation to an actual calculator.&lt;/p&gt;
+&lt;div class="video-wrapper"&gt;
+&lt;iframe loading="lazy"
+src="https://www.youtube.com/embed/yOcUCnLgvt8"
+allowfullscreen
+title="YouTube Video"
+&gt;
+&lt;/iframe&gt;
+&lt;/div&gt;
+&lt;p&gt;Which got me thinking&amp;hellip; what if instead of a calculator or other tool, we could have a model that called other models?&lt;/p&gt;
+&lt;p&gt;Essentially, having a small orchestrator model that can interpret what language, framework, domain etc. the prompt is regarding, and then call the appropriate models to handle each specific task?&lt;/p&gt;
+&lt;p&gt;Whether or not that&amp;rsquo;s even a feasible idea is another story entirely, but it certainly feels like learning how to fine-tune a model has only increased my curiosity rather than quenched it.&lt;/p&gt;</description></item><item><title>Running AI models locally with Ollama</title><link>https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/</link><pubDate>Wed, 23 Jul 2025 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/image.png" alt="Featured image of post Running AI models locally with Ollama" /&gt;&lt;p&gt;Fine! I&amp;rsquo;ll have another look at AI. Geez.&lt;/p&gt;
+&lt;p&gt;At least, that&amp;rsquo;s how it felt when I begrudgingly decided to look at running some models locally.&lt;/p&gt;
+&lt;p&gt;A few months ago, I decided to have a look at &lt;a class="link" href="https://vivecuervo7.github.io/dev-blog/p/cursor-vibe-check/" &gt;vibe coding with Cursor&lt;/a&gt;. Now, I&amp;rsquo;ll have to admit that I went into that experiment fairly biased despite my best efforts to keep an open mind, but I walked away not very impressed and with the notion that AI was over-hyped even further cemented in my mind.&lt;/p&gt;
+&lt;p&gt;Given a few months and some more poking around with GitHub Copilot, and I think I&amp;rsquo;m ready to say that while I&amp;rsquo;m still quite bearish on AI in general, it has certainly found a place in my workflow. Unfortunately, I have experienced some frustration with it — largely along the lines of running out of Claude requests and being left with GPT, which would at times just seemingly disconnect and wouldn&amp;rsquo;t return to working order until I restarted VS Code.&lt;/p&gt;
+&lt;p&gt;There&amp;rsquo;s also the whole privacy concern. Personally I find myself unbothered by it, but in the context of customer data I am &lt;em&gt;very&lt;/em&gt; cautious about the implications.&lt;/p&gt;
+&lt;p&gt;Anyway, waking up with a &amp;ldquo;what do I want to look into today&amp;rdquo; landed me on the topic of running AI models locally.&lt;/p&gt;
+&lt;h2 id="getting-started"&gt;Getting started
+&lt;/h2&gt;&lt;div class="alert"&gt;Tip: Install with &lt;code&gt;brew install ollama&lt;/code&gt; and then run &lt;code&gt;ollama&lt;/code&gt; to see the available commands.&lt;/div&gt;
+&lt;p&gt;No surprises that I landed here. Even as someone who has had my head half-buried in the sand when it comes to AI, I was well aware of &lt;a class="link" href="https://ollama.com/" target="_blank" rel="noopener"
+&gt;Ollama&lt;/a&gt;. A bit of light searching yielded alternatives, but I decided early on that I was just going to stick with the basics here.&lt;/p&gt;
+&lt;p&gt;Installation was a breeze, just needing a quick &lt;code&gt;brew install ollama&lt;/code&gt; to install it locally. Once installed, calling &lt;code&gt;ollama&lt;/code&gt; by itself shows us the relatively simple set of commands we can pass it, but to get started there&amp;rsquo;s only a couple we really need.&lt;/p&gt;
+&lt;p&gt;First of all though, to start the Ollama server run &lt;code&gt;ollama serve&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id="models"&gt;Models
+&lt;/h2&gt;&lt;p&gt;The basic commands we&amp;rsquo;re after here are &lt;code&gt;ollama run&lt;/code&gt;, &lt;code&gt;ollama list&lt;/code&gt; and &lt;code&gt;ollama rm&lt;/code&gt; to run a model, list all models, and remove models.&lt;/p&gt;
+&lt;p&gt;The Ollama &lt;a class="link" href="https://ollama.com/search" target="_blank" rel="noopener"
+&gt;models page&lt;/a&gt; details a slew of models that we can run.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/ollama-models.png"
+width="3196"
+height="1344"
+srcset="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/ollama-models_hu_ab4c77a0f4b79ffa.png 480w, https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/ollama-models_hu_f9293d5b5a2b22e7.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="237"
+data-flex-basis="570px"
+&gt;&lt;/p&gt;
+&lt;p&gt;Actually installing and running a model is as simple as calling &lt;code&gt;ollama run llama3.1&lt;/code&gt;. This will download it if it hasn&amp;rsquo;t yet been pulled, and runs it immediately. Once installed, we can start typing prompts into the terminal!&lt;/p&gt;
+&lt;h3 id="choosing-a-model"&gt;Choosing a model
+&lt;/h3&gt;&lt;p&gt;I&amp;rsquo;m not going to go too in-depth here — mostly because I still don&amp;rsquo;t really understand it! I&amp;rsquo;ll give it a red-hot crack anyway.&lt;/p&gt;
+&lt;p&gt;Looking at the list of available models, I saw a bunch of options and was completely lost as to which I needed. Looking at this heavily truncated list below, I was confused as to which I should use. Especially since there we easily 60+ variants to choose from!&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;llama3.1:405b-text-fp16&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;llama3.1:70b-text-q3_K_S&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;llama3.1:8b-instruct-q5_K_M&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Anyway, after a bit of reading I was able to break it down to the following, using &lt;code&gt;llama3.1:8b-instruct-q5_K_M&lt;/code&gt; as a reference.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;llama3.1&lt;/code&gt; — the name of the model, each may be better or worse at some things.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;8b&lt;/code&gt; — the number of parameters the model contains. Roughly, the &amp;ldquo;size&amp;rdquo; of the model.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;instruct&lt;/code&gt; — the purpose of the model, which generally is the main function of that model.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;q5_K_M&lt;/code&gt; — the model&amp;rsquo;s quantization, or roughly, level of optimisation.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The Ollama GitHub repository also provided this helpful note, providing some guidelines around system resource requirements for different model sizes.&lt;/p&gt;
+&lt;div class="alert"&gt;You should have at least 8 GB of RAM available to run the 7B models, 16 GB to run the 13B models, and 32 GB to run the 33B models.&lt;/div&gt;
+&lt;p&gt;To expand slightly on quantization as that was a completely new term for me, quantization is the process of converting a model&amp;rsquo;s weights from high precision data types to lower precision types. While this generally translates to a smaller resource footprint, it comes at the cost of a potential reduction in accuracy and quality.&lt;/p&gt;
+&lt;p&gt;Models can get even more complex than that, and I found &lt;a class="link" href="https://developers.redhat.com/articles/2025/04/03/how-navigate-llm-model-names#" target="_blank" rel="noopener"
+&gt;this page&lt;/a&gt; does a good job of explaining the terms without going too deep. In fact, it&amp;rsquo;s just about where I pulled that little quantization explainer from.&lt;/p&gt;
+&lt;p&gt;Personally, I landed on the &lt;code&gt;qwen2.5-coder:3b-instruct-q4_K_M&lt;/code&gt; and &lt;code&gt;qwen2.5-coder:7b-instruct-q4_K_M&lt;/code&gt; models. The 3B model was nice and quick, and seemed to handle most basic tasks with ease. I did find myself frequently switching to the 7B model when the smaller one wasn&amp;rsquo;t quite doing the job.&lt;/p&gt;
+&lt;p&gt;I also spent about half an hour looking at new PCs.&lt;/p&gt;
+&lt;h2 id="open-webui"&gt;Open WebUI
+&lt;/h2&gt;&lt;p&gt;As nice as it is to be able to start running models locally with such ease, the interface leaves a little to be desired.&lt;/p&gt;
+&lt;p&gt;&lt;a class="link" href="https://openwebui.com/" target="_blank" rel="noopener"
+&gt;Open WebUI&lt;/a&gt; offers us a much nicer way to interact with our models — even allowing us to run multiple models side-by-side, which is perfect for comparing the output of various models.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/open-webui.png"
+width="3202"
+height="1254"
+srcset="https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/open-webui_hu_7e9e6274501ac640.png 480w, https://vivecuervo7.github.io/dev-blog/p/ollama-local-agent/images/open-webui_hu_4960c48fea60d14f.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="255"
+data-flex-basis="612px"
+&gt;&lt;/p&gt;
+&lt;p&gt;Running the following should both pull and start the docker container. Note that this does also create a volume, so settings, chats, etc. will be persisted.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-shell" data-lang="shell"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;docker run -d -p 3000:8080 --add-host&lt;span class="o"&gt;=&lt;/span&gt;host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="performance"&gt;Performance
+&lt;/h2&gt;&lt;p&gt;It didn&amp;rsquo;t take long for a wry smile to grow on my face. I&amp;rsquo;ve spent long enough bragging about how well my decision to go with a MacBook Air has been, and after about a year and a half I finally ran into the thing that made me wish I had a little more grunt under the hood.&lt;/p&gt;
+&lt;p&gt;Even some of the smallest models were slow enough to be a little annoying, and those that didn&amp;rsquo;t have smaller varieties were just slower than I would consider to be usable. Certainly, with no qualms about GPT harvesting my data, I was not about to pump the brakes on whatever thinking was going on under the hood.&lt;/p&gt;
+&lt;p&gt;I decided to flick open my dusty old Windows laptop (in fact it&amp;rsquo;s neither dusty nor old, currently it serves as my game streaming server using &lt;a class="link" href="https://github.com/LizardByte/Sunshine" target="_blank" rel="noopener"
+&gt;Sunlight&lt;/a&gt;) and install Ollama there.&lt;/p&gt;
+&lt;p&gt;Woah. Okay, now we&amp;rsquo;re running at what looked like 3-4x faster. Turns out having a GPU kinda helps.&lt;/p&gt;
+&lt;h2 id="ollama-over-the-network"&gt;Ollama over the network
+&lt;/h2&gt;&lt;p&gt;Cool. So we&amp;rsquo;ve got a fast-enough-to-be-usable machine running AI models. Unfortunately, I don&amp;rsquo;t actually do any work on that laptop — it&amp;rsquo;s pretty much dedicated to gaming* these days. That said, I&amp;rsquo;d had a taste of how the models &lt;em&gt;should&lt;/em&gt; be running, and I couldn&amp;rsquo;t look back.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;* by which I mean, of course, the times I&amp;rsquo;d love to be playing games if life could just stop throwing me side quests&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;m certainly no network buff, and I chose the path of least resistance. I quickly installed &lt;a class="link" href="https://ngrok.com/" target="_blank" rel="noopener"
+&gt;ngrok&lt;/a&gt; and exposed my Ollama endpoint (&lt;code&gt;http://localhost:11434&lt;/code&gt;) to see if it was workable. Navigating to the endpoint that ngrok assigned for me, and I could see the very simple page that told me Ollama was running. Sweet!&lt;/p&gt;
+&lt;p&gt;Now, I really should clean this up — since I only intend to use this while I&amp;rsquo;m sitting within arm&amp;rsquo;s reach of both laptops, I really could just serve this over my local network. For the sake of experimentation, however, that&amp;rsquo;s tomorrow&amp;rsquo;s problem.&lt;/p&gt;
+&lt;h3 id="open-webui-1"&gt;Open WebUI
+&lt;/h3&gt;&lt;p&gt;I guess this one can come first since we&amp;rsquo;ve already talked about setting it up.&lt;/p&gt;
+&lt;p&gt;Since I already had this up and running on my MacBook, I just needed to pop into the settings. Under the option for &lt;strong&gt;Connections&lt;/strong&gt; there is a section called &lt;strong&gt;Manage Direct Connections&lt;/strong&gt;. This is where we can add the URL of our Ollama server.&lt;/p&gt;
+&lt;p&gt;With a bit of trial and error, I found that I needed to append the ngrok-provided URL with &lt;code&gt;/v1&lt;/code&gt; to get it working. It should pick up the models automatically, although they can be specified explicitly if we want.&lt;/p&gt;
+&lt;p&gt;Alternatively, the likely easier way to achieve this would be to simply specify the &lt;code&gt;OLLAMA_BASE_URL&lt;/code&gt; while we&amp;rsquo;re creating the container, by adding &lt;code&gt;-e OLLAMA_BASE_URL=&lt;/code&gt; to the previous command. Here&amp;rsquo;s the command again, but you&amp;rsquo;ll need to replace the URL with your own.&lt;/p&gt;
+&lt;p&gt;Note that this approach does &lt;strong&gt;not&lt;/strong&gt; require us to append the URL with &lt;code&gt;v1&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-shell" data-lang="shell"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;docker run -d -p 3000:8080 --add-host&lt;span class="o"&gt;=&lt;/span&gt;host.docker.internal:host-gateway -e &lt;span class="nv"&gt;OLLAMA_BASE_URL&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;http://localhost:11434 -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="github-copilot"&gt;GitHub Copilot
+&lt;/h3&gt;&lt;p&gt;I was pretty stoked at this point, but GitHub Copilot was the big one.&lt;/p&gt;
+&lt;p&gt;I already knew Ollama was supported — in fact, hooking it up to Copilot was the first thing I did after running my first model. Wiring it up to Ollama running on a different computer proved to be a little less obvious, and fortunately I stumbled across a relevant &lt;a class="link" href="https://github.com/orgs/community/discussions/156483" target="_blank" rel="noopener"
+&gt;GitHub discussion&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The TL;DR for the above is that we&amp;rsquo;re looking for a setting called &lt;code&gt;github.copilot.chat.byok.ollamaEndpoint&lt;/code&gt;. Throwing my ngrok endpoint at that setting allowed me to select the models running on my other machine.&lt;/p&gt;
+&lt;p&gt;The only annoyance I found with this is that I had two different sizes of the same model, and GitHub Copilot&amp;rsquo;s interface just showed the same display name for each of them. As a workaround, it looks like I could possibly use a Modelfile to give my models better names, but that opened yet another door — and a welcome one at that.&lt;/p&gt;
+&lt;h2 id="modelfiles"&gt;Modelfiles
+&lt;/h2&gt;&lt;p&gt;Basically, one of the things I&amp;rsquo;ve disliked is this idea that I have a generic AI helper that I constantly need to keep feeding cues to. I have a coding style, and part of what has been turning me away from AI is that it won&amp;rsquo;t write the code that I want it to write!&lt;/p&gt;
+&lt;p&gt;While, yes, in the context of GitHub Copilot, Cursor, etc., I can just throw a set of rules at it, I disliked the notion that I would need to maintain this on a per-project basis, constantly re-synchronising them with my other projects&amp;hellip; Nope. That&amp;rsquo;s not saving me time.&lt;/p&gt;
+&lt;p&gt;So, I started looking into custom models. Here&amp;rsquo;s the &lt;a class="link" href="https://ollama.readthedocs.io/en/modelfile/#examples" target="_blank" rel="noopener"
+&gt;Modelfile reference&lt;/a&gt;, which goes into a lot more detail than I have below.&lt;/p&gt;
+&lt;div class="code-hint-block"&gt;
+&lt;span class="code-hint-path"&gt;&lt;/span
+&gt;&lt;span class="code-hint"&gt;svelte-assistant.Modelfile&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;FROM qwen2.5-coder:3b-instruct-q4_K_M
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;SYSTEM You are an expert in SvelteKit, the full-stack meta-framework. You are familiar with Svelte 5 syntax. You are familiar with the Svelte documentation found here: https://svelte.dev/docs/svelte/overview and the SvelteKit documentation found here: https://svelte.dev/docs/kit/introduction. When a question or instruction appears to be targeted towards a different web framework, make a suggestion to use a specialised model. Endeavour to answer questions as quickly as possible. Omit any examples or lengthy explanations unless requested.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;I threw a couple of questions at it, and it answered as much as I expected it to.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;span class="lnt"&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&amp;gt;&amp;gt;&amp;gt; What do you specialise in?
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;I specialize in SvelteKit and related technologies, including Svelte 5 syntax, documentation from
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;svelte.dev/docs/svelte/overview, and the SvelteKit documentation at svelte.dev/docs/kit/introduction.
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&amp;gt;&amp;gt;&amp;gt; Can you help me with a React project?
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;For React-related questions or assistance, I suggest using a model specialized in React development.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Knowing it was a Hail Mary at best, it unfortunately seemed to not be capable of looking up any information about the newer Svelte 5 syntax — which has thus far been a bit of a souring experience when it comes to using AI as a code assistant.&lt;/p&gt;
+&lt;p&gt;Additionally, if I asked it a more pointed question about React such as &amp;ldquo;can you show me an example React component&amp;rdquo;, it would just spit out a component instead of telling me to use a model specific to React.&lt;/p&gt;
+&lt;p&gt;Honestly, not such a big deal, but I was kind of hoping to get a few models with a &amp;ldquo;soft&amp;rdquo; specialisation that I could feed additional context into with the hope of being able to just run a bunch of smaller, faster, targeted models that better fit the way I tend to use AI.&lt;/p&gt;
+&lt;p&gt;At the very least, we can tweak a few parameters and set the &amp;ldquo;tone&amp;rdquo; for the model&amp;rsquo;s responses.&lt;/p&gt;
+&lt;h2 id="conclusion"&gt;Conclusion
+&lt;/h2&gt;&lt;p&gt;It was pretty nice being able to get up and running as easily as it turned out to be. Given my laptop was churning out responses about as quickly as the network-bound GPT or Claude, I&amp;rsquo;m probably going to stick to running this locally for the time being, preserving my capped Claude requests for the truly difficult tasks.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;m still curious about the potential for those smaller, targeted models, but a lot of the documentation I read about fine-tuning models just went straight over my head. I guess I&amp;rsquo;ll settle for something more within my means, and just set up my Ollama server to run over my local network instead of through ngrok.&lt;/p&gt;
+&lt;p&gt;Now to convince my wife that I really do need that expensive PC upgrade&amp;hellip;&lt;/p&gt;</description></item></channel></rss>
