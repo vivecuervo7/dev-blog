@@ -40,55 +40,48 @@ I set up two Caddyfiles—one pointing at the Azure environment and one pointing
 {{< code-hint "~/project/Caddyfile.azure" >}}
 
 ```
-{
-	auto_https disable_redirects
-}
-
-https://localhost:9443 {
-	reverse_proxy https://my-app.example.com {
-		header_up Host {upstream_hostport}
-	}
-
-	header {
-		Access-Control-Allow-Origin "http://localhost:3000"
-		Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-		Access-Control-Allow-Headers "*"
-		Access-Control-Allow-Credentials "true"
-	}
+localhost:9443 {
+	header Access-Control-Allow-Origin "http://localhost:3000"
+	header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+	header Access-Control-Allow-Headers "Content-Type, Authorization, Cache-Control"
+	header Access-Control-Allow-Credentials "true"
 
 	@options method OPTIONS
-	respond @options 204
+	handle @options {
+		respond 204
+	}
+
+	reverse_proxy https://my-app.example.com {
+		header_up Host my-app.example.com
+	}
 }
 ```
 
 {{< code-hint "~/project/Caddyfile.vm" >}}
 
 ```
-{
-	auto_https disable_redirects
-}
+localhost:9443 {
+	header Access-Control-Allow-Origin "http://localhost:3000"
+	header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+	header Access-Control-Allow-Headers "Content-Type, Authorization, Cache-Control"
+	header Access-Control-Allow-Credentials "true"
 
-https://localhost:9443 {
+	@options method OPTIONS
+	handle @options {
+		respond 204
+	}
+
 	reverse_proxy http://10.211.55.3:5000 {
+		header_up Host 10.211.55.3:5000
 		header_down -Access-Control-Allow-Origin
 		header_down -Access-Control-Allow-Methods
 		header_down -Access-Control-Allow-Headers
 		header_down -Access-Control-Allow-Credentials
 	}
-
-	header {
-		Access-Control-Allow-Origin "http://localhost:3000"
-		Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-		Access-Control-Allow-Headers "*"
-		Access-Control-Allow-Credentials "true"
-	}
-
-	@options method OPTIONS
-	respond @options 204
 }
 ```
 
-The VM version strips any CORS headers the upstream might already set, so Caddy's own headers are the only ones the browser sees. The Azure version passes `Host` through so the upstream knows which tenant to serve.
+Both versions set CORS headers and handle preflight `OPTIONS` requests. The VM version also strips any CORS headers the upstream might already set, so Caddy's own headers are the only ones the browser sees.
 
 Switching is one command:
 
@@ -103,19 +96,17 @@ Typing that reload command every time is fine, but I wanted something snappier. 
 {{< code-hint "~/project/.bin/caddy-azure" >}}
 
 ```bash
-#!/bin/bash
-CONFIG=~/project/Caddyfile.azure
+#!/bin/sh
+CONFIG="$HOME/project/Caddyfile.azure"
 caddy reload --config "$CONFIG" 2>/dev/null || caddy start --config "$CONFIG"
-echo "→ Azure backend"
 ```
 
 {{< code-hint "~/project/.bin/caddy-vm" >}}
 
 ```bash
-#!/bin/bash
-CONFIG=~/project/Caddyfile.vm
+#!/bin/sh
+CONFIG="$HOME/project/Caddyfile.vm"
 caddy reload --config "$CONFIG" 2>/dev/null || caddy start --config "$CONFIG"
-echo "→ VM backend"
 ```
 
 Now, I _could_ add `~/project/.bin` to my `PATH` in `.zshrc`. But that means every terminal session gets these project-specific commands on the path, even when I'm nowhere near this project. That's where [direnv](https://direnv.net/) comes in.
