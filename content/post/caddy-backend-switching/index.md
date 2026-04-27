@@ -37,7 +37,7 @@ I needed a local proxy that could serve HTTPS, sit at a stable URL the frontend 
 
 I set up two Caddyfiles—one pointing at the Azure environment and one pointing at the VM:
 
-{{< code-hint "Caddyfile.azure" "~/project/Caddyfile.azure" >}}
+{{< code-hint "~/project/Caddyfile.azure" >}}
 
 ```
 {
@@ -61,7 +61,7 @@ https://localhost:9443 {
 }
 ```
 
-{{< code-hint "Caddyfile.vm" "~/project/Caddyfile.vm" >}}
+{{< code-hint "~/project/Caddyfile.vm" >}}
 
 ```
 {
@@ -100,7 +100,7 @@ caddy reload --config ~/project/Caddyfile.azure
 
 Typing that reload command every time is fine, but I wanted something snappier. I created two tiny scripts in a `.bin` directory:
 
-{{< code-hint "caddy-azure" "~/project/.bin/caddy-azure" >}}
+{{< code-hint "~/project/.bin/caddy-azure" >}}
 
 ```bash
 #!/bin/bash
@@ -109,7 +109,7 @@ caddy reload --config "$CONFIG" 2>/dev/null || caddy start --config "$CONFIG"
 echo "→ Azure backend"
 ```
 
-{{< code-hint "caddy-vm" "~/project/.bin/caddy-vm" >}}
+{{< code-hint "~/project/.bin/caddy-vm" >}}
 
 ```bash
 #!/bin/bash
@@ -122,7 +122,7 @@ Now, I _could_ add `~/project/.bin` to my `PATH` in `.zshrc`. But that means eve
 
 direnv watches for `.envrc` files as you `cd` around your filesystem. When you enter a directory that has one, it loads the environment. When you leave, it unloads it. One line in an `.envrc` is all it takes:
 
-{{< code-hint ".envrc" "~/project/.envrc" >}}
+{{< code-hint "~/project/.envrc" >}}
 
 ```bash {linenos=false}
 PATH_add .bin
