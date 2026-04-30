@@ -40,19 +40,19 @@ I could do it. I _did_ do it. But the whole time I had this low-level discomfort
 
 What I _wanted_ to do was start with one of those inputs. Understand its shape, figure out what it needed from the form, and then step back to think about how the form should be built around it. Instead I was going the other direction, building the outside and trusting that the inside would fit later.
 
-The following ticket was to actually add an input. Almost immediately, things shifted. The input had a real shape: props, validation, a layout of its own. And that shape _informed_ the shell. I went back and made changes to the wrapper, and suddenly the whole thing felt right. That nagging discomfort evaporated.
+The following ticket was to actually add an input. Almost immediately, things shifted. The input had a real shape: props, validation, a layout of its own. And that shape _informed_ the shell. I went back and made changes to the wrapper, and suddenly the whole thing felt right.
 
 It got me thinking about _why_ I work that way. And that old slide came back to mind.
 
 ## Big letter; small letter
 
-In 1977, psychologist David Navon designed an experiment that's become a staple of cognitive psychology. He showed people images of large letters composed of smaller letters, a big "H" made up of tiny "S"s for example, and asked them to identify either the large letter or the small ones.
+In 1977, a psychologist named David Navon ran an experiment. He showed people images of large letters composed of smaller letters, a big "H" made up of tiny "S"s for example, and asked them to identify either the large letter or the small ones.
 
 {{< figure src="images/navon.png" alt="A Navon figure: a large H made of small S characters" width="400px" >}}
 
 Most people identify the global shape first. This is called the [global precedence effect](https://en.wikipedia.org/wiki/Global_precedence): we tend to see the forest before the trees. But not everyone. Some people consistently pick up on the local features first, the small letters, before the large shape registers.
 
-This isn't a deficiency. It's a _preference_, a stable and measurable cognitive tendency. People who default to local processing aren't incapable of seeing the global shape. They just don't start there.
+This isn't a deficiency. It's a _preference_, a stable and measurable cognitive tendency. People who default to local processing aren't incapable of seeing the global shape, they just don't start there.
 
 When I first saw a Navon figure, I noticed the small letters immediately. The large letter came second. Which, in hindsight, isn't surprising at all.
 
@@ -66,13 +66,13 @@ Did you read the sentence, or did you _scan_ it? If your eyes snagged on the dou
 
 ## It turns out there's a name for this
 
-Construal Level Theory, developed by psychologists Nira Liberman and Yaacov Trope, describes [the relationship between psychological distance and abstract versus concrete thinking](https://pmc.ncbi.nlm.nih.gov/articles/PMC3152826/). The core idea is that the more _distant_ something is (in time, space, or hypotheticality) the more abstractly we think about it. The closer it is, the more concretely we think.
+Construal Level Theory, developed by psychologists Nira Liberman and Yaacov Trope, describes [the relationship between psychological distance and abstract versus concrete thinking](https://pmc.ncbi.nlm.nih.gov/articles/PMC3152826/). The core idea is that the further away something feels, whether in time, space, or just how hypothetical it is, the more abstractly we think about it. The closer it feels, the more concretely we think.
 
 High-level construal is big-picture thinking. You focus on the gist, the "why," the overall shape. Low-level construal is detail thinking: specifics, mechanics, the "how."
 
 This maps onto the form shell problem almost exactly. The inputs didn't exist yet. They were psychologically distant, future work, hypothetical shapes. The task was asking me to think about them abstractly: _imagine_ roughly what they'll look like, and build a structure around that imagination. I wanted the opposite. Low-level construal first, a real input to anchor the structural decisions on.
 
-CLT doesn't frame this as a fixed trait (anyone's thinking shifts depending on psychological distance) but the research does suggest people have default tendencies. It's a spectrum, not a switch.
+CLT doesn't frame this as a fixed trait, but the research does suggest people have default tendencies.
 
 ## The same tension in software
 
@@ -88,25 +88,23 @@ Stubs. That's literally what I was doing, building a form shell with placeholder
 
 > Bottom-up emphasizes coding and early testing, which can begin as soon as the first module has been specified.
 
-That's what I wanted. Give me _one_ real module, one input, and I can start building and testing immediately. The structure reveals itself as the pieces take shape. Working with stubs meant deferring that understanding, and for my particular way of processing things, the deferral was where the friction lived.
+That's what I wanted. Give me _one_ real module, one input, and I can start building and testing immediately. The structure reveals itself as the pieces take shape. Working with stubs meant deferring that understanding, and for my particular way of processing things, that deferral was where all the friction was coming from.
 
 ## The ISTP connection
 
-Here's where I went a little deeper. I'm an ISTP on the Myers-Briggs framework, and before anyone objects, yes, I know MBTI has [well-documented scientific limitations](https://en.wikipedia.org/wiki/Myers%E2%80%93Briggs_Type_Indicator#Criticism). I don't treat it as gospel. But as a lens for thinking about cognitive preferences, the pieces line up in a way that's hard to dismiss.
+Welcome to the horoscope section. I'm an ISTP on the Myers-Briggs framework, and yes, I know MBTI has [well-documented scientific limitations](https://en.wikipedia.org/wiki/Myers%E2%80%93Briggs_Type_Indicator#Criticism). I don't treat it as gospel. But as a lens for thinking about cognitive preferences, the pieces line up in a way that's hard to dismiss.
 
 The ISTP's dominant cognitive function is Introverted Thinking (Ti), a drive to build precise internal frameworks by pulling things apart and understanding how the pieces connect. The auxiliary function is Extraverted Sensing (Se), a preference for present-moment sensory information over abstract or hypothetical data.
 
 In practical terms, this combination means ISTPs tend to [break problems into parts and figure out how they're connected](https://www.psychologyjunkie.com/heres-how-you-solve-problems-based-on-your-personality-type/), starting from facts rather than theories. They want to _see_ and _handle_ the thing before they're comfortable reasoning about the system it belongs to.
 
-That's… exactly what I've been describing. Start with a real piece. Understand it. Then zoom out.
-
-I wouldn't go so far as to say MBTI _explains_ all of this. But it does rhyme with it in a way that's hard to ignore.
+That's exactly what I've been describing: start with a real piece, understand it, and then zoom out. I wouldn't go so far as to say MBTI _explains_ all of this, but it does rhyme with it in a way that's hard to ignore.
 
 ## The generative AI angle
 
 This took one more turn when I started thinking about how I use generative AI, because there's a tension there too.
 
-A lot of the recommended workflows for AI tools are explicitly top-down: plan modes, spec-driven prompts, outline-first generation. I've tried working that way, and I bounce off it every time. When AI gives me a high-level scaffold, I get a version of the same unease I felt with the form shell. It looks right at a distance, but I don't trust it until I've built something real inside it.
+A lot of the recommended workflows for AI tools feel very top-down: plan modes, spec-driven prompts, that sort of thing. I've tried working that way, and I bounce off it every time. When AI gives me a high-level scaffold, I get a version of the same unease I felt with the form shell. It looks right at a distance, but I don't trust it until I've built something real inside it.
 
 So I iterate instead. Small prompts, one piece at a time, evaluating each output before thinking about the next layer. Get a draft of one section, or a single component, react to it, adjust, then build outward. Each iteration gives me something real to anchor on, and the bigger picture takes shape as the pieces accumulate.
 
