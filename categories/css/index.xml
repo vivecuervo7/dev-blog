@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>CSS on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/categories/css/</link><description>Recent content in CSS on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Fri, 28 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/categories/css/index.xml" rel="self" type="application/rss+xml"/><item><title>PostCSS: Styling without the Sass</title><link>https://vivecuervo7.github.io/dev-blog/p/less-sass-with-postcss/</link><pubDate>Fri, 28 Mar 2025 00:00:00 +0000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/less-sass-with-postcss/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/less-sass-with-postcss/cover.jpg" alt="Featured image of post PostCSS: Styling without the Sass" /&gt;&lt;p&gt;Whenever I decide to do any programming outside of work hours, I like to pick up a bunch of tools that I don&amp;rsquo;t get to touch in my day-to-day, even if it&amp;rsquo;s just so side projects don&amp;rsquo;t &lt;em&gt;feel&lt;/em&gt; like work.&lt;/p&gt;
+&lt;p&gt;Sometimes, I stumble across some tooling that I want to roll into my standard workflow — &lt;a class="link" href="https://postcss.org/" target="_blank" rel="noopener"
+&gt;PostCSS&lt;/a&gt; being one that I&amp;rsquo;ve stumbled across a couple of times now and decided to cobble together something a little firmer than just a &amp;ldquo;hey, I tried this and I liked it&amp;rdquo;. More specifically, I have found myself leaning towards PostCSS as a replacement for the default of dragging Sass into every new project I&amp;rsquo;ve worked on.&lt;/p&gt;
+&lt;p&gt;Don&amp;rsquo;t get me wrong — Sass is and has been a great tool to use over the years, but I feel as though I&amp;rsquo;ve only ever really needed a fraction of what it offers. Not to mention that the growth of CSS itself has slowly started eating away at the benefits I&amp;rsquo;ve found in Sass, such as nesting or variables.&lt;/p&gt;
+&lt;h2 id="what-is-postcss"&gt;What is PostCSS
+&lt;/h2&gt;&lt;p&gt;Or maybe it&amp;rsquo;s easier to talk about what it isn&amp;rsquo;t.&lt;/p&gt;
+&lt;p&gt;It certainly isn&amp;rsquo;t a pre-processor like Sass or Less. It doesn&amp;rsquo;t use a different syntax the way these pre-processors do, allowing us to instead write standard CSS. Which is good for newcomers who may not be familiar with a particular flavour of pre-processor!&lt;/p&gt;
+&lt;p&gt;It also isn&amp;rsquo;t strictly a &lt;em&gt;post&lt;/em&gt;-processor, despite the name alluding to such. The rich plugin ecosystem really allows it to act as both a pre- and post-processor. It&amp;rsquo;s modular, and highly flexible — you could even keep your desired pre-processor around. This isn&amp;rsquo;t an either-or scenario.&lt;/p&gt;
+&lt;h3 id="ok-so-what-is-it"&gt;Ok&amp;hellip; so, what &lt;em&gt;is&lt;/em&gt; it?
+&lt;/h3&gt;&lt;p&gt;PostCSS is, in their own words, &amp;ldquo;a tool for transforming CSS with JavaScript&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;What PostCSS does is transpile your written CSS into JavaScript, allowing us to process it before writing it back as CSS. By itself, it doesn&amp;rsquo;t actually transform anything — for that we&amp;rsquo;ll need to tap into the plugins available to PostCSS.&lt;/p&gt;
+&lt;p&gt;On the topic of plugins, there are a few of them in the wild which are regularly used — often without the explicit intention to use PostCSS. &lt;a class="link" href="https://autoprefixer.github.io/" target="_blank" rel="noopener"
+&gt;Autoprefixer&lt;/a&gt;, &lt;a class="link" href="https://cssnano.github.io/cssnano/" target="_blank" rel="noopener"
+&gt;cssnano&lt;/a&gt; and &lt;a class="link" href="https://stylelint.io/" target="_blank" rel="noopener"
+&gt;Stylelint&lt;/a&gt; are all commonly used PostCSS plugins, meaning there&amp;rsquo;s a good chance you&amp;rsquo;ve already used PostCSS!&lt;/p&gt;
+&lt;h3 id="wait-so-if-its-not-a-pre-processor"&gt;Wait, so if it&amp;rsquo;s &lt;em&gt;not&lt;/em&gt; a pre-processor&amp;hellip;
+&lt;/h3&gt;&lt;p&gt;Yep, that&amp;rsquo;s right. You can stick with your trusty Sass, Less, or Stylus.
+Or, you could bring in a few plugins to get your pre-processor-like functionality. This is where a lot of my interest in PostCSS started, looking at it as a potential drop-in replacement for Sass entirely. I&amp;rsquo;ll cover some of &lt;a class="link" href="#postcss-the-pre-processor" &gt;those specific plugins below&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id="plugins"&gt;Plugins
+&lt;/h2&gt;&lt;p&gt;All the useful things you can do with PostCSS come from plugins. Below we&amp;rsquo;ll have a look at some of the plugins that I&amp;rsquo;ve found consistently seem to bubble up as the more useful picks.&lt;/p&gt;
+&lt;p&gt;If you want to see &lt;em&gt;all&lt;/em&gt; of the plugins, &lt;a class="link" href="https://postcss.org/docs/postcss-plugins" target="_blank" rel="noopener"
+&gt;here is a good place to start&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id="the-plugins-you-probably-want"&gt;The plugins you probably want
+&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Autoprefixer&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class="link" href="https://github.com/postcss/autoprefixer?tab=readme-ov-file" target="_blank" rel="noopener"
+&gt;Autoprefixer&lt;/a&gt; adds vendor prefixes to your CSS using rules from &lt;a class="link" href="https://caniuse.com/" target="_blank" rel="noopener"
+&gt;Can I Use&lt;/a&gt;. Forget about manually writing vendor prefixes entirely! Stylelint can also be configured to &lt;a class="link" href="https://stylelint.io/user-guide/rules/property-no-vendor-prefix/" target="_blank" rel="noopener"
+&gt;disallow writing vendor prefixes&lt;/a&gt; too, so you don&amp;rsquo;t even need to remember to forget about vendor prefixes.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;cssnano&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class="link" href="https://github.com/cssnano/cssnano?tab=readme-ov-file" target="_blank" rel="noopener"
+&gt;cssnano&lt;/a&gt; makes your CSS small. It&amp;rsquo;s a minifier that compresses your CSS to reduce your overall bundle size. There are a few presets, the default being a safe option, making it easy enough to drop in that it seems almost silly to &lt;em&gt;not&lt;/em&gt; include it. The &lt;a class="link" href="https://cssnano.github.io/cssnano/docs/what-are-optimisations/" target="_blank" rel="noopener"
+&gt;full list of optimisations can be found here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Stylelint&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Ok, ok. You probably won&amp;rsquo;t install this as a plugin the way you will the others, but it&amp;rsquo;s still a PostCSS plugin so I&amp;rsquo;ll include it here. &lt;a class="link" href="https://stylelint.io/" target="_blank" rel="noopener"
+&gt;Stylelint&lt;/a&gt; is simply put, a linting tool for your CSS. There are a &lt;a class="link" href="https://stylelint.io/user-guide/rules" target="_blank" rel="noopener"
+&gt;bunch of useful rules&lt;/a&gt; that are worth perusing.&lt;/p&gt;
+&lt;p&gt;If the rules included with Stylelint aren&amp;rsquo;t quite enough for you, there are a bunch of &lt;a class="link" href="https://github.com/stylelint/awesome-stylelint" target="_blank" rel="noopener"
+&gt;plugins, configs and integrations&lt;/a&gt; available. Just in case you need plugins for your plugins.&lt;/p&gt;
+&lt;h3 id="tomorrows-css-today"&gt;Tomorrow&amp;rsquo;s CSS, today
+&lt;/h3&gt;&lt;p&gt;This one is in my opinion one of the most powerful and compelling reasons to use PostCSS, so it&amp;rsquo;s getting its own section.&lt;/p&gt;
+&lt;p&gt;&lt;a class="link" href="https://github.com/csstools/postcss-plugins/tree/main/plugin-packs/postcss-preset-env" target="_blank" rel="noopener"
+&gt;PostCSS Preset Env&lt;/a&gt; essentially allows us to use modern CSS without worrying about it not being supported in a bunch of browsers (looking at you, &lt;del&gt;Internet Explorer&lt;/del&gt; Safari). By leveraging &lt;a class="link" href="https://cssdb.org/" target="_blank" rel="noopener"
+&gt;CSSDB&lt;/a&gt; and your specified browser targets, it automatically includes the necessary plugins to ensure consistent behavior across different environments.&lt;/p&gt;
+&lt;p&gt;You can even start using experimental or proposed CSS features. PostCSS Preset Env&amp;rsquo;s complete feature list can be found &lt;a class="link" href="https://github.com/csstools/postcss-plugins/blob/main/plugin-packs/postcss-preset-env/FEATURES.md" target="_blank" rel="noopener"
+&gt;here&lt;/a&gt;. Some favourites are listed below:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a class="link" href="https://cssdb.org/#custom-media-queries" target="_blank" rel="noopener"
+&gt;custom-media-queries&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="link" href="https://cssdb.org/#custom-selectors" target="_blank" rel="noopener"
+&gt;custom-selectors&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="link" href="https://cssdb.org/#light-dark-function" target="_blank" rel="noopener"
+&gt;light-dark-function&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="sass-like-functionality"&gt;Sass-like functionality
+&lt;/h3&gt;&lt;p&gt;The last time I looked at bringing in a bunch of Sass-like functionality, I found myself installing a bunch of plugins for all the various things. Those individual plugins are still available if you really want to bring them in individually, such as &lt;a class="link" href="https://github.com/postcss/postcss-mixins" target="_blank" rel="noopener"
+&gt;postcss-mixins&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;It looks as though the easiest path to similar functionality might be to just go straight for &lt;a class="link" href="https://github.com/csstools/postcss-advanced-variables?tab=readme-ov-file" target="_blank" rel="noopener"
+&gt;postcss-advanced-variables&lt;/a&gt;. This plugin brings Sass-like &lt;code&gt;$variables&lt;/code&gt;, &lt;code&gt;@if&lt;/code&gt;, &lt;code&gt;@else&lt;/code&gt;, &lt;code&gt;@for&lt;/code&gt; and &lt;code&gt;@each&lt;/code&gt; rules, as well as &lt;code&gt;@mixin&lt;/code&gt; rules. And honestly, with nesting already supported, this covers 90% of the things I really got out of Sass anyway. A counterpart for Sass&amp;rsquo; maps exists in &lt;a class="link" href="https://github.com/Scrum/postcss-map-get" target="_blank" rel="noopener"
+&gt;postcss-map-get&lt;/a&gt;, and really the last missing piece is support for functions.&lt;/p&gt;
+&lt;p&gt;To that end, it seems the Sass-like &lt;a class="link" href="https://github.com/mcattx/postcss-define-function" target="_blank" rel="noopener"
+&gt;postcss-define-function&lt;/a&gt; plugin for this hasn&amp;rsquo;t seen any love in a while — and I&amp;rsquo;d probably consider using &lt;a class="link" href="https://github.com/andyjansson/postcss-functions" target="_blank" rel="noopener"
+&gt;postcss-functions&lt;/a&gt; which is a bit different in that it leans towards defining functions in JavaScript.&lt;/p&gt;
+&lt;p&gt;If I found myself needing any other features that weren&amp;rsquo;t readily available via existing plugins I&amp;rsquo;d likely start considering a move to just go back to using Sass, but I think the above would cover just about all the functionality I&amp;rsquo;ve actually used over the past few years.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;TL;DR&lt;/strong&gt; &lt;a class="link" href="https://github.com/csstools/postcss-advanced-variables?tab=readme-ov-file" target="_blank" rel="noopener"
+&gt;postcss-advanced-variables&lt;/a&gt; and &lt;a class="link" href="https://github.com/Scrum/postcss-map-get" target="_blank" rel="noopener"
+&gt;postcss-map-get&lt;/a&gt; is &lt;em&gt;probably&lt;/em&gt; going to give you most of what you&amp;rsquo;re using Sass for today.&lt;/p&gt;
+&lt;h3 id="writing-custom-plugins"&gt;Writing custom plugins
+&lt;/h3&gt;&lt;p&gt;While I haven&amp;rsquo;t found the need to do this myself, PostCSS also purports to make it fairly straightforward to &lt;a class="link" href="https://postcss.org/docs/writing-a-postcss-plugin" target="_blank" rel="noopener"
+&gt;write your own custom plugins&lt;/a&gt;, which is a huge leap from being at the mercy of whatever functionality is offered by one of the pre-processor options.&lt;/p&gt;
+&lt;p&gt;Chances are however that you&amp;rsquo;ll generally find what you&amp;rsquo;re after. There are even existing plugins &lt;a class="link" href="https://github.com/sebdeckers/postcss-imperial" target="_blank" rel="noopener"
+&gt;to let you use yards, feet and twips&lt;/a&gt;! Don&amp;rsquo;t do that, though.&lt;/p&gt;</description></item></channel></rss>

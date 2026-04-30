@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Local Dev on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/local-dev/</link><description>Recent content in Local Dev on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 27 Apr 2026 00:00:00 +1000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/local-dev/index.xml" rel="self" type="application/rss+xml"/><item><title>Hot-swapping backends with Caddy and direnv</title><link>https://vivecuervo7.github.io/dev-blog/p/caddy-backend-switching/</link><pubDate>Mon, 27 Apr 2026 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/caddy-backend-switching/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/caddy-backend-switching/cover.png" alt="Featured image of post Hot-swapping backends with Caddy and direnv" /&gt;&lt;h2 id="the-problem"&gt;The problem
+&lt;/h2&gt;&lt;p&gt;I work on a project where the frontend is a single-page app and the backend runs in a Windows VM via Parallels. There&amp;rsquo;s also a deployed version of the backend hosted in Azure. Depending on what I&amp;rsquo;m working on, I need to hit one or the other—and switching between them was getting tedious.&lt;/p&gt;
+&lt;p&gt;The frontend needs HTTPS—things like camera access and mixed content rules were causing issues over plain HTTP in the local dev setup. The VM backend serves plain HTTP, so I needed something to put HTTPS in front of it.&lt;/p&gt;
+&lt;p&gt;On top of that, the API URL gets baked into the frontend bundle at build time. Changing it means restarting the dev server. So even if I &lt;em&gt;could&lt;/em&gt; just point at a different backend URL, I&amp;rsquo;d be restarting the dev server every time I switched.&lt;/p&gt;
+&lt;p&gt;I needed a local proxy that could serve HTTPS, sit at a stable URL the frontend never has to change, and let me swap the upstream behind it with minimal effort.&lt;/p&gt;
+&lt;h2 id="caddy-as-the-gateway"&gt;Caddy as the gateway
+&lt;/h2&gt;&lt;p&gt;&lt;a class="link" href="https://caddyserver.com/" target="_blank" rel="noopener"
+&gt;Caddy&lt;/a&gt; handles this perfectly. It automatically handles HTTPS certificates for &lt;code&gt;localhost&lt;/code&gt;, so the frontend always talks HTTPS to &lt;code&gt;localhost:9443&lt;/code&gt; and Caddy forwards traffic to whichever backend is active.&lt;/p&gt;
+&lt;p&gt;I set up two Caddyfiles—one pointing at the Azure environment and one pointing at the VM:&lt;/p&gt;
+&lt;div class="code-hint-block"&gt;
+&lt;span class="code-hint-path"&gt;&lt;/span
+&gt;&lt;span class="code-hint"&gt;~/project/Caddyfile.azure&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt; 1
+&lt;/span&gt;&lt;span class="lnt"&gt; 2
+&lt;/span&gt;&lt;span class="lnt"&gt; 3
+&lt;/span&gt;&lt;span class="lnt"&gt; 4
+&lt;/span&gt;&lt;span class="lnt"&gt; 5
+&lt;/span&gt;&lt;span class="lnt"&gt; 6
+&lt;/span&gt;&lt;span class="lnt"&gt; 7
+&lt;/span&gt;&lt;span class="lnt"&gt; 8
+&lt;/span&gt;&lt;span class="lnt"&gt; 9
+&lt;/span&gt;&lt;span class="lnt"&gt;10
+&lt;/span&gt;&lt;span class="lnt"&gt;11
+&lt;/span&gt;&lt;span class="lnt"&gt;12
+&lt;/span&gt;&lt;span class="lnt"&gt;13
+&lt;/span&gt;&lt;span class="lnt"&gt;14
+&lt;/span&gt;&lt;span class="lnt"&gt;15
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;localhost:9443 {
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header Access-Control-Allow-Origin &amp;#34;http://localhost:3000&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header Access-Control-Allow-Methods &amp;#34;GET, POST, PUT, DELETE, OPTIONS&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header Access-Control-Allow-Headers &amp;#34;Content-Type, Authorization, Cache-Control&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header Access-Control-Allow-Credentials &amp;#34;true&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; @options method OPTIONS
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; handle @options {
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; respond 204
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; reverse_proxy https://my-app.example.com {
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header_up Host my-app.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;div class="code-hint-block"&gt;
+&lt;span class="code-hint-path"&gt;&lt;/span
+&gt;&lt;span class="code-hint"&gt;~/project/Caddyfile.vm&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt; 1
+&lt;/span&gt;&lt;span class="lnt"&gt; 2
+&lt;/span&gt;&lt;span class="lnt"&gt; 3
+&lt;/span&gt;&lt;span class="lnt"&gt; 4
+&lt;/span&gt;&lt;span class="lnt"&gt; 5
+&lt;/span&gt;&lt;span class="lnt"&gt; 6
+&lt;/span&gt;&lt;span class="lnt"&gt; 7
+&lt;/span&gt;&lt;span class="lnt"&gt; 8
+&lt;/span&gt;&lt;span class="lnt"&gt; 9
+&lt;/span&gt;&lt;span class="lnt"&gt;10
+&lt;/span&gt;&lt;span class="lnt"&gt;11
+&lt;/span&gt;&lt;span class="lnt"&gt;12
+&lt;/span&gt;&lt;span class="lnt"&gt;13
+&lt;/span&gt;&lt;span class="lnt"&gt;14
+&lt;/span&gt;&lt;span class="lnt"&gt;15
+&lt;/span&gt;&lt;span class="lnt"&gt;16
+&lt;/span&gt;&lt;span class="lnt"&gt;17
+&lt;/span&gt;&lt;span class="lnt"&gt;18
+&lt;/span&gt;&lt;span class="lnt"&gt;19
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;localhost:9443 {
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header Access-Control-Allow-Origin &amp;#34;http://localhost:3000&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header Access-Control-Allow-Methods &amp;#34;GET, POST, PUT, DELETE, OPTIONS&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header Access-Control-Allow-Headers &amp;#34;Content-Type, Authorization, Cache-Control&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header Access-Control-Allow-Credentials &amp;#34;true&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; @options method OPTIONS
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; handle @options {
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; respond 204
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; reverse_proxy http://10.211.55.3:5000 {
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header_up Host 10.211.55.3:5000
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header_down -Access-Control-Allow-Origin
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header_down -Access-Control-Allow-Methods
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header_down -Access-Control-Allow-Headers
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; header_down -Access-Control-Allow-Credentials
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Both versions set CORS headers and handle preflight &lt;code&gt;OPTIONS&lt;/code&gt; requests. The VM version also strips any CORS headers the upstream might already set, so Caddy&amp;rsquo;s own headers are the only ones the browser sees.&lt;/p&gt;
+&lt;p&gt;Switching is one command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;caddy reload --config ~/project/Caddyfile.azure
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="direnv-for-scoped-shortcuts"&gt;direnv for scoped shortcuts
+&lt;/h2&gt;&lt;p&gt;Typing that reload command every time is fine, but I wanted something snappier. I created two tiny scripts in a &lt;code&gt;.bin&lt;/code&gt; directory:&lt;/p&gt;
+&lt;div class="code-hint-block"&gt;
+&lt;span class="code-hint-path"&gt;&lt;/span
+&gt;&lt;span class="code-hint"&gt;~/project/.bin/caddy-azure&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="cp"&gt;#!/bin/sh
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nv"&gt;CONFIG&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;&lt;span class="s2"&gt;/project/Caddyfile.azure&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;caddy reload --config &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$CONFIG&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt; 2&amp;gt;/dev/null &lt;span class="o"&gt;||&lt;/span&gt; caddy start --config &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$CONFIG&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;div class="code-hint-block"&gt;
+&lt;span class="code-hint-path"&gt;&lt;/span
+&gt;&lt;span class="code-hint"&gt;~/project/.bin/caddy-vm&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="cp"&gt;#!/bin/sh
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nv"&gt;CONFIG&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;&lt;span class="s2"&gt;/project/Caddyfile.vm&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;caddy reload --config &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$CONFIG&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt; 2&amp;gt;/dev/null &lt;span class="o"&gt;||&lt;/span&gt; caddy start --config &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$CONFIG&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Now, I &lt;em&gt;could&lt;/em&gt; add &lt;code&gt;~/project/.bin&lt;/code&gt; to my &lt;code&gt;PATH&lt;/code&gt; in &lt;code&gt;.zshrc&lt;/code&gt;. But that means every terminal session gets these project-specific commands on the path, even when I&amp;rsquo;m nowhere near this project. That&amp;rsquo;s where &lt;a class="link" href="https://direnv.net/" target="_blank" rel="noopener"
+&gt;direnv&lt;/a&gt; comes in.&lt;/p&gt;
+&lt;p&gt;direnv watches for &lt;code&gt;.envrc&lt;/code&gt; files as you &lt;code&gt;cd&lt;/code&gt; around your filesystem. When you enter a directory that has one, it loads the environment. When you leave, it unloads it. One line in an &lt;code&gt;.envrc&lt;/code&gt; is all it takes:&lt;/p&gt;
+&lt;div class="code-hint-block"&gt;
+&lt;span class="code-hint-path"&gt;&lt;/span
+&gt;&lt;span class="code-hint"&gt;~/project/.envrc&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;PATH_add .bin
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;From any terminal under &lt;code&gt;~/project&lt;/code&gt;, I get &lt;code&gt;caddy-azure&lt;/code&gt; and &lt;code&gt;caddy-vm&lt;/code&gt; as commands. Step outside that tree and they disappear. No shell pollution, no remembering to clean up.&lt;/p&gt;
+&lt;h2 id="the-workflow"&gt;The workflow
+&lt;/h2&gt;&lt;p&gt;Day to day it looks like this:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;caddy-azure&lt;/code&gt; — starts Caddy with the Azure config (or reloads if it&amp;rsquo;s already running)&lt;/li&gt;
+&lt;li&gt;Start the frontend: &lt;code&gt;npm start&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Work against the Azure backend&lt;/li&gt;
+&lt;li&gt;Need to test against the VM? &lt;code&gt;caddy-vm&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Done with the VM? &lt;code&gt;caddy-azure&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The frontend doesn&amp;rsquo;t care—it always hits &lt;code&gt;https://localhost:9443&lt;/code&gt;. The proxy does the routing.&lt;/p&gt;
+&lt;h2 id="one-gotcha"&gt;One gotcha
+&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;Clear your session after switching.&lt;/strong&gt; If the app caches auth tokens or session data (and it probably does), log out before switching backends. Stale tokens from one environment won&amp;rsquo;t work against the other, and the errors aren&amp;rsquo;t always obvious.&lt;/p&gt;</description></item></channel></rss>

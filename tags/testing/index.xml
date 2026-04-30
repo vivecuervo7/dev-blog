@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Testing on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/testing/</link><description>Recent content in Testing on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 04 Mar 2026 00:00:00 +1000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/testing/index.xml" rel="self" type="application/rss+xml"/><item><title>Claude Code as a Godot Editor</title><link>https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/</link><pubDate>Wed, 04 Mar 2026 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/cover.png" alt="Featured image of post Claude Code as a Godot Editor" /&gt;&lt;h2 id="ive-never-opened-the-editor"&gt;I&amp;rsquo;ve never opened the editor
+&lt;/h2&gt;&lt;p&gt;I&amp;rsquo;m building a card game in Godot. It has a deck builder with drag-and-drop, a battle arena, crafting screens, shaders I &lt;em&gt;never&lt;/em&gt; could have written by hand. And I&amp;rsquo;ve managed to get to this point having never opened the Godot editor.&lt;/p&gt;
+&lt;p&gt;Actually, I lie. I opened it once. My Unity-wired brain didn&amp;rsquo;t like what I saw, so I closed it—but that didn&amp;rsquo;t stop me from building my front-end using Godot.&lt;/p&gt;
+&lt;p&gt;The entire UI has been built through Claude Code: editing scene files and scripts in the terminal, verifying changes through a composable test runner, and iterating with a live command queue that talks to the running game.&lt;/p&gt;
+&lt;p&gt;The game actually started in Unity, and the friction there was what pushed me to try something different. Unity&amp;rsquo;s editor is resource-heavy and needs to be running for most workflows. Every time I tabbed back into it, the domain reload would kick in. Already annoying on its own, but &lt;em&gt;constant&lt;/em&gt; when you&amp;rsquo;re bouncing between an AI assistant and the editor. I kept interrupting my own flow just by interacting with it. Getting the MCP server set up was yet another step I had to get through before Claude could even talk to the engine.&lt;/p&gt;
+&lt;p&gt;Godot offered a simpler, more AI-friendly alternative. Text-based scene files, a lightweight runtime, and no editor dependency meant I could skip the GUI entirely and let Claude do the editing.&lt;/p&gt;
+&lt;p&gt;It helps that the game is server-authoritative, so the client is purely a presentation layer. There&amp;rsquo;s no sensitive logic or secrets to worry about on the UI side, which makes it easy to give Claude a long leash.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/godot_mock.png"
+width="1894"
+height="268"
+srcset="https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/godot_mock_hu_9a72735be07c9063.png 480w, https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/godot_mock_hu_fd45114fc41d5700.png 1024w"
+loading="lazy"
+alt="Why indeed?"
+class="gallery-image"
+data-flex-grow="706"
+data-flex-basis="1696px"
+&gt;&lt;/p&gt;
+&lt;h2 id="why-godot-is-ai-friendly"&gt;Why Godot is AI-friendly
+&lt;/h2&gt;&lt;p&gt;Godot is &lt;a class="link" href="https://docs.godotengine.org/en/latest/tutorials/editor/command_line_tutorial.html" target="_blank" rel="noopener"
+&gt;CLI-friendly&lt;/a&gt;, and that&amp;rsquo;s what makes it AI-friendly. The engine runs the game directly from the command line. A single &lt;code&gt;godot --path &amp;lt;project&amp;gt; --main-scene &amp;lt;scene&amp;gt;&lt;/code&gt; launches the game windowed, ready to interact with. No editor process running in the background, no waiting for it to load. In Unity, you &lt;em&gt;can&amp;rsquo;t&lt;/em&gt; run the game without loading the editor first. When your workflow is entirely terminal-based, that made things&amp;hellip; not nice.&lt;/p&gt;
+&lt;p&gt;The file formats help too. &lt;code&gt;.tscn&lt;/code&gt; scene files are text-based and surprisingly readable. Even having never seen one before, I could follow what was going on:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-ini" data-lang="ini"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="k"&gt;[node name=&amp;#34;StartButton&amp;#34; type=&amp;#34;Button&amp;#34; parent=&amp;#34;MainMenu/VBox&amp;#34;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="na"&gt;layout_mode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;2&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="na"&gt;size_flags_horizontal&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;4&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="na"&gt;disabled&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="na"&gt;text&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#34;Start Game&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;GDScript is the same story. Clean, Python-like, easy to pick up. Nothing about the toolchain demands a GUI to work with it.&lt;/p&gt;
+&lt;h2 id="the-test-runner"&gt;The test runner
+&lt;/h2&gt;&lt;p&gt;Being able to edit scenes as text is only half the story. The other half is knowing whether your changes &lt;em&gt;actually work&lt;/em&gt;. Godot&amp;rsquo;s runtime errors only surface when you navigate to the affected scene, so a broken crafting screen won&amp;rsquo;t tell you anything until you click through to it.&lt;/p&gt;
+&lt;p&gt;What I wanted was something like end-to-end testing with Playwright: the ability to programmatically navigate through the application, interact with elements, and verify that things work. What I ended up with was a step-based test runner, where each step is a standalone GDScript file with a simple contract:&lt;/p&gt;
+&lt;div class="code-hint-block"&gt;
+&lt;span class="code-hint-path"&gt;&lt;/span
+&gt;&lt;span class="code-hint"&gt;tests/steps/open_crafting.gd&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-gdscript" data-lang="gdscript"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="kd"&gt;extends&lt;/span&gt; &lt;span class="nc"&gt;RefCounted&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ctx&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;TestContext&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nc"&gt;Dictionary&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="nc"&gt;String&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="c1"&gt;# return &amp;#34;&amp;#34; for pass, error message for fail&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="n"&gt;ctx&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;press_button&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;CraftingButton&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;ctx&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;wait_for_node&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;CraftingScreen&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Steps compose into chains via the CLI:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;godot --path src/client/godot &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; --main-scene res://tests/runner.tscn &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; -- --steps&lt;span class="o"&gt;=&lt;/span&gt;auth,crafting,select --stay-open
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;A JSON manifest maps aliases to step scripts and defines macros, so &lt;code&gt;setup:deck&lt;/code&gt; expands to &lt;code&gt;auth, deck, set_formation, fill_deck, save_deck&lt;/code&gt;. Common sequences get a short name, and you can mix and match freely.&lt;/p&gt;
+&lt;h3 id="dual-speed-steps"&gt;Dual-speed steps
+&lt;/h3&gt;&lt;p&gt;Not every test needs to drive the real UI. Setting up a full deck through drag-and-drop takes 10–15 seconds; doing it through API shortcuts takes about 2. So there are two flavours of most steps:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;fast_*&lt;/code&gt; steps&lt;/strong&gt;—API shortcuts that set up state directly, skipping the UI&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;ui_*&lt;/code&gt; steps&lt;/strong&gt;—real clicks and drags, simulating actual player input&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The manifest descriptions and macro naming make the intent clear enough that Claude tends to pick the right variant from context. If I ask it to verify a UI flow, it reaches for &lt;code&gt;ui_fill_deck&lt;/code&gt;. If the deck is just setup for testing something else, it uses &lt;code&gt;fast_fill_deck&lt;/code&gt;. The macros reflect this too: &lt;code&gt;setup:deck&lt;/code&gt; uses API shortcuts, &lt;code&gt;test:battle_e2e&lt;/code&gt; drives the full UI.&lt;/p&gt;
+&lt;h3 id="output"&gt;Output
+&lt;/h3&gt;&lt;p&gt;Output goes to both JSONL (for Claude to parse) and Markdown (for human review), with timestamped screenshots at each step. Importantly, Claude &lt;em&gt;reads&lt;/em&gt; the trace output and examines those screenshots to diagnose failures. It&amp;rsquo;s not just running the tests, it&amp;rsquo;s analysing the results.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;[1/4] wait_for_auth
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; PASS (3402ms) 📸 000_wait_for_auth.png
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;[2/4] navigate_to
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; PASS (160ms) 📸 001_navigate_to.png
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;[3/4] select_card
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; PASS (4ms) 📸 002_select_card.png
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;[4/4] assert_label
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; PASS (0ms) 📸 003_assert_label.png
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;═══════════════════════════════════════
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 4 PASSED, 0 FAILED (7s)
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; Traces: .test-traces/2026-03-04_15-52-16/
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; Screenshots: .test-traces/2026-03-04_15-52-16/screenshots/
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;═══════════════════════════════════════
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="a-grid-overlaytalking-about-pixels"&gt;A grid overlay—talking about pixels
+&lt;/h2&gt;&lt;p&gt;Here&amp;rsquo;s a problem that doesn&amp;rsquo;t really come up in traditional development: how do you tell an AI where things are on screen?&lt;/p&gt;
+&lt;p&gt;Early on, this was genuinely frustrating. I&amp;rsquo;d say &amp;ldquo;nudge that panel a bit to the left&amp;rdquo;, then &amp;ldquo;no, a bit more to the right&amp;rdquo;, then &amp;ldquo;make it a little bigger&amp;rdquo;—and never &lt;em&gt;quite&lt;/em&gt; land on what I actually wanted. &amp;ldquo;Set the anchor to 0.3&amp;rdquo; is more precise, but that requires you to already know the current value and do the spatial maths yourself. What I needed was a shared coordinate system—a way for both me and Claude to point at the same spot on screen and agree on what we&amp;rsquo;re talking about.&lt;/p&gt;
+&lt;p&gt;The solution was a dev-only grid overlay that draws coordinates over the running game. The backtick key cycles through four modes: OFF → LARGE (64px) → MEDIUM (32px) → SMALL (16px) → OFF.&lt;/p&gt;
+&lt;p&gt;When the grid is active, it becomes a measurement tool:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Hover&lt;/strong&gt; shows a coordinate tooltip (e.g. &lt;code&gt;MEDIUM (12, 5)&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Click&lt;/strong&gt; copies a single cell reference to the clipboard&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Drag&lt;/strong&gt; copies a range (e.g. &lt;code&gt;MEDIUM (2,7):(79,35)&lt;/code&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The grid consumes all mouse input when visible. Intentionally so—it&amp;rsquo;s a measurement mode, not a passive overlay.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/grid-overlay.png"
+width="1780"
+height="818"
+srcset="https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/grid-overlay_hu_704e11022ffe9930.png 480w, https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/grid-overlay_hu_9785ef9b43a83f8b.png 1024w"
+loading="lazy"
+alt="The dev grid overlay in MEDIUM mode, showing cell coordinates on hover"
+class="gallery-image"
+data-flex-grow="217"
+data-flex-basis="522px"
+&gt;&lt;/p&gt;
+&lt;h3 id="spatial-communication"&gt;Spatial communication
+&lt;/h3&gt;&lt;p&gt;Instead of vague descriptions, I can now tell Claude exactly what I want:&lt;/p&gt;
+&lt;div class="prompt"&gt;
+&lt;img class="prompt-icon" src="https://vivecuervo7.github.io/dev-blog/images/claude-color.png" alt="Claude" /&gt;
+Reposition the board area to MEDIUM (2,7):(79,35)
+&lt;/div&gt;
+&lt;p&gt;Claude knows precisely what region of the screen I&amp;rsquo;m talking about, and can translate that grid reference into the right anchor and margin values in the &lt;code&gt;.tscn&lt;/code&gt; file. No guessing, no &amp;ldquo;a bit more to the left&amp;rdquo; back-and-forth.&lt;/p&gt;
+&lt;p&gt;Honestly, this turned out to be the piece that made CLI-driven layout work &lt;em&gt;genuinely&lt;/em&gt; viable. Without a shared spatial language, I&amp;rsquo;d have been constantly fighting imprecise descriptions. With the grid, positioning conversations became as concrete as code reviews.&lt;/p&gt;
+&lt;h2 id="the-edit-test-verify-loop"&gt;The edit-test-verify loop
+&lt;/h2&gt;&lt;p&gt;With all of the above in place, the workflow becomes a pretty tight loop:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Edit&lt;/strong&gt;—Claude modifies a &lt;code&gt;.tscn&lt;/code&gt; or &lt;code&gt;.gd&lt;/code&gt; file&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Run&lt;/strong&gt;—launch the test runner with the relevant steps&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Analyse&lt;/strong&gt;—Claude reads the trace output and examines the screenshots to check whether the change achieved what was asked for&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fix&lt;/strong&gt;—adjust based on what it sees&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Re-run&lt;/strong&gt;—verify the fix&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The screenshot analysis is what makes this self-correcting. Claude isn&amp;rsquo;t just checking pass/fail. It&amp;rsquo;s &lt;em&gt;looking&lt;/em&gt; at the rendered UI and comparing it against the intent. If a panel is misaligned or a label is truncated, it can see that and iterate without me having to point it out.&lt;/p&gt;
+&lt;p&gt;A single &lt;code&gt;/client&lt;/code&gt; skill handles both launching and testing. &lt;code&gt;/client arena&lt;/code&gt; launches the game navigated to the arena screen for me to poke around. &lt;code&gt;/client verify crafting works&lt;/code&gt; triggers the test runner instead, composing steps, running them, and reporting the trace. Same skill, different mode based on intent.&lt;/p&gt;
+&lt;p&gt;Because the skill maps natural language to step chains, I can also just describe what I want in plain English:&lt;/p&gt;
+&lt;div class="prompt"&gt;
+&lt;img class="prompt-icon" src="https://vivecuervo7.github.io/dev-blog/images/claude-color.png" alt="Claude" /&gt;
+Launch the game as a new user. Redeem the code &amp;ldquo;MATERIALS&amp;rdquo;. Craft one copy each of a few different cards. Navigate to the deck editor, and fill the deck up with those cards, then go to the arena and battle one of the opponents.
+&lt;/div&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/step-chain.gif"
+width="720"
+height="330"
+srcset="https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/step-chain_hu_2904667ce33dad6.gif 480w, https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/step-chain_hu_88a9bd70267e298e.gif 1024w"
+loading="lazy"
+alt="Sped up x3. Claude controlling the game to execute the above prompt, and losing the fight. How embarassing."
+class="gallery-image"
+data-flex-grow="218"
+data-flex-basis="523px"
+&gt;&lt;/p&gt;
+&lt;p&gt;Claude reads the manifest, maps that description to the available steps, and composes the chain. In practice, a chain this long doesn&amp;rsquo;t always execute cleanly end-to-end, but portions of it do, and those are what end up getting used in verification loops. Being able to just &lt;em&gt;describe&lt;/em&gt; what I want rather than spelling out step names takes a lot of friction out of the process.&lt;/p&gt;
+&lt;p&gt;Once Claude is satisfied that the changes are working, it&amp;rsquo;ll often relaunch the client with &lt;code&gt;--stay-open&lt;/code&gt; so I can have a look myself. It handles the automated loop, then hands it back to me for a final check.&lt;/p&gt;
+&lt;h2 id="live-reload"&gt;Live reload
+&lt;/h2&gt;&lt;p&gt;The test runner is great for verification, but for small tweaks like nudging element positions and adjusting margins, relaunching the client every time gets old fast. This was actually the one point where I was genuinely tempted to just open the Godot editor. Hot reload removed that temptation: make a change, see it immediately in the running game.&lt;/p&gt;
+&lt;p&gt;A &lt;code&gt;LiveReload&lt;/code&gt; autoload handles this. It polls for a &lt;code&gt;.reload&lt;/code&gt; sentinel file, and when it detects a change, it reloads the current scene&amp;rsquo;s script and resources from disk and swaps them in. Touch the file, the scene updates in place.&lt;/p&gt;
+&lt;p&gt;Right now the touch is manual, but Claude Code&amp;rsquo;s &lt;a class="link" href="https://docs.anthropic.com/en/docs/claude-code/hooks" target="_blank" rel="noopener"
+&gt;hooks&lt;/a&gt; feature could automate this with a &lt;code&gt;PostToolUse&lt;/code&gt; hook that fires on every &lt;code&gt;Edit&lt;/code&gt; or &lt;code&gt;Write&lt;/code&gt; tool call, making it fully automatic.&lt;/p&gt;
+&lt;h2 id="the-live-command-queue"&gt;The live command queue
+&lt;/h2&gt;&lt;p&gt;Sometimes I want the game running interactively, but I don&amp;rsquo;t want to click through everything myself. If I&amp;rsquo;m testing different formations against different opponents, it gets tedious: switch formation, fill the deck, save, navigate to the arena, pick an opponent, fight. I just wanted to tell Claude &amp;ldquo;switch to mage, fill the deck, and go fight that opponent again&amp;rdquo; while the game was already running.&lt;/p&gt;
+&lt;h3 id="how-it-works"&gt;How it works
+&lt;/h3&gt;&lt;p&gt;The mechanism is just two files.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;.cmd-queue&lt;/code&gt;&lt;/strong&gt;—written by Claude, contains the step string to execute&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;.cmd-result&lt;/code&gt;&lt;/strong&gt;—written by the game after execution, contains the results&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;When the &lt;code&gt;/client&lt;/code&gt; skill detects a running session, it writes directly to &lt;code&gt;.cmd-queue&lt;/code&gt; instead of launching a new instance. A &lt;code&gt;CommandWatcher&lt;/code&gt; autoload in the game polls for that file every 300ms:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Claude writes &lt;code&gt;navigate:deck,picker&lt;/code&gt; to &lt;code&gt;.cmd-queue&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;CommandWatcher picks it up and deletes the file&lt;/li&gt;
+&lt;li&gt;Steps execute via the shared &lt;code&gt;StepRunner&lt;/code&gt; class&lt;/li&gt;
+&lt;li&gt;Results (with screenshots and trace paths) get written to &lt;code&gt;.cmd-result&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Claude reads the result and deletes the file&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;I went with files over sockets or HTTP because there&amp;rsquo;s just less to think about. No ports, no networking code. Godot&amp;rsquo;s &lt;code&gt;FileAccess&lt;/code&gt; handles the read/write, and if something goes wrong I can just &lt;code&gt;cat .cmd-result&lt;/code&gt; to see what happened.&lt;/p&gt;
+&lt;h2 id="case-study-formation-unlocks-and-upgrades"&gt;Case study: Formation unlocks and upgrades
+&lt;/h2&gt;&lt;p&gt;One session that stood out was implementing part of the economy system: formation fragments, XP, levelling, and a battle reward screen. It touched 33 files across 6 projects: domain entities, database migrations, API endpoints, and the Godot client UI.&lt;/p&gt;
+&lt;p&gt;The implementation used parallel background agents, each given front-loaded context and conventions from &lt;code&gt;.claude/rules/&lt;/code&gt; files. At peak, five agents were writing code simultaneously.&lt;/p&gt;
+&lt;p&gt;After the code was written, Claude kicked off the deployment and verification through four skills:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;/migrate apply&lt;/code&gt;&lt;/strong&gt;—built the database migrator, ran it through Aspire, confirmed the new tables and columns were created&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;/server restart&lt;/code&gt;&lt;/strong&gt;—restarted the API, verified it came up healthy with the new endpoints&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;/client verify battle results&lt;/code&gt;&lt;/strong&gt;—ran the test steps (setup deck, navigate arena, fight battle, assert results), then read the trace screenshots to verify the result&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;On that verify step, 8 of 9 steps passed. The one failure was a redemption code that had already been used. Not a bug, just existing game state. Claude recognised this as expected rather than flagging it as an issue, and from the final screenshot confirmed three reward sections were rendering correctly: materials, fragments, and formation XP with a progress bar.&lt;/p&gt;
+&lt;ol start="4"&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;/client new profile&lt;/code&gt;&lt;/strong&gt;—launched with a fresh device ID to verify the feature from a brand new player&amp;rsquo;s perspective. Only the Standard formation owned, Mage and Swarm locked at 0 fragments, and it left the client running for me to explore.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;That last one was interesting. Verifying with a fresh player is the kind of thing that usually requires someone to think &amp;ldquo;what about the new user path?&amp;rdquo; and go write a separate test for it.&lt;/p&gt;
+&lt;p&gt;None of these skills were designed as a pipeline. They were built independently, for different purposes, at different times. But they composed naturally because each one is self-contained and they communicate through system state. &lt;code&gt;/migrate&lt;/code&gt; writes to the database, &lt;code&gt;/server&lt;/code&gt; picks up new code, &lt;code&gt;/client&lt;/code&gt; hits the running API.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/battle-rewards.png"
+width="1780"
+height="818"
+srcset="https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/battle-rewards_hu_33aedd6aae1504f.png 480w, https://vivecuervo7.github.io/dev-blog/p/claude-code-godot/images/battle-rewards_hu_335509fb9270ee8c.png 1024w"
+loading="lazy"
+alt="Battle reward screen showing materials, fragments, and formation XP sections"
+class="gallery-image"
+data-flex-grow="217"
+data-flex-basis="522px"
+&gt;&lt;/p&gt;
+&lt;h2 id="wrapping-up"&gt;Wrapping up
+&lt;/h2&gt;&lt;p&gt;Beyond the iteration speed, this workflow expanded what I could do within a game engine. I&amp;rsquo;ve never written a shader, but through this setup Claude wrote frosted glass blurs, Voronoi shard patterns, glow pulses, and vignette effects that I could iterate on and refine just like any other UI element. That was never in my skillset—the feedback loop made it accessible.&lt;/p&gt;
+&lt;p&gt;The pattern here isn&amp;rsquo;t specific to Godot or game development, either. A composable step runner, a way to send commands to a running application, and a verification loop that analyses screenshots. I&amp;rsquo;d be curious to see how well this translates to web development with Playwright or similar tooling.&lt;/p&gt;
+&lt;p&gt;The picture I keep coming back to is a demo. A stakeholder asks &amp;ldquo;what happens if X?&amp;rdquo; and instead of manually clicking through screens trying to get the data into the right state just to hit the right button, I type that scenario into Claude and it executes right there. The stakeholder cares about the result, not the setup. And the tooling that made that demo possible doesn&amp;rsquo;t go away afterwards—it&amp;rsquo;s the same tooling that drives the verification loop day-to-day.&lt;/p&gt;</description></item></channel></rss>

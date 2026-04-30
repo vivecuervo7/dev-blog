@@ -1,0 +1,357 @@
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Run, configure, and integrate Keycloak for local development with Docker, React, and .NET"><title>Using Keycloak as a local auth server</title><link rel=canonical href=https://vivecuervo7.github.io/dev-blog/p/keycloak/><link rel=stylesheet href=/dev-blog/scss/style.min.6a9f654a96b64d93360b9e45cdbd689f91b39c0e7c00585e612be4b6c8a0954f.css><meta property='og:title' content="Using Keycloak as a local auth server"><meta property='og:description' content="Run, configure, and integrate Keycloak for local development with Docker, React, and .NET"><meta property='og:url' content='https://vivecuervo7.github.io/dev-blog/p/keycloak/'><meta property='og:site_name' content='Isaac Dedini'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Keycloak'><meta property='article:tag' content='Docker'><meta property='article:tag' content='React'><meta property='article:tag' content='MSAL'><meta property='article:tag' content='.NET Core'><meta property='article:published_time' content='2024-08-05T00:00:00+00:00'><meta property='article:modified_time' content='2026-03-04T08:00:00+10:00'><meta property='og:image' content='https://vivecuervo7.github.io/dev-blog/p/keycloak/cover.jpg'><meta name=twitter:title content="Using Keycloak as a local auth server"><meta name=twitter:description content="Run, configure, and integrate Keycloak for local development with Docker, React, and .NET"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://vivecuervo7.github.io/dev-blog/p/keycloak/cover.jpg'><link rel="shortcut icon" href=/dev-blog/favicon.ico></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/dev-blog/><img src=/dev-blog/img/avatar_hu_d49d25d3a05488f7.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/dev-blog>Isaac Dedini</a></h1><h2 class=site-description></h2></div></header><ol class=menu id=main-menu><li><a href=/dev-blog/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/dev-blog/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/dev-blog/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#getting-started>Getting started</a></li><li><a href=#configuring-keycloak>Configuring Keycloak</a><ol><li><a href=#creating-a-realm>Creating a realm</a></li><li><a href=#adding-a-user>Adding a user</a></li><li><a href=#registering-a-client>Registering a client</a><ol><li><a href=#audience-claim>Audience claim</a></li></ol></li></ol></li><li><a href=#persisting-keycloak-configuration>Persisting Keycloak configuration</a></li><li><a href=#importing-and-exporting-configuration>Importing and exporting configuration</a><ol><li><a href=#exporting-an-existing-realm>Exporting an existing realm</a></li><li><a href=#importing-a-realm-from-a-file>Importing a realm from a file</a></li></ol></li><li><a href=#using-keycloak-with-a-react-spa--msal>Using Keycloak with a React SPA + MSAL</a><ol><li><a href=#running-keycloak-with-https>Running Keycloak with HTTPS</a><ol><li><a href=#creating-a-self-signed-certificate-using-dotnet-dev-certs>Creating a self-signed certificate using dotnet dev-certs</a></li><li><a href=#running-keycloak-with-the-certificate>Running Keycloak with the certificate</a></li></ol></li><li><a href=#configuring-msal-to-work-with-keycloak>Configuring MSAL to work with Keycloak</a><ol><li><a href=#running-react-with-https>Running React with HTTPS</a></li><li><a href=#missing-parameter-id_token_hint>Missing parameter: id_token_hint</a></li></ol></li><li><a href=#optional-adding-a-secured-net-backend>Optional: Adding a secured .NET backend</a></li></ol></li></ol></nav></div></section></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/dev-blog/p/keycloak/><img src=/dev-blog/p/keycloak/cover_hu_b54db749bc1d6e12.jpg srcset="/dev-blog/p/keycloak/cover_hu_b54db749bc1d6e12.jpg 800w, /dev-blog/p/keycloak/cover_hu_a8caa163466b68ce.jpg 1600w" width=800 height=450 loading=lazy alt="Featured image of post Using Keycloak as a local auth server"></a></div><div class=article-details><header class=article-category><a href=/dev-blog/categories/development/ style=background-color:#1c4269;color:#fff>Development
+</a><a href=/dev-blog/categories/authentication/ style=background-color:#5181b1;color:#fff>Authentication</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/dev-blog/p/keycloak/>Using Keycloak as a local auth server</a></h2><h3 class=article-subtitle>Run, configure, and integrate Keycloak for local development with Docker, React, and .NET</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2024-08-05T00:00:00Z>Aug 05, 2024</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>11 minute read</time></div></footer></div></header><section class=article-content><p><a class=link href=https://www.keycloak.org/ target=_blank rel=noopener>Keycloak</a> is an open-source identity and access management solution designed to manage users and secure applications. It provides features such as single sign-on (SSO), social login integration, and user federation.</p><p>It also offers a user-friendly administration console for managing users, roles, and permissions, as well as customizable user interfaces for login, registration, and account management</p><p><strong>Why use a local auth server?</strong></p><p>Being able to run a local auth server means we won&rsquo;t find ourselves blocked while waiting for a client to configure their own auth server. Often picking up a piece of work involving client-owned authentication results in some delays while requests are sent around, and more often than not leaves us unable to write our application code until the auth server has been configured.</p><p>It also allows us to have full control over our own local dev environment, including the ability to create any number of users with specific roles. This means we can easily run multi-user scenarios locally for testing, demoes or debugging, and prevents needing to comment out or tweak application code just to replicate a bug.</p><h2 id=getting-started>Getting started</h2><p>To start the Keycloak dev server, simply run the following command in your terminal. This will expose Keycloak on port <code>8080</code>, and creates an initial admin user with the credentials <code>admin:admin</code>.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>docker run -p 8080:8080 -e <span class=nv>KEYCLOAK_ADMIN</span><span class=o>=</span>admin -e <span class=nv>KEYCLOAK_ADMIN_PASSWORD</span><span class=o>=</span>admin quay.io/keycloak/keycloak:25.0.2 start-dev
+</span></span></code></pre></div><p>Opening <a class=link href=http://localhost:8080/ target=_blank rel=noopener>http://localhost:8080/</a> in your browser should show you the login page for the Keycloak admin interface. Sign in with the previously created admin credentials <code>admin:admin</code>. Once logged in, you should be greeted with the Keycloak admin console.</p><h2 id=configuring-keycloak>Configuring Keycloak</h2><h3 id=creating-a-realm>Creating a realm</h3><ol><li>Open the admin console and login using our admin credentials <code>admin:admin</code></li><li>Open the dropdown that currently says <strong>Keycloak</strong> and select <strong>Create realm</strong></li><li>Enter the desired name for the realm, in this case using <code>local-dev</code></li><li>Finish creating the realm by clicking the &ldquo;Create&rdquo; button</li></ol><p><img src=/dev-blog/p/keycloak/images/create-realm.jpg width=3217 height=1213 srcset="/dev-blog/p/keycloak/images/create-realm_hu_a23ac4eea19e8319.jpg 480w, /dev-blog/p/keycloak/images/create-realm_hu_6ee212bb2aa6d373.jpg 1024w" loading=lazy alt="Creating a new realm" class=gallery-image data-flex-grow=265 data-flex-basis=636px></p><h3 id=adding-a-user>Adding a user</h3><ol><li>Select <strong>Users</strong> from the sidebar, then click <strong>Create new user</strong></li><li>Fill in the details for a new user, in this case using <code>test-user</code> as the username</li><li>(Optional) ticking <strong>Email verified</strong> means our test user can skip this step</li><li>Select <strong>Credentials</strong> from the tab bar, then click <strong>Set password</strong></li><li>Enter and confirm the user&rsquo;s password, in this case using <code>password</code></li><li>(Optional) uncheck <strong>Temporary</strong> to prevent needing to update the password at first login for this user</li></ol><p><img src=/dev-blog/p/keycloak/images/create-user.jpg width=2897 height=1536 srcset="/dev-blog/p/keycloak/images/create-user_hu_515dfbf9184d7684.jpg 480w, /dev-blog/p/keycloak/images/create-user_hu_c6ecc9c07efb668e.jpg 1024w" loading=lazy alt="Creating a new user" class=gallery-image data-flex-grow=188 data-flex-basis=452px> <img src=/dev-blog/p/keycloak/images/set-password.jpg width=3216 height=1537 srcset="/dev-blog/p/keycloak/images/set-password_hu_7d48f529932b859d.jpg 480w, /dev-blog/p/keycloak/images/set-password_hu_1a607d4b285ddb2.jpg 1024w" loading=lazy alt="Setting a user’s password" class=gallery-image data-flex-grow=209 data-flex-basis=502px></p><p>You can test the newly created user&rsquo;s account at <a class=link href=http://localhost:8080/realms/myrealm/account target=_blank rel=noopener>http://localhost:8080/realms/myrealm/account</a>. Opening the link and signing in with our user&rsquo;s credentials <code>test-user:password</code> gives us access to a user-facing interface that allows updating of details, passwords, and the setting up of two-factor authentication.</p><h3 id=registering-a-client>Registering a client</h3><ol><li>Select <strong>Clients</strong> in the sidebar, then click <strong>Create client</strong></li><li>Make sure to leave <code>OpenID Connect</code> selected as the <strong>Client type</strong></li><li>Enter the desired client name, in this case using <code>local-dev-client</code></li><li>Click <strong>Next</strong></li><li>Ensure that <strong>Standard flow</strong> remains checked</li><li>Click <strong>Next</strong></li><li>To facilitate testing, make the following changes to the <strong>Login settings</strong><ul><li>Set <strong>Valid redirect URIs</strong> to <code>https://www.keycloak.org/app/*</code></li><li>Set <strong>Web origins</strong> to <code>https://www.keycloak.org</code></li></ul></li><li>Click <strong>Save</strong></li></ol><p><img src=/dev-blog/p/keycloak/images/create-client-1.jpg width=2642 height=1216 srcset="/dev-blog/p/keycloak/images/create-client-1_hu_e1499bb3969c61ca.jpg 480w, /dev-blog/p/keycloak/images/create-client-1_hu_3f7cf7728a10db71.jpg 1024w" loading=lazy alt="Creating a new client" class=gallery-image data-flex-grow=217 data-flex-basis=521px> <img src=/dev-blog/p/keycloak/images/create-client-2.jpg width=2642 height=1216 srcset="/dev-blog/p/keycloak/images/create-client-2_hu_d6a9a5a12df0e245.jpg 480w, /dev-blog/p/keycloak/images/create-client-2_hu_2aa9fa64c206b953.jpg 1024w" loading=lazy alt="Login settings for client" class=gallery-image data-flex-grow=217 data-flex-basis=521px></p><p>You can test the newly created client by using <a class=link href=https://www.keycloak.org/app/ target=_blank rel=noopener>https://www.keycloak.org/app/</a>. Enter the details from our previously created realm and client, and press <strong>Save</strong>. Once saved, you can sign in with the test user created earlier.</p><h4 id=audience-claim>Audience claim</h4><p>You may also need to set the audience claim correctly, which might become apparent when wiring this up to an application.</p><ol><li>Select <strong>Clients</strong> in the sidebar, select our newly created client <code>local-dev-client</code>, then select <strong>Client scopes</strong> from the tabs along the top</li><li>Select the <strong>Assigned client scope</strong> named <code>&lt;client-id>-dedicated</code>, in our case <code>local-dev-client-dedicated</code></li><li>Click the <strong>Add mapper</strong> button, and select <strong>By configuration</strong></li><li>Select <strong>Audience</strong> from the list of options, and then configure as per below<ul><li><strong>Name</strong> can be whatever you choose, I&rsquo;ve gone with <code>audience</code> here</li><li>Selecting <strong>Included Client Audience</strong> will open a dropdown; select the newly created client <code>local-dev-client</code></li></ul></li></ol><p><img src=/dev-blog/p/keycloak/images/client-scopes.jpg width=3216 height=1947 srcset="/dev-blog/p/keycloak/images/client-scopes_hu_164ae629454b8930.jpg 480w, /dev-blog/p/keycloak/images/client-scopes_hu_4b67d147985aab7a.jpg 1024w" loading=lazy alt="Configuring client scopes" class=gallery-image data-flex-grow=165 data-flex-basis=396px> <img src=/dev-blog/p/keycloak/images/audience-mapper.jpg width=2617 height=1648 srcset="/dev-blog/p/keycloak/images/audience-mapper_hu_1b8c2f90d3fa7739.jpg 480w, /dev-blog/p/keycloak/images/audience-mapper_hu_64f91dfa24b0c272.jpg 1024w" loading=lazy alt="Adding audience mapper" class=gallery-image data-flex-grow=158 data-flex-basis=381px></p><p>This should finish configuring our client to correctly populate the audience claim in any generated tokens.</p><h2 id=persisting-keycloak-configuration>Persisting Keycloak configuration</h2><p>Of course, once we tear down our Docker container we lose any of the previously configured values. <a class=link href=https://docs.docker.com/storage/volumes/ target=_blank rel=noopener>Docker volumes</a> provide a nice solution here, which we can easily configure using <code>docker-compose</code>.</p><p>Save the following as <code>docker-compose.yml</code> and run by calling <code>docker-compose up -d</code> in your terminal.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>docker-compose.yml</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>services</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>keycloak</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>quay.io/keycloak/keycloak:25.0.2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>container_name</span><span class=p>:</span><span class=w> </span><span class=l>keycloak</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=m>8080</span><span class=p>:</span><span class=m>8080</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>environment</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>KEYCLOAK_ADMIN=admin</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>KEYCLOAK_ADMIN_PASSWORD=admin</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>volumes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>keycloak-data:/opt/keycloak/data/</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>restart</span><span class=p>:</span><span class=w> </span><span class=l>always</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>command</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;start-dev&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>volumes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>keycloak-data</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>keycloak-data</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h2 id=importing-and-exporting-configuration>Importing and exporting configuration</h2><p>Keycloak allows us to import and export realms, which can make it much easier to share configurations amongst team members.</p><h3 id=exporting-an-existing-realm>Exporting an existing realm</h3><p>The following instructions to export a realm from Keycloak will assume the use of a docker compose file similar to this.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>docker-compose.yml</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>services</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>keycloak</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>quay.io/keycloak/keycloak:25.0.2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>container_name</span><span class=p>:</span><span class=w> </span><span class=l>keycloak</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=m>8080</span><span class=p>:</span><span class=m>8080</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>environment</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>KEYCLOAK_ADMIN=admin</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>KEYCLOAK_ADMIN_PASSWORD=admin</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>volumes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>keycloak-data:/opt/keycloak/data/</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>restart</span><span class=p>:</span><span class=w> </span><span class=l>always</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>command</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;start-dev&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>volumes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>keycloak-data</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>keycloak-data</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>The easiest way to export a realm when using docker compose is to add a second compose file. Call this <code>docker-compose.export.yml</code>.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>docker-compose.export.yml</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>services</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>keycloak</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>command</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;export --dir /opt/keycloak/data/export/ --realm local-dev --users realm_file&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>volumes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>./output:/opt/keycloak/data/export</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Run the following in your terminal to export the configured realm.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>docker-compose -f <span class=s2>&#34;docker-compose.yml&#34;</span> -f <span class=s2>&#34;docker-compose.export.yml&#34;</span> up --exit-code-from keycloak
+</span></span></code></pre></div><p>You should now have a directory called <code>output</code> that contains a file called <code>local-dev-realm.json</code>. This file can be imported manually when creating a new realm, or Keycloak can be configured to automatically import this realm when the service starts (attempting to import an already-existing realm will fail to prevent overwrites).</p><p>An important caveat to note is that Keycloak is designed to export from a <em>stopped</em> server, meaning you will need to ensure that your configuration has been persisted through some means.</p><p>Keycloak also allows for multiple options when it comes to if and how users should be exported. The example above uses the simpler approach of combining them into the realm file. See the <a class=link href=https://www.keycloak.org/server/importExport target=_blank rel=noopener>Keycloak documentation</a> for more details.</p><h3 id=importing-a-realm-from-a-file>Importing a realm from a file</h3><p>The updated Docker compose file below uses a bind mount to an <code>import</code> directory. Once any <code>realm.json</code> files have been exported, placing the files in the <code>import</code> directory will allow Keycloak to automatically pick those realms up and import them on first run.</p><p>Update your <code>docker-compose.yml</code> to the following and run by calling <code>docker-compose up -d</code> in your terminal.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>docker-compose.yml</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>services</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>keycloak</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>quay.io/keycloak/keycloak:25.0.2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>container_name</span><span class=p>:</span><span class=w> </span><span class=l>keycloak</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=m>8080</span><span class=p>:</span><span class=m>8080</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>environment</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>KEYCLOAK_ADMIN=admin</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>KEYCLOAK_ADMIN_PASSWORD=admin</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>volumes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>./import:/opt/keycloak/data/import</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>restart</span><span class=p>:</span><span class=w> </span><span class=l>always</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>command</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;start-dev&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;--import-realm&#34;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Note the removal of the persisted Docker volume — this effectively gives us an auth server that can be modified on the fly, but will reset back to the exported realm whenever it restarts.</p><p>As Keycloak won&rsquo;t overwrite an existing realm with the import method, the Docker volume can always be reintroduced and will essentially mean our import file serves as a starting point upon which changes can be persisted.</p><h2 id=using-keycloak-with-a-react-spa--msal>Using Keycloak with a React SPA + MSAL</h2><p>One of my main motivations for looking into Keycloak was to decouple local development from a third party authentication server which needed to be configured by the client. More often than not, this is done using Microsoft Entra ID, and in a typical React application we would use MSAL to set up client authentication.</p><p>This serves as a short guide to resolving some of the issues encountered when trying to use MSAL with a locally-configured Keycloak server.</p><p>See the example repo <a class=link href=https://github.com/vivecuervo7/local-auth-with-keycloak-example target=_blank rel=noopener>here</a>.</p><h3 id=running-keycloak-with-https>Running Keycloak with HTTPS</h3><p>Keycloak will be exposed at <a class=link href=http://localhost:8080 target=_blank rel=noopener>http://localhost:8080</a> which is all well and good for most cases, however I was wanting to drop this in as a local auth replacement for MSAL in a typical React project.</p><p>Since <code>@azure/msal-browser</code> <a class=link href=https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/6631 target=_blank rel=noopener>doesn&rsquo;t allow us to use a HTTP authority</a>, the default Keycloak endpoint won&rsquo;t work. The following steps allow for running Keycloak with HTTPS.</p><h4 id=creating-a-self-signed-certificate-using-dotnet-dev-certs>Creating a self-signed certificate using dotnet dev-certs</h4><p>Since dotnet-certs are typically used for local dev when building .NET applications, it seemed easiest to simply repurpose the same tooling to create other local dev certs.</p><p>Create the self-signed certificate by running the following in your terminal, in this case using <code>password</code> as the credential to create the following two files: <code>certificate.crt</code> and <code>certificate.key</code>.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>dotnet dev-certs https -ep ./certificate.crt -p password --trust --format PEM
+</span></span></code></pre></div><p>Use <code>openssl</code> to decrypt the certificate key, overwriting <code>certificate.key</code> with the decrypted copy.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>openssl rsa -in certificate.key  -out certificate.key
+</span></span></code></pre></div><p>As a matter of preference, I tend to rename these files to <code>cert.pem</code> and <code>key.pem</code>. The remainder of this guide assumes this naming.</p><h4 id=running-keycloak-with-the-certificate>Running Keycloak with the certificate</h4><p>The following changes expect that the certificate files we just created are present in a <code>certificates</code> directory. Go ahead and create the folder and copy both the certificate and key into it.</p><p>Create or update your <code>docker-compose.yml</code> file to the following and run by calling <code>docker-compose up -d</code> in your terminal.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>docker-compose.yml</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yml data-lang=yml><span class=line><span class=cl><span class=nt>services</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>keycloak</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>quay.io/keycloak/keycloak:25.0.2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>container_name</span><span class=p>:</span><span class=w> </span><span class=l>keycloak</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=m>8080</span><span class=p>:</span><span class=m>8080</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=m>8443</span><span class=p>:</span><span class=m>8443</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>environment</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>KEYCLOAK_ADMIN=admin</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>KEYCLOAK_ADMIN_PASSWORD=admin</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>volumes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>./import:/opt/keycloak/data/import</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>./certificates:/opt/keycloak/data/certificates</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>restart</span><span class=p>:</span><span class=w> </span><span class=l>always</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>command</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;start-dev&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;--import-realm&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;--https-certificate-file=/opt/keycloak/data/certificates/cert.pem&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;--https-certificate-key-file=/opt/keycloak/data/certificates/key.pem&#34;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>You can now access the Keycloak server at either <a class=link href=http://localhost:8080 target=_blank rel=noopener>http://localhost:8080</a> or <a class=link href=https://localhost:8443 target=_blank rel=noopener>https://localhost:8443</a>. Using the HTTPS endpoint should allow us to use Keycloak with <a class=link href=https://github.com/AzureAD/microsoft-authentication-library-for-js target=_blank rel=noopener>@azure/msal-browser</a>.</p><h3 id=configuring-msal-to-work-with-keycloak>Configuring MSAL to work with Keycloak</h3><p>Without delving too deep into how we might hold MSAL in a typical React application, the biggest change we need to make is to manually provide some of the configuration that usually works out of the box with MSAL when using Microsoft Entra ID.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-typescript data-lang=typescript><span class=line><span class=cl><span class=kr>const</span> <span class=nx>msalConfig</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nx>auth</span><span class=o>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>clientId</span><span class=o>:</span> <span class=s2>&#34;local-dev-client&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nx>authority</span><span class=o>:</span> <span class=s2>&#34;https://localhost:8443/realms/local-dev&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nx>knownAuthorities</span><span class=o>:</span> <span class=p>[</span><span class=s2>&#34;https://localhost:8443/realms/local-dev&#34;</span><span class=p>],</span>
+</span></span><span class=line><span class=cl>    <span class=nx>redirectUri</span><span class=o>:</span> <span class=s2>&#34;https://localhost:5173&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nx>postLogoutRedirectUri</span><span class=o>:</span> <span class=s2>&#34;https://localhost:5173&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nx>protocolMode</span>: <span class=kt>ProtocolMode.OIDC</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nx>authorityMetadata</span>: <span class=kt>JSON.stringify</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>      <span class=nx>authorization_endpoint</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/auth&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nx>token_endpoint</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/token&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nx>issuer</span><span class=o>:</span> <span class=s2>&#34;https://localhost:8443/realms/local-dev&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nx>userinfo_endpoint</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/userinfo&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nx>end_session_endpoint</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/logout&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>}),</span>
+</span></span><span class=line><span class=cl>  <span class=p>},</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>const</span> <span class=nx>msalInstance</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>PublicClientApplication</span><span class=p>(</span><span class=nx>msalConfig</span><span class=p>);</span>
+</span></span></code></pre></td></tr></table></div></div><p>There are of course a few more data points required, which may then need to be manually provided again when configuring this to work with both Keycloak locally <em>and</em> Microsoft Entra ID when deployed. A small amount of pain to endure for the benefits of decoupling ourselves from a customer-provided auth server.</p><p>Of course, in practice we would make these string more easily configurable, but I&rsquo;ve opted to hardcode them to better demonstrate.</p><p>See the <a class=link href=https://github.com/vivecuervo7/local-auth-with-keycloak-example target=_blank rel=noopener>sample repo</a> to see these changes in more context.</p><p><strong>OpenID Endpoint Configuration</strong></p><p>The trickier part here might be knowing where to obtain these strings from. Navigating to the realm settings of our Keycloak server&rsquo;s admin interface, find the <strong>OpenID Endpoint Configuration</strong> link.</p><p><img src=/dev-blog/p/keycloak/images/realm-settings.jpg width=1408 height=975 srcset="/dev-blog/p/keycloak/images/realm-settings_hu_66eef3c4456a13aa.jpg 480w, /dev-blog/p/keycloak/images/realm-settings_hu_583d3fc7e108d5c2.jpg 1024w" loading=lazy alt="OpenID Endpoint Configuration link" class=gallery-image data-flex-grow=144 data-flex-basis=346px></p><p>Opening this will yield a new page with all of our endpoints that we need to populate this config.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;issuer&#34;</span><span class=p>:</span> <span class=s2>&#34;https://localhost:8443/realms/local-dev&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;authorization_endpoint&#34;</span><span class=p>:</span> <span class=s2>&#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/auth&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;token_endpoint&#34;</span><span class=p>:</span> <span class=s2>&#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/token&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;userinfo_endpoint&#34;</span><span class=p>:</span> <span class=s2>&#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/userinfo&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;end_session_endpoint&#34;</span><span class=p>:</span> <span class=s2>&#34;https://localhost:8443/realms/local-dev/protocol/openid-connect/logout&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=c1>// ...
+</span></span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><h4 id=running-react-with-https>Running React with HTTPS</h4><p>We may also need to run our React application with HTTPS as well. To achieve this, we need to update <code>vite.config.ts</code> to contain the following. Fortunately, we can repurpose the same certificates we created for Keycloak.</p><p>Note that while omitted below, it may be useful to split the <code>serve</code> and <code>build</code> commands so we keep our changes away from any deployed code.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>vite.config.ts</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-diff data-lang=diff><span class=line><span class=cl>import { defineConfig, loadEnv } from &#34;vite&#34;;
+</span></span><span class=line><span class=cl>import react from &#34;@vitejs/plugin-react-swc&#34;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>export default defineConfig(({ command, mode }) =&gt; {
+</span></span><span class=line><span class=cl><span class=gi>+ process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  return {
+</span></span><span class=line><span class=cl>    plugins: [react()],
+</span></span><span class=line><span class=cl><span class=gi>+   server: {
+</span></span></span><span class=line><span class=cl><span class=gi>+     https: {
+</span></span></span><span class=line><span class=cl><span class=gi>+       cert: process.env.VITE_CERT ?? &#34;&#34;,
+</span></span></span><span class=line><span class=cl><span class=gi>+       key: process.env.VITE_CERT_KEY ?? &#34;&#34;,
+</span></span></span><span class=line><span class=cl><span class=gi>+     },
+</span></span></span><span class=line><span class=cl><span class=gi>+   },
+</span></span></span><span class=line><span class=cl>  };
+</span></span><span class=line><span class=cl>});
+</span></span></code></pre></td></tr></table></div></div><p>And then we&rsquo;ll also need to add a <code>.env</code> (and <code>.env.local</code>) with the correct paths.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>.env</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-diff data-lang=diff><span class=line><span class=cl><span class=gi>+ VITE_CERT=../local-dev/certificates/cert.pem
+</span></span></span><span class=line><span class=cl><span class=gi>+ VITE_CERT_KEY=../local-dev/certificates/key.pem
+</span></span></span></code></pre></td></tr></table></div></div><p>Now running the React application with <code>pnpm dev</code> should serve it using HTTPS.</p><h4 id=missing-parameter-id_token_hint>Missing parameter: id_token_hint</h4><p>I did run into a small issue with the setup, where a user was unable to logout completely. Attempting to logout was yielding an error due to the absence of either a <code>client_id</code> or <code>id_token_hint</code> when requesting the <code>post_logout_redirect_uri</code>.</p><p>Ultimately, this was easily resolved by obtaining an access token <em>before</em> attempting to logout, and using the <code>id_token</code> from that.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>main.tsx</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-typescript data-lang=typescript><span class=line><span class=cl><span class=kr>const</span> <span class=nx>handleLogout</span> <span class=o>=</span> <span class=kr>async</span> <span class=p>()</span> <span class=o>=&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>const</span> <span class=nx>response</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>instance</span><span class=p>.</span><span class=nx>acquireTokenSilent</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>    <span class=nx>scopes</span><span class=o>:</span> <span class=p>[</span><span class=s2>&#34;openid&#34;</span><span class=p>],</span>
+</span></span><span class=line><span class=cl>  <span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>await</span> <span class=nx>instance</span><span class=p>.</span><span class=nx>logoutRedirect</span><span class=p>({</span>
+</span></span><span class=line><span class=cl>    <span class=nx>idTokenHint</span>: <span class=kt>response.idToken</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=p>});</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=optional-adding-a-secured-net-backend>Optional: Adding a secured .NET backend</h3><p>The <a class=link href=https://github.com/vivecuervo7/local-auth-with-keycloak-example target=_blank rel=noopener>sample repo</a> contains code that also connects the React application to a .NET API with a secured endpoint.</p><p>The configuration here is relatively straightforward to work with our local Keycloak server.</p><p>The main changes we&rsquo;ll need to make are to <code>Program.cs</code>, where we simply add our necessary configuration (truncated for brevity).</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>Program.cs</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-diff data-lang=diff><span class=line><span class=cl><span class=gi>+ using Microsoft.AspNetCore.Authentication.JwtBearer;
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  var builder = WebApplication.CreateBuilder(args);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gi>+ builder
+</span></span></span><span class=line><span class=cl><span class=gi>+     .Services.AddAuthentication(options =&gt;
+</span></span></span><span class=line><span class=cl><span class=gi>+     {
+</span></span></span><span class=line><span class=cl><span class=gi>+         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+</span></span></span><span class=line><span class=cl><span class=gi>+         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+</span></span></span><span class=line><span class=cl><span class=gi>+     })
+</span></span></span><span class=line><span class=cl><span class=gi>+     .AddJwtBearer(options =&gt; builder.Configuration.Bind(&#34;JwtBearerOptions&#34;, options));
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gi>+ builder
+</span></span></span><span class=line><span class=cl><span class=gi>+     .Services.AddAuthorizationBuilder()
+</span></span></span><span class=line><span class=cl><span class=gi>+     .AddDefaultPolicy(&#34;RequireAuthenticatedUser&#34;, policy =&gt; policy.RequireAuthenticatedUser());
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  var app = builder.Build();
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  app.UseHttpsRedirection();
+</span></span><span class=line><span class=cl><span class=gi>+ app.UseAuthentication();
+</span></span></span><span class=line><span class=cl><span class=gi>+ app.UseAuthorization();
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  app.MapGet(&#34;/weatherforecast&#34;, () =&gt; [])
+</span></span><span class=line><span class=cl>    .WithName(&#34;GetWeatherForecast&#34;)
+</span></span><span class=line><span class=cl>    .WithOpenApi()
+</span></span><span class=line><span class=cl><span class=gi>+   .RequireAuthorization();
+</span></span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  await app.RunAsync();
+</span></span></code></pre></td></tr></table></div></div><p>And providing the appropriate configuration via appsettings.</p><div class=code-hint-block><span class=code-hint-path></span><span class=code-hint>appsettings.json</span></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-diff data-lang=diff><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl><span class=gi>+ &#34;JwtBearerOptions&#34;: {
+</span></span></span><span class=line><span class=cl><span class=gi>+   &#34;Authority&#34;: &#34;https://localhost:8443/realms/local-dev&#34;,
+</span></span></span><span class=line><span class=cl><span class=gi>+   &#34;Audience&#34;: &#34;local-dev-client&#34;
+</span></span></span><span class=line><span class=cl><span class=gi>+ }
+</span></span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><p>Running the code in the sample repo will result in the React application displaying a button which calls the <code>/weatherforecast</code> endpoint to illustrate the correct responses are returned depending on whether the client has been authenticated or not.</p></section><footer class=article-footer><section class=article-tags><a href=/dev-blog/tags/keycloak/>Keycloak</a>
+<a href=/dev-blog/tags/docker/>Docker</a>
+<a href=/dev-blog/tags/react/>React</a>
+<a href=/dev-blog/tags/msal/>MSAL</a>
+<a href=/dev-blog/tags/.net-core/>.NET Core</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>Last updated on Mar 04, 2026 08:00 +1000</span></section></footer></article><div class="article-list--compact links"><article><a href=https://www.keycloak.org/ target=_blank rel=noopener><div class=article-details><h2 class=article-title>Keycloak</h2><footer class=article-time>Open Source Identity and Access Management</footer></div></a></article><article><a href=https://www.docker.com/ target=_blank rel=noopener><div class=article-details><h2 class=article-title>Docker</h2><footer class=article-time>Accelerated Container Application Development</footer></div></a></article><article><a href=https://react.dev/ target=_blank rel=noopener><div class=article-details><h2 class=article-title>React</h2><footer class=article-time>The library for web and native user interfaces</footer></div></a></article><article><a href=https://github.com/AzureAD/microsoft-authentication-library-for-js target=_blank rel=noopener><div class=article-details><h2 class=article-title>MSAL.js</h2><footer class=article-time>Microsoft Authentication Library for JavaScript</footer></div></a></article><article><a href=https://dotnet.microsoft.com/en-us/ target=_blank rel=noopener><div class=article-details><h2 class=article-title>.NET</h2><footer class=article-time>The free, open-source, cross-platform framework for building modern apps and powerful cloud services</footer></div></a></article></div><aside class=related-content--wrapper><h2 class=section-title>Related content</h2><div class=related-content><div class="flex article-list--tile"><article class=has-image><a href=/dev-blog/p/react-component-library-with-vite/><div class=article-image><img src=/dev-blog/p/react-component-library-with-vite/cover.d26b3a871a78a1e0ea99d749c00ba9c7_hu_ab8c56241ac9c6de.jpg width=250 height=150 loading=lazy alt="Featured image of post Creating a React component library with Vite" data-key=react-component-library-with-vite data-hash="md5-0ms6hxp4oeDqmddJwAupxw=="></div><div class=article-details><h2 class=article-title>Creating a React component library with Vite</h2></div></a></article><article class=has-image><a href=/dev-blog/p/caddy-backend-switching/><div class=article-image><img src=/dev-blog/p/caddy-backend-switching/cover.8160e82ffb992b5a57f254c987e771d4_hu_634aed96efd4e350.png width=250 height=150 loading=lazy alt="Featured image of post Hot-swapping backends with Caddy and direnv" data-key=caddy-backend-switching data-hash="md5-gWDoL/uZK1pX8lTJh+dx1A=="></div><div class=article-details><h2 class=article-title>Hot-swapping backends with Caddy and direnv</h2></div></a></article><article class=has-image><a href=/dev-blog/p/claude-code-godot/><div class=article-image><img src=/dev-blog/p/claude-code-godot/cover.c761d1a7269e85852227a45f95732d08_hu_54d9651171189a05.png width=250 height=150 loading=lazy alt="Featured image of post Claude Code as a Godot Editor" data-key=claude-code-godot data-hash="md5-x2HRpyaehYUiJ6RflXMtCA=="></div><div class=article-details><h2 class=article-title>Claude Code as a Godot Editor</h2></div></a></article><article class=has-image><a href=/dev-blog/p/journalling-with-claude/><div class=article-image><img src=/dev-blog/p/journalling-with-claude/cover.24a7ed978e5081fa75c5c0b71b8577bc_hu_982c6a388bcaf40d.jpg width=250 height=150 loading=lazy alt="Featured image of post Automated journalling for AI-assisted development" data-key=journalling-with-claude data-hash="md5-JKftl45Qgfp1xcC3G4V3vA=="></div><div class=article-details><h2 class=article-title>Automated journalling for AI-assisted development</h2></div></a></article><article class=has-image><a href=/dev-blog/p/fine-tuning-an-llm/><div class=article-image><img src=/dev-blog/p/fine-tuning-an-llm/image.3cb94e5459cd6e59d8b5290a1e3ca537_hu_c5f582216c3f460d.png width=250 height=150 loading=lazy alt="Featured image of post RAG to fine-tuning an LLM" data-key=fine-tuning-an-llm data-hash="md5-PLlOVFnNblnYtSkKHjylNw=="></div><div class=article-details><h2 class=article-title>RAG to fine-tuning an LLM</h2></div></a></article></div></div></aside><footer class=site-footer><section class=copyright>&copy;
+2024 -
+2026 Isaac Dedini</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.34.2>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/dev-blog/ts/main.c922af694cc257bf1ecc41c0dd7b0430f9114ec280ccf67cd2c6ad55f5316c4e.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
