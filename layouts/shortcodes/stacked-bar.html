@@ -1,0 +1,7 @@
+<div class="chart-bars">
+  {{ with .Get "title" }}<div class="chart-bars-title">{{ . }}</div>{{ end }}
+  <div class="chart-stacked-bar">
+  {{ .Inner }}
+  </div>
+  {{ with .Get "total-label" }}<div class="chart-stacked-bar-total">{{ . }}</div>{{ end }}
+</div>

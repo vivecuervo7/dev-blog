@@ -1,0 +1,5 @@
+<div class="chart-stat">
+  <div class="chart-stat-label">{{ .Get "label" }}</div>
+  <div class="chart-stat-value">{{ .Get "value" }}{{ with .Get "unit" }}<span class="chart-stat-unit">{{ . }}</span>{{ end }}</div>
+  {{ with .Get "sub" }}<div class="chart-stat-sub">{{ . | markdownify }}</div>{{ end }}
+</div>

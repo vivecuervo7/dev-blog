@@ -1,0 +1,6 @@
+{{ $value := .Get "value" | float }}
+{{ $total := .Parent.Get "total" | float }}
+{{ $width := mul (div $value $total) 100 }}
+<div class="chart-stacked-segment chart-bar-{{ .Get "class" | default "good" }}" style="width: {{ printf "%.2f" $width }}%" title="{{ .Get "label" }}">
+  <span>{{ .Get "label" }}</span>
+</div>

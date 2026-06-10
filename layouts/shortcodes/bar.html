@@ -1,0 +1,10 @@
+{{ $value := .Get "value" | float }}
+{{ $max := .Parent.Get "max" | float }}
+{{ $width := mul (div $value $max) 100 }}
+<div class="chart-bar-row">
+  <div class="chart-bar-label">{{ .Get "label" }}</div>
+  <div class="chart-bar-track">
+    <div class="chart-bar-fill chart-bar-{{ .Get "class" | default "good" }}" style="width: {{ printf "%.1f" $width }}%"></div>
+    {{ with .Get "annotation" }}<div class="chart-bar-annotation">{{ . }}</div>{{ end }}
+  </div>
+</div>
