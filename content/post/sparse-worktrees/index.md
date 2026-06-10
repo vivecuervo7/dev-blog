@@ -124,10 +124,10 @@ Worktree creation totalled 25.7 seconds across all three. Seven and a half minut
 
 ### The .NET side
 
-The .NET path was lower-traffic for me personally (most of my day-to-day work is the frontend), but the validation numbers held up. A clean build of the runnable web app's role-scoped solution took around 53 seconds, against 274 seconds for the full slim solution. Three concurrent .NET worktrees occupied 68 GB of apparent disk while consuming only ~3.76 GB of actually-allocated space, thanks to ReFS `block-clone`. About 18× compression on the borrowed `bin/obj` files.
+The .NET path was lower-traffic for me personally (most of my day-to-day work is the frontend), but the validation numbers held up. A clean build of the runnable web app's role-scoped solution took around 53 seconds, against 274 seconds for the full solution. Three concurrent .NET worktrees occupied 68 GB of apparent disk while consuming only ~3.76 GB of actually-allocated space, thanks to ReFS `block-clone`. About 18× compression on the borrowed `bin/obj` files.
 
 {{< bar-chart title="Backend build (clean + rebuild)" max="274" >}}
-{{< bar label="Full slim solution (162 projects)" value="274" annotation="~274 s" class="fail" >}}
+{{< bar label="Full solution (162 projects)" value="274" annotation="~274 s" class="fail" >}}
 {{< bar label="Role-scoped .slnf (45 projects)" value="53" annotation="~53 s · ~5× faster" class="pass" >}}
 {{< /bar-chart >}}
 
