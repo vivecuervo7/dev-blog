@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Git on Isaac Dedini</title><link>https://vivecuervo7.github.io/dev-blog/tags/git/</link><description>Recent content in Git on Isaac Dedini</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Thu, 11 Jun 2026 00:00:00 +1000</lastBuildDate><atom:link href="https://vivecuervo7.github.io/dev-blog/tags/git/index.xml" rel="self" type="application/rss+xml"/><item><title>Sparse worktrees on a 6 GB repo</title><link>https://vivecuervo7.github.io/dev-blog/p/sparse-worktrees/</link><pubDate>Thu, 11 Jun 2026 00:00:00 +1000</pubDate><guid>https://vivecuervo7.github.io/dev-blog/p/sparse-worktrees/</guid><description>&lt;img src="https://vivecuervo7.github.io/dev-blog/p/sparse-worktrees/cover.png" alt="Featured image of post Sparse worktrees on a 6 GB repo" /&gt;&lt;h2 id="the-problem"&gt;The problem
+&lt;/h2&gt;&lt;p&gt;The pattern was familiar. A long-running Claude session would be mid-task on my feature branch when review feedback landed on an open PR. The options were either to wait for Claude to finish before switching, or to stash, switch branches, address the feedback, switch back, unstash, and try to recreate the context Claude had been holding. Doing it once was fine. Three times in an afternoon was the kind of friction worktrees exist to solve.&lt;/p&gt;
+&lt;p&gt;Except worktrees were off the table on this project. The &lt;code&gt;CLAUDE.md&lt;/code&gt; is explicit:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-markdown" data-lang="markdown"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="gu"&gt;## Worktrees
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="k"&gt;-&lt;/span&gt; Prefer working directly on a branch — large file count makes worktree checkout slow
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="k"&gt;-&lt;/span&gt; Never build inside a worktree — solution is too large, will exhaust disk space
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;For most of the team that&amp;rsquo;s the right default. A fresh clone alone is around 6.2 GB: 3.6 GB of working-tree files plus 2.6 GB of &lt;code&gt;.git&lt;/code&gt; history. &lt;code&gt;npm ci&lt;/code&gt; adds 2.1 GB more for the React frontend&amp;rsquo;s &lt;code&gt;node_modules&lt;/code&gt;, and a NuGet restore plus backend build adds several more GB:&lt;/p&gt;
+&lt;div class="chart-bars"&gt;
+&lt;div class="chart-bars-title"&gt;Disk cost of one fully-provisioned worktree&lt;/div&gt;
+&lt;div class="chart-stacked-bar"&gt;
+&lt;div class="chart-stacked-segment chart-bar-good" style="width: 23.53%" title="Working tree · 3.6 GB"&gt;
+&lt;span&gt;Working tree · 3.6 GB&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="chart-stacked-segment chart-bar-soft" style="width: 16.99%" title=".git · 2.6 GB"&gt;
+&lt;span&gt;.git · 2.6 GB&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="chart-stacked-segment chart-bar-mid" style="width: 13.73%" title="node_modules · 2.1 GB"&gt;
+&lt;span&gt;node_modules · 2.1 GB&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="chart-stacked-segment chart-bar-bad" style="width: 45.75%" title="Backend deps &amp;#43; build · ~7 GB"&gt;
+&lt;span&gt;Backend deps &amp;#43; build · ~7 GB&lt;/span&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-stacked-bar-total"&gt;≈ 15&amp;#43; GB before any actual work happens&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Three concurrent worktrees, all provisioned at once, would consume more than 30 GB before any actual work happened.&lt;/p&gt;
+&lt;p&gt;What pushed me to revisit the rule was the desire to run multiple Claude agents in parallel. Branch switching on a single checkout forces those agents into serial execution, which is the opposite of why you&amp;rsquo;d spawn multiple. The &lt;code&gt;CLAUDE.md&lt;/code&gt; rule existed for good reasons, but it was now also the thing blocking one of the more interesting use cases I had for the project.&lt;/p&gt;
+&lt;h2 id="sparse-checkouts"&gt;Sparse checkouts
+&lt;/h2&gt;&lt;p&gt;The obvious first lever was git&amp;rsquo;s sparse-checkout in cone mode. Restricting the checked-out tree to just the directories I actually touch (for the frontend role, that&amp;rsquo;s roughly the React app and its build tooling) takes the 3.6 GB of working-tree files down to about 1.8 GB. The &lt;code&gt;.git&lt;/code&gt; directory and the dependency installs are untouched; sparse-checkout only changes which files get materialised on disk.&lt;/p&gt;
+&lt;div class="chart-bars"&gt;
+&lt;div class="chart-bars-title"&gt;Working tree size for the frontend role&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Full checkout&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-fail" style="width: 100.0%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;3.6 GB&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Sparse checkout (cone)&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-pass" style="width: 50.0%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;1.8 GB · 50% less&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;This &lt;em&gt;partially&lt;/em&gt; solves the problem. The clone is still ~6 GB, but at least the working tree shrinks. For this repo that&amp;rsquo;s still meaningful; on a different repo where the clone itself isn&amp;rsquo;t oversized, the source-tree savings might not matter much.&lt;/p&gt;
+&lt;p&gt;What sparse-checkout &lt;em&gt;doesn&amp;rsquo;t&lt;/em&gt; touch is the expensive part: a new worktree&amp;rsquo;s first run still pays a full &lt;code&gt;npm ci&lt;/code&gt; (~50 seconds, ~2 GB) and a NuGet restore plus first build (multiple minutes). The source-tree savings were real, but a rounding error against the dependency cost.&lt;/p&gt;
+&lt;h2 id="copy-on-write"&gt;Copy-on-write
+&lt;/h2&gt;&lt;p&gt;I was about to file sparse-checkout away as a half-win when someone I work with poked at it from a different direction. Their suggestion was roughly this: combine the sparse worktree with symlinks, so that for the projects you weren&amp;rsquo;t actively touching in a given worktree, the &lt;code&gt;bin/obj&lt;/code&gt; directories pointed back at the primary checkout&amp;rsquo;s build output instead of being rebuilt from scratch.&lt;/p&gt;
+&lt;p&gt;Symlinks alone wouldn&amp;rsquo;t work. A write through the symlink modifies the primary&amp;rsquo;s &lt;code&gt;bin/obj&lt;/code&gt; and corrupts your primary checkout. What I actually wanted was &lt;em&gt;share-by-default-but-diverge-on-write&lt;/em&gt;, which is exactly what copy-on-write filesystems do. macOS&amp;rsquo;s APFS exposes it as &lt;code&gt;clonefile(2)&lt;/code&gt;, Windows ReFS calls it &lt;code&gt;block-clone&lt;/code&gt;, Linux&amp;rsquo;s btrfs and xfs have &lt;code&gt;reflink&lt;/code&gt;. All produce a copy that shares storage blocks with the source until either side writes, when fresh blocks get allocated transparently.&lt;/p&gt;
+&lt;p&gt;For Node this was easy to reason about. If the worktree&amp;rsquo;s &lt;code&gt;package-lock.json&lt;/code&gt; matches the primary&amp;rsquo;s, the dependencies are byte-identical, so &lt;code&gt;node_modules&lt;/code&gt; can be cloned in one syscall. For .NET it was messier (restored packages, generated code, multiple &lt;code&gt;bin/obj&lt;/code&gt; paths, projects that are inside the cone versus borrowed from outside) and required several iterations to get right.&lt;/p&gt;
+&lt;p&gt;But the shape of the idea was clear. Sparse-checkout addresses the source-tree size. CoW addresses the dependency and build-output cost. Together they make worktree creation feel near-instant.&lt;/p&gt;
+&lt;h2 id="wiring-it-together"&gt;Wiring it together
+&lt;/h2&gt;&lt;p&gt;I ended up with a bash script wrapping three steps:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;git worktree add&lt;/code&gt; the new branch into a sibling directory.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;git sparse-checkout init --cone&lt;/code&gt; and set the cone to the relevant role&amp;rsquo;s directories.&lt;/li&gt;
+&lt;li&gt;If the worktree&amp;rsquo;s lockfile matches the primary&amp;rsquo;s, CoW-clone &lt;code&gt;node_modules&lt;/code&gt;. Otherwise fall back to &lt;code&gt;npm ci&lt;/code&gt;. Same pattern for the .NET dep and build dirs.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;One implementation wrinkle worth noting: &lt;code&gt;cp -c -R&lt;/code&gt; produces CoW blocks on macOS but walks the tree file-by-file, taking ~22 seconds for &lt;code&gt;node_modules&lt;/code&gt;. Calling &lt;code&gt;clonefile(2)&lt;/code&gt; directly on the directory does it in 2–4 seconds.&lt;/p&gt;
+&lt;div class="chart-bars"&gt;
+&lt;div class="chart-bars-title"&gt;Cloning node_modules: clonefile syscall vs cp -c -R walk&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;cp -c -R (walks tree, ~166k syscalls)&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-fail" style="width: 100.0%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~22 s&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;clonefile(2) (one syscall on the directory)&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-pass" style="width: 18.2%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~4 s · ~6× faster&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;On Windows, ReFS &lt;code&gt;block-clone&lt;/code&gt; only fires through specific APIs. &lt;code&gt;cp -r&lt;/code&gt; in Git Bash silently bypasses it and produces a real copy, which is how the first Windows run produced 22 GB of physical disk per worktree.&lt;/p&gt;
+&lt;p&gt;The script also grows the cone organically: when an agent runs into a missing import during testing, it broadens the cone and tries again.&lt;/p&gt;
+&lt;h2 id="how-it-went"&gt;How it went
+&lt;/h2&gt;&lt;h3 id="on-paper"&gt;On paper
+&lt;/h3&gt;&lt;div class="chart-stats"&gt;
+&lt;div class="chart-stat"&gt;
+&lt;div class="chart-stat-label"&gt;Sparse &amp;#43; CoW&lt;/div&gt;
+&lt;div class="chart-stat-value"&gt;~4&lt;span class="chart-stat-unit"&gt;s&lt;/span&gt;&lt;/div&gt;
+&lt;div class="chart-stat-sub"&gt;when lockfile matches primary&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-stat"&gt;
+&lt;div class="chart-stat-label"&gt;Full &amp;#43; npm ci&lt;/div&gt;
+&lt;div class="chart-stat-value"&gt;~50&lt;span class="chart-stat-unit"&gt;s&lt;/span&gt;&lt;/div&gt;
+&lt;div class="chart-stat-sub"&gt;the prior baseline&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-stat"&gt;
+&lt;div class="chart-stat-label"&gt;Per-worktree disk&lt;/div&gt;
+&lt;div class="chart-stat-value"&gt;~170&lt;span class="chart-stat-unit"&gt;MB&lt;/span&gt;&lt;/div&gt;
+&lt;div class="chart-stat-sub"&gt;vs ~3.9 GB full&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-stat"&gt;
+&lt;div class="chart-stat-label"&gt;Speedup&lt;/div&gt;
+&lt;div class="chart-stat-value"&gt;~12&lt;span class="chart-stat-unit"&gt;×&lt;/span&gt;&lt;/div&gt;
+&lt;div class="chart-stat-sub"&gt;time, default fast path&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-bars"&gt;
+&lt;div class="chart-bars-title"&gt;Cost to create one ready-to-use worktree&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Full worktree &amp;#43; npm ci&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-fail" style="width: 100.0%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~50 s · 3.9 GB&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Sparse &amp;#43; npm ci fallback&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-pass" style="width: 32.0%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~16 s · 2.2 GB&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Sparse &amp;#43; CoW (cp -c -R)&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-pass" style="width: 44.0%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~22 s · 170 MB&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Sparse &amp;#43; CoW (clonefile)&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-pass" style="width: 8.0%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~4 s · 170 MB&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;The top row is the baseline I&amp;rsquo;d have paid without any of this. Everything below it is an improvement, with the bottom row being the fast path: CoW via &lt;code&gt;clonefile&lt;/code&gt;, which fires when the lockfile matches primary — most of the time.&lt;/p&gt;
+&lt;h3 id="in-practice"&gt;In practice
+&lt;/h3&gt;&lt;p&gt;The more honest test was whether the workflow held up under actual use. The most relevant case was a Friday afternoon when three open PRs had review comments waiting and I was mid-feature on an unrelated branch. Claude handled the whole loop end to end: spinning up three sparse worktrees (one per PR), addressing the feedback in each, and tearing the worktrees down once I&amp;rsquo;d reviewed the changes.&lt;/p&gt;
+&lt;div class="chart-bars"&gt;
+&lt;div class="chart-bars-title"&gt;Wall-clock: three PR-feedback agents, parallel vs sequential&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Sequential (one agent at a time)&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-fail" style="width: 100.0%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~18 min&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Parallel (3 worktrees, 3 agents)&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-pass" style="width: 41.7%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~7.5 min · 2.4× speedup&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Worktree creation totalled 25.7 seconds across all three. Seven and a half minutes of wall-clock later, three agents had clean commits with full test suites passing. Sequentially this would have been roughly 18 minutes of agent time plus a stash dance between each one. The primary checkout stayed parked on its feature branch the whole time.&lt;/p&gt;
+&lt;h3 id="the-net-side"&gt;The .NET side
+&lt;/h3&gt;&lt;p&gt;The .NET path was lower-traffic for me personally (most of my day-to-day work is the frontend), but the validation numbers held up. A clean build of the runnable web app&amp;rsquo;s role-scoped solution took around 53 seconds, against 274 seconds for the full solution. Three concurrent .NET worktrees occupied 68 GB of apparent disk while consuming only ~3.76 GB of actually-allocated space, thanks to ReFS &lt;code&gt;block-clone&lt;/code&gt;. About 18× compression on the borrowed &lt;code&gt;bin/obj&lt;/code&gt; files.&lt;/p&gt;
+&lt;div class="chart-bars"&gt;
+&lt;div class="chart-bars-title"&gt;Backend build (clean &amp;#43; rebuild)&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Full solution (162 projects)&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-fail" style="width: 100.0%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~274 s&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chart-bar-row"&gt;
+&lt;div class="chart-bar-label"&gt;Role-scoped .slnf (45 projects)&lt;/div&gt;
+&lt;div class="chart-bar-track"&gt;
+&lt;div class="chart-bar-fill chart-bar-pass" style="width: 19.3%"&gt;&lt;/div&gt;
+&lt;div class="chart-bar-annotation"&gt;~53 s · ~5× faster&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;The wrapper also generates a Visual Studio Solution Filter (a &lt;code&gt;.slnf&lt;/code&gt;) as a byproduct of the cone, which slotted in cleanly. Pointed at the &lt;code&gt;.slnf&lt;/code&gt;, Visual Studio only loads the role&amp;rsquo;s 45 projects instead of the full 162. The startup project built and ran fine from it, but ran into some issues at runtime. I figured this was likely due to some of the projects missing, but didn&amp;rsquo;t dig too much further as the majority of my pressing work was all front-end related.&lt;/p&gt;
+&lt;p&gt;The takeaway here is that making changes from a narrow cone is cheap, running and verifying them isn&amp;rsquo;t.&lt;/p&gt;
+&lt;h2 id="where-it-gets-rough"&gt;Where it gets rough
+&lt;/h2&gt;&lt;p&gt;The big one is that the cone is correct for editing but reliably too narrow for running tests. In the .NET case, sometimes too narrow for running the solution at all. Frontend test runners walk real imports across the source tree, and a diff-derived cone only contains the files in the PR. The first version of the script left agents bouncing off &amp;ldquo;module not found&amp;rdquo; errors until they manually broadened the cone.&lt;/p&gt;
+&lt;p&gt;The fix was a hybrid strategy: organic cone growth that broadens on resolution failures, combined with role-based &amp;ldquo;always include&amp;rdquo; presets so the common cases avoid the dance entirely. The frontend cone, for instance, always pulls in &lt;code&gt;webpack/&lt;/code&gt;, &lt;code&gt;config/&lt;/code&gt;, and a handful of others.&lt;/p&gt;
+&lt;p&gt;This helps, but doesn&amp;rsquo;t eliminate the cost. There&amp;rsquo;s still a meaningful gap between &amp;ldquo;small enough cone to be fast&amp;rdquo; and &amp;ldquo;broad enough cone to validate the change locally.&amp;rdquo; In practice, for many quick PR-feedback rounds, the path of least friction became: make the change, push, let CI validate. &lt;em&gt;The cone makes making changes cheap and makes validating them awkward.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The .NET path works, but the implementation isn&amp;rsquo;t as clean as the frontend&amp;rsquo;s. Where the frontend story is a couple of hundred lines of mostly-generic bash, the .NET equivalent is several times that, and most of the extra exists to handle this repo&amp;rsquo;s particular shape: code-gen targets that hardcode output paths, vendor DLL references via &lt;code&gt;&amp;lt;HintPath&amp;gt;&lt;/code&gt;, &lt;code&gt;packages.config&lt;/code&gt;-style restoration, and a few locally-modified project files that need to be carried into each worktree to produce binaries that match the primary checkout.&lt;/p&gt;
+&lt;p&gt;The tooling on that side is closer to a project-specific wrapper than a portable library.&lt;/p&gt;
+&lt;h2 id="was-it-worth-it"&gt;Was it worth it?
+&lt;/h2&gt;&lt;p&gt;A few weeks on, the picture&amp;rsquo;s more mixed than I expected. The experiment did what it set out to do: parallel Claude agents on a repo that had been explicitly deemed unsuitable for worktrees. But folding the workflow into daily work was more involved than I&amp;rsquo;d hoped. I reach for sparse worktrees for specific cases now (PR-feedback rounds, parallel small features), not as the default.&lt;/p&gt;
+&lt;p&gt;When I do reach for it, the frontend path is the cleaner of the two: per-worktree cost is low enough that spinning one up is a non-decision. The .NET path works but it&amp;rsquo;s a brittle, repo-specific win; I wouldn&amp;rsquo;t expect that side to lift to another .NET codebase without similar investigative work upfront. The cone-versus-validation tension still bites too – it&amp;rsquo;s a real ceiling, not a minor footnote, and it shows up whenever a test runner reaches further than a diff would suggest.&lt;/p&gt;
+&lt;p&gt;Would I recommend this approach on a more reasonably-sized repo?&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://vivecuervo7.github.io/dev-blog/p/sparse-worktrees/images/season-3-no-gif-by-the-office.gif"
+width="480"
+height="400"
+srcset="https://vivecuervo7.github.io/dev-blog/p/sparse-worktrees/images/season-3-no-gif-by-the-office_hu_7a3a1a291f26015c.gif 480w, https://vivecuervo7.github.io/dev-blog/p/sparse-worktrees/images/season-3-no-gif-by-the-office_hu_edad94b6d250a91d.gif 1024w"
+loading="lazy"
+alt="Nope"
+class="gallery-image"
+data-flex-grow="120"
+data-flex-basis="288px"
+&gt;&lt;/p&gt;
+&lt;p&gt;If worktrees are already cheap to spin up, there&amp;rsquo;s little reason to layer this on top, especially with a package manager that deduplicates dependencies the way &lt;code&gt;pnpm&lt;/code&gt; does.&lt;/p&gt;
+&lt;p&gt;The bigger takeaway is less about this specific tooling than how a codebase gets set up in the first place. Most of the friction I kept running into wasn&amp;rsquo;t from sparse-checkout or copy-on-write. Those did their jobs. It came from the codebase not having been designed with worktrees in mind: a port assumption here, an environment-file shortcut there, build state baked into the wrong place. None of that is AI-specific; a human dev wanting to work on two branches in parallel would have hit the same edges. But in a world where running multiple Claude agents against the same repo in parallel is a meaningful unlock, the value of considering worktrees from the outset is higher than it&amp;rsquo;s ever been.&lt;/p&gt;</description></item></channel></rss>
